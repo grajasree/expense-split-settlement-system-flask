@@ -835,7 +835,7 @@ elif menu == "👥 Groups & Members":
                     # 2. Quick Register & Add a new friend
                     with st.expander(f"➕ Friend not registered yet? Register & Add to {g['name']}"):
                         with st.form(f"quick_add_group_{gid}", clear_on_submit=True):
-                            new_fr_name = st.text_input("Friend's Full Name", placeholder="e.g. Bhoomika, Priya, Ananya")
+                            new_fr_name = st.text_input("Friend's Full Name", placeholder="e.g. Rajasree, Priya, Ananya")
                             if st.form_submit_button("Register & Add to Group"):
                                 if not new_fr_name.strip():
                                     st.error("Name is required.")
@@ -905,7 +905,7 @@ elif menu == "👥 Groups & Members":
             other_members = [u for u in all_users if u['id'] != current_user_id]
             other_names = [u['name'] for u in other_members]
             other_map = {u['name']: u['id'] for u in other_members}
-            chosen_friends = st.multiselect("Select Friends to Include in this Group (e.g. Bhoomika, Priya):", other_names)
+            chosen_friends = st.multiselect("Select Friends to Include in this Group (e.g. Rajasree, Priya):", other_names)
 
             if st.form_submit_button("Create Group with Members"):
                 if not g_name.strip():
