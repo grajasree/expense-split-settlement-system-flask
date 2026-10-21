@@ -3,3 +3,6 @@ PyMySQL>=1.1.0
 cryptography>=42.0.0
 python-dotenv>=1.0.0
 gunicorn>=21.2.0
+streamlit>=1.30.0
+plotly>=5.18.0
+pandas>=2.0.0
