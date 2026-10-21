@@ -19,7 +19,7 @@ load_dotenv()
 # Page configuration
 st.set_page_config(
     page_title="SplitSettlement - Expense Split & Settlement",
-    page_icon="💳",
+    page_icon="✦",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -411,6 +411,585 @@ def simplify_debts(net_balances, member_dict):
     return settlements
 
 # ==============================================================================
+# INTERNATIONALIZATION (I18N) & CREATIVE BRANDING ENGINE
+# ==============================================================================
+LANGUAGE_OPTIONS = ["English", "ಕನ್ನಡ (Kannada)", "తెలుగు (Telugu)", "हिन्दी (Hindi)"]
+
+if 'interface_language' not in st.session_state:
+    st.session_state['interface_language'] = "English"
+
+TRANSLATIONS = {
+    'en': {
+        'app_title': 'SplitSettlement',
+        'app_subtitle': 'Expense Split & Settlement System',
+        'auth_badge': '🔒 Secure Access',
+        'welcome_hero_title': 'Welcome to SplitSettlement',
+        'welcome_hero_desc': 'The smart, stress-free way to share expenses, settle debts, and manage group budgets with friends and teammates.',
+        'tab_signin': '🔐 Sign In to Account',
+        'tab_register': '📝 Create New Account',
+        'signin_header': 'Enter your name or email to access your dashboard:',
+        'signin_invited_tip': '💡 **Invited to a group by a friend?** You can log in using your name and default password **123456**, or switch to the **\'Create New Account\'** tab to set your own password and activate your account.',
+        'ident_label': 'Name or Email *',
+        'ident_placeholder': 'e.g. Rajasree or user@example.com',
+        'pwd_label': 'Password *',
+        'pwd_placeholder': 'Enter your password',
+        'btn_login': 'Log In to Dashboard',
+        'reg_header': 'Register your details to create your account and start splitting:',
+        'fullname_label': 'Full Name *',
+        'fullname_placeholder': 'e.g. Rajasree, Priya, Bhoomika',
+        'email_label': 'Email Address *',
+        'email_placeholder': 'e.g. name@example.com',
+        'create_pwd_label': 'Create Password *',
+        'confirm_pwd_label': 'Confirm Password *',
+        'btn_create_account': '🚀 Create Account & Log In',
+        'nav_groups': '👥 Groups & Members',
+        'nav_expenses': '🧾 Expenses & Splits',
+        'nav_balances': '⚖️ Balances (Who Owes Whom)',
+        'nav_budgets': '🐷 Group Budgets',
+        'nav_simulator': '🧪 What-If Simulator',
+        'nav_dashboard': '📊 Dashboard & Analytics',
+        'nav_history': '📜 Payment History',
+        'step_1': 'Step 1: 👥 Groups & Members',
+        'step_2': 'Step 2: 🧾 Add & Split Expenses',
+        'step_3': 'Step 3: ⚖️ Who Owes Whom',
+        'step_4': 'Step 4: 📜 Payment History',
+        'active_profile': 'Active Profile',
+        'logged_in': 'Logged In',
+        'btn_logout': '🚪 Log Out',
+        'btn_logout_account': '🚪 Log Out Account',
+        'nav_menu_header': 'Navigation Menu:',
+        'groups_hero_title': 'Group Management',
+        'groups_hero_desc': 'Organize project teams, roommates, trips, and friends circles.',
+        'tab_view_groups': '📋 View Your Groups',
+        'tab_create_group': '➕ Create New Group',
+        'no_groups_msg': 'You do not belong to any groups yet. Switch to the \'Create New Group\' tab to start one!',
+        'add_member_title': '➕ Add Member to',
+        'add_member_input': 'Enter Member Name to Add to',
+        'add_member_placeholder': 'e.g. Priya or Bhoomika',
+        'btn_add_member': '➕ Add to Group',
+        'next_step_group_title': 'Done adding members to',
+        'next_step_group_sub': 'Proceed to record bills and split expenses among group members.',
+        'btn_next_to_expenses': '➡️ Proceed to Next Step: Record Expenses for',
+        'remove_member_title': '➖ Remove a Member from',
+        'btn_remove_member': 'Remove Member from Group',
+        'confirm_delete_group': 'Confirm deletion of',
+        'btn_delete_group': '🗑️ Delete Group',
+        'group_name_label': 'Group Name *',
+        'group_desc_label': 'Description (Optional)',
+        'group_budget_label': 'Monthly Spending Budget (₹, Optional)',
+        'initial_members_label': 'Initial Members to Add (Optional - comma separated names):',
+        'btn_create_group': 'Create Group',
+        'expenses_hero_title': 'Expense Tracking',
+        'expenses_hero_desc': 'Record bills and split with Equal, Percentage, or Custom shares.',
+        'tab_add_expense': '➕ Add New Expense',
+        'tab_expense_history': '📜 Expense History & Management',
+        'select_group_label': 'Select Group:',
+        'exp_desc_label': 'Expense Description *',
+        'exp_desc_placeholder': 'e.g. Cafe Meeting, Printouts, Dinner',
+        'exp_amt_label': 'Total Amount (₹) *',
+        'exp_cat_label': 'Category:',
+        'exp_date_label': 'Date:',
+        'paid_by_label': 'Paid By (Member):',
+        'split_method_label': 'Split Method:',
+        'split_equal': 'Equal Split',
+        'split_percentage': 'Percentage Split',
+        'split_custom': 'Custom Split',
+        'btn_save_expense': '💾 Save Expense & Split',
+        'delete_expense_title': '🗑️ Delete a Recorded Expense',
+        'btn_delete_selected_expense': 'Delete Selected Expense',
+        'next_step_exp_title': 'Expenses Recorded! Ready to See Who Owes Whom?',
+        'next_step_exp_sub': 'Proceed to view net balances and optimized settlement instructions.',
+        'btn_back_to_groups': '👥 Back to Groups',
+        'btn_next_to_balances': '⚖️ Proceed to Next Step: Who Owes Whom',
+        'balances_hero_title': 'Who Owes Whom',
+        'balances_hero_desc': 'Optimal minimum cash-flow debt simplification algorithm.',
+        'settlement_instructions': '💡 Settlement Instructions:',
+        'pays': 'pays',
+        'all_settled': '✅ Everyone is completely settled up in this group!',
+        'col_member': 'Member',
+        'col_paid': 'Paid',
+        'col_share': 'Share',
+        'col_net': 'Net',
+        'col_status': 'Status',
+        'status_gets_back': 'Gets Back',
+        'status_owes': 'Owes',
+        'status_settled': 'Settled',
+        'next_step_bal_title': 'Settlements Reviewed! Ready to View Payment History?',
+        'next_step_bal_sub': 'Proceed to view full payment logs, or check group budgets and analytics.',
+        'btn_back_to_expenses': '⬅️ Back to Expenses',
+        'btn_view_analytics': '📊 View Analytics',
+        'btn_proceed_to_history': '📜 Proceed to Step 4: Payment History',
+        'history_hero_title': 'Payment & Expense History',
+        'history_hero_desc': 'Complete historical log of all recorded bills, shares, and settlements.',
+        'filter_group_label': 'Filter History by Group:',
+        'all_your_groups': 'All Your Groups',
+        'stat_total_tx': 'Total Transactions',
+        'stat_total_spent': 'Total Group Spending',
+        'stat_your_share': 'Your Total Share',
+        'delete_history_title': '🗑️ Delete a Recorded Payment / Expense',
+        'btn_delete_entry': 'Delete Entry',
+        'complete_lifecycle_title': 'All Steps Completed! Need to Record More or Adjust Groups?',
+        'complete_lifecycle_sub': 'Jump back to any prior step at any time.',
+        'btn_goto_step1': '👥 Step 1: Manage Groups',
+        'btn_goto_step2': '🧾 Step 2: Add More Expenses',
+        'btn_goto_step3': '⚖️ Step 3: Check Balances',
+        'budgets_hero_title': 'Group Budgets',
+        'budgets_hero_desc': 'Set spending caps and monitor automated threshold alerts.',
+        'simulator_hero_title': 'What-If Expense Simulator',
+        'simulator_hero_desc': 'Test hypothetical expenses without affecting recorded data.',
+        'dashboard_hero_title': 'Financial Overview',
+        'dashboard_hero_desc': 'Track shared expenses, balances, and real-time budget health.',
+    },
+    'kn': {
+        'app_title': 'ಸ್ಪ್ಲಿಟ್‌ಸೆಟ್ಲ್‌ಮೆಂಟ್ (SplitSettlement)',
+        'app_subtitle': 'ಖರ್ಚು ಹಂಚಿಕೆ ಮತ್ತು ಇತ್ಯರ್ಥ ವ್ಯವಸ್ಥೆ',
+        'auth_badge': '🔒 ಸುರಕ್ಷಿತ ಪ್ರವೇಶ',
+        'welcome_hero_title': 'ಸ್ಪ್ಲಿಟ್‌ಸೆಟ್ಲ್‌ಮೆಂಟ್‌ಗೆ ಸುಸ್ವಾಗತ',
+        'welcome_hero_desc': 'ಸ್ನೇಹಿತರು ಮತ್ತು ತಂಡದೊಂದಿಗೆ ಖರ್ಚುಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳಲು, ಸಾಲಗಳನ್ನು ತೀರಿಸಲು ಮತ್ತು ಗುಂಪು ಬಜೆಟ್‌ಗಳನ್ನು ಸುಲಭವಾಗಿ ನಿರ್ವಹಿಸಲು ಅತ್ಯುತ್ತಮ ವೇದಿಕೆ.',
+        'tab_signin': '🔐 ಖಾತೆಗೆ ಲಾಗ್ ಇನ್ ಮಾಡಿ',
+        'tab_register': '📝 ಹೊಸ ಖಾತೆ ರಚಿಸಿ',
+        'signin_header': 'ನಿಮ್ಮ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ಪ್ರವೇಶಿಸಲು ಹೆಸರು ಅಥವಾ ಇಮೇಲ್ ನಮೂದಿಸಿ:',
+        'signin_invited_tip': '💡 **ಸ್ನೇಹಿತರು ನಿಮ್ಮನ್ನು ಗುಂಪಿಗೆ ಸೇರಿಸಿದ್ದಾರೆಯೇ?** ನಿಮ್ಮ ಹೆಸರು ಮತ್ತು ಪೂರ್ವನಿಯೋಜಿತ ಪಾಸ್‌ವರ್ಡ್ **123456** ಬಳಸಿ ಲಾಗಿನ್ ಆಗಬಹುದು, ಅಥವಾ ನಿಮ್ಮದೇ ಪಾಸ್‌ವರ್ಡ್ ಹೊಂದಿಸಲು **\'ಹೊಸ ಖಾತೆ ರಚಿಸಿ\'** ಟ್ಯಾಬ್ ಬಳಸಿ.',
+        'ident_label': 'ಹೆಸರು ಅಥವಾ ಇಮೇಲ್ *',
+        'ident_placeholder': 'ಉದಾ: Rajasree ಅಥವಾ user@example.com',
+        'pwd_label': 'ಪಾಸ್‌ವರ್ಡ್ *',
+        'pwd_placeholder': 'ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ',
+        'btn_login': 'ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ಗೆ ಲಾಗ್ ಇನ್ ಮಾಡಿ',
+        'reg_header': 'ಖಾತೆ ರಚಿಸಲು ಮತ್ತು ಖರ್ಚು ಹಂಚಲು ನಿಮ್ಮ ವಿವರಗಳನ್ನು ನೋಂದಾಯಿಸಿ:',
+        'fullname_label': 'ಪೂರ್ಣ ಹೆಸರು *',
+        'fullname_placeholder': 'ಉದಾ: Rajasree, Priya, Bhoomika',
+        'email_label': 'ಇಮೇಲ್ ವಿಳಾಸ *',
+        'email_placeholder': 'ಉದಾ: name@example.com',
+        'create_pwd_label': 'ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ *',
+        'confirm_pwd_label': 'ಪಾಸ್‌ವರ್ಡ್ ಖಚಿತಪಡಿಸಿ *',
+        'btn_create_account': '🚀 ಖಾತೆ ರಚಿಸಿ ಮತ್ತು ಲಾಗ್ ಇನ್ ಆಗಿ',
+        'nav_groups': '👥 ಗುಂಪುಗಳು ಮತ್ತು ಸದಸ್ಯರು',
+        'nav_expenses': '🧾 ಖರ್ಚುಗಳು ಮತ್ತು ಹಂಚಿಕೆ',
+        'nav_balances': '⚖️ ಬಾಕಿ ಲೆಕ್ಕ (ಯಾರು ಯಾರಿಗೆ ನೀಡಬೇಕು)',
+        'nav_budgets': '🐷 ಗುಂಪು ಬಜೆಟ್‌ಗಳು',
+        'nav_simulator': '🧪 ವಾಟ್-ಇಫ್ ಸಿಮ್ಯುಲೇಟರ್',
+        'nav_dashboard': '📊 ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ಮತ್ತು ವಿಶ್ಲೇಷಣೆ',
+        'nav_history': '📜 ಪಾವತಿ ಇತಿಹಾಸ',
+        'step_1': 'ಹಂತ ೧: 👥 ಗುಂಪುಗಳು & ಸದಸ್ಯರು',
+        'step_2': 'ಹಂತ ೨: 🧾 ಖರ್ಚು ಸೇರಿಸಿ & ಹಂಚಿಕೆ',
+        'step_3': 'ಹಂತ ೩: ⚖️ ಯಾರು ಯಾರಿಗೆ ನೀಡಬೇಕು',
+        'step_4': 'ಹಂತ ೪: 📜 ಪಾವತಿ ಇತಿಹಾಸ',
+        'active_profile': 'ಸಕ್ರಿಯ ಪ್ರೊಫೈಲ್',
+        'logged_in': 'ಲಾಗಿನ್ ಆಗಿದೆ',
+        'btn_logout': '🚪 ಲಾಗ್‌ಔಟ್',
+        'btn_logout_account': '🚪 ಖಾತೆಯಿಂದ ನಿರ್ಗಮಿಸಿ',
+        'nav_menu_header': 'ನ್ಯಾವಿಗೇಷನ್ ಮೆನು:',
+        'groups_hero_title': 'ಗುಂಪು ನಿರ್ವಹಣೆ',
+        'groups_hero_desc': 'ಪ್ರಾಜೆಕ್ಟ್ ತಂಡಗಳು, ರೂಮ್‌ಮೇಟ್‌ಗಳು, ಪ್ರವಾಸಗಳು ಮತ್ತು ಸ್ನೇಹಿತರ ಬಳಗಗಳನ್ನು ನಿರ್ವಹಿಸಿ.',
+        'tab_view_groups': '📋 ನಿಮ್ಮ ಗುಂಪುಗಳು',
+        'tab_create_group': '➕ ಹೊಸ ಗುಂಪು ರಚಿಸಿ',
+        'no_groups_msg': 'ನೀವು ಇನ್ನೂ ಯಾವುದೇ ಗುಂಪಿನಲ್ಲಿ ಇಲ್ಲ. ಹೊಸ ಗುಂಪನ್ನು ಪ್ರಾರಂಭಿಸಲು \'ಹೊಸ ಗುಂಪು ರಚಿಸಿ\' ಟ್ಯಾಬ್ ಕ್ಲಿಕ್ ಮಾಡಿ!',
+        'add_member_title': '➕ ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿ:',
+        'add_member_input': 'ಗುಂಪಿಗೆ ಸೇರಿಸಬೇಕಾದ ಸದಸ್ಯರ ಹೆಸರು:',
+        'add_member_placeholder': 'ಉದಾ: Priya ಅಥವಾ Bhoomika',
+        'btn_add_member': '➕ ಗುಂಪಿಗೆ ಸೇರಿಸಿ',
+        'next_step_group_title': 'ಸದಸ್ಯರನ್ನು ಸೇರಿಸುವುದು ಮುಗಿದಿದೆಯೇ?',
+        'next_step_group_sub': 'ಗುಂಪಿನ ಸದಸ್ಯರ ನಡುವೆ ಬಿಲ್‌ಗಳನ್ನು ದಾಖಲಿಸಲು ಮತ್ತು ಖರ್ಚು ಹಂಚಲು ಮುಂದುವರಿಯಿರಿ.',
+        'btn_next_to_expenses': '➡️ ಮುಂದಿನ ಹಂತ: ಖರ್ಚುಗಳನ್ನು ದಾಖಲಿಸಿ -',
+        'remove_member_title': '➖ ಗುಂಪಿನಿಂದ ಸದಸ್ಯರನ್ನು ತೆಗೆದುಹಾಕಿ',
+        'btn_remove_member': 'ಸದಸ್ಯರನ್ನು ತೆಗೆದುಹಾಕಿ',
+        'confirm_delete_group': 'ಗುಂಪನ್ನು ಅಳಿಸುವುದನ್ನು ಖಚಿತಪಡಿಸಿ:',
+        'btn_delete_group': '🗑️ ಗುಂಪು ಅಳಿಸಿ',
+        'group_name_label': 'ಗುಂಪಿನ ಹೆಸರು *',
+        'group_desc_label': 'ವಿವರಣೆ (ಐಚ್ಛಿಕ)',
+        'group_budget_label': 'ಮಾಸಿಕ ಖರ್ಚು ಬಜೆಟ್ (₹, ಐಚ್ಛಿಕ)',
+        'initial_members_label': 'ಆರಂಭಿಕ ಸದಸ್ಯರು (ಐಚ್ಛಿಕ - ಕಾಮಾದಿಂದ ಬೇರ್ಪಡಿಸಿದ ಹೆಸರುಗಳು):',
+        'btn_create_group': 'ಗುಂಪು ರಚಿಸಿ',
+        'expenses_hero_title': 'ಖರ್ಚುಗಳ ಟ್ರ್ಯಾಕಿಂಗ್',
+        'expenses_hero_desc': 'ಬಿಲ್‌ಗಳನ್ನು ಸಮಾನ, ಶೇಕಡಾವಾರು ಅಥವಾ ಕಸ್ಟಮ್ ಪಾಲುಗಳಲ್ಲಿ ಹಂಚಿರಿ.',
+        'tab_add_expense': '➕ ಹೊಸ ಖರ್ಚು ಸೇರಿಸಿ',
+        'tab_expense_history': '📜 ಖರ್ಚು ಇತಿಹಾಸ ಮತ್ತು ನಿರ್ವಹಣೆ',
+        'select_group_label': 'ಗುಂಪನ್ನು ಆಯ್ಕೆಮಾಡಿ:',
+        'exp_desc_label': 'ಖರ್ಚಿನ ವಿವರಣೆ *',
+        'exp_desc_placeholder': 'ಉದಾ: ಕೆಫೆ ಸಭೆ, ಪ್ರಿಂಟ್‌ಔಟ್, ಊಟ',
+        'exp_amt_label': 'ಒಟ್ಟು ಮೊತ್ತ (₹) *',
+        'exp_cat_label': 'ವರ್ಗ:',
+        'exp_date_label': 'ದಿನಾಂಕ:',
+        'paid_by_label': 'ಪಾವತಿಸಿದವರು (ಸದಸ್ಯರು):',
+        'split_method_label': 'ಹಂಚಿಕೆ ವಿಧಾನ:',
+        'split_equal': 'ಸಮಾನ ಹಂಚಿಕೆ',
+        'split_percentage': 'ಶೇಕಡಾವಾರು ಹಂಚಿಕೆ',
+        'split_custom': 'ಕಸ್ಟಮ್ ಹಂಚಿಕೆ',
+        'btn_save_expense': '💾 ಖರ್ಚನ್ನು ಉಳಿಸಿ ಮತ್ತು ಹಂಚಿ',
+        'delete_expense_title': '🗑️ ದಾಖಲಾದ ಖರ್ಚನ್ನು ಅಳಿಸಿ',
+        'btn_delete_selected_expense': 'ಆಯ್ಕೆಮಾಡಿದ ಖರ್ಚನ್ನು ಅಳಿಸಿ',
+        'next_step_exp_title': 'ಖರ್ಚುಗಳು ದಾಖಲಾಗಿವೆ! ಯಾರು ಯಾರಿಗೆ ನೀಡಬೇಕು ಎಂದು ನೋಡಬೇಕೆ?',
+        'next_step_exp_sub': 'ನಿವ್ವಳ ಬಾಕಿಗಳು ಮತ್ತು ಅತ್ಯುತ್ತಮ ಇತ್ಯರ್ಥ ಸೂಚನೆಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಮುಂದುವರಿಯಿರಿ.',
+        'btn_back_to_groups': '👥 ಗುಂಪುಗಳಿಗೆ ಹಿಂತಿರುಗಿ',
+        'btn_next_to_balances': '⚖️ ಮುಂದಿನ ಹಂತ: ಯಾರು ಯಾರಿಗೆ ನೀಡಬೇಕು',
+        'balances_hero_title': 'ಯಾರು ಯಾರಿಗೆ ನೀಡಬೇಕು',
+        'balances_hero_desc': 'ಕನಿಷ್ಠ ನಗದು-ಹರಿವಿನ ಅತ್ಯುತ್ತಮ ಸಾಲ ಸರಳೀಕರಣ ಅಲ್ಗಾರಿದಮ್.',
+        'settlement_instructions': '💡 ಇತ್ಯರ್ಥ ಸೂಚನೆಗಳು:',
+        'pays': 'ನೀಡಬೇಕು:',
+        'all_settled': '✅ ಈ ಗುಂಪಿನಲ್ಲಿ ಎಲ್ಲರ ಲೆಕ್ಕ ಸಂಪೂರ್ಣ ತೀರಿದೆ!',
+        'col_member': 'ಸದಸ್ಯರು',
+        'col_paid': 'ಪಾವತಿಸಿದ್ದು',
+        'col_share': 'ಪಾಲು',
+        'col_net': 'ನಿವ್ವಳ ಬಾಕಿ',
+        'col_status': 'ಸ್ಥಿತಿ',
+        'status_gets_back': 'ಪಡೆಯಬೇಕು',
+        'status_owes': 'ನೀಡಬೇಕು',
+        'status_settled': 'ತೀರಿದೆ',
+        'next_step_bal_title': 'ಇತ್ಯರ್ಥಗಳನ್ನು ಪರಿಶೀಲಿಸಿದ್ದೀರಾ? ಪಾವತಿ ಇತಿಹಾಸ ನೋಡಬೇಕೆ?',
+        'next_step_bal_sub': 'ಸಂಪೂರ್ಣ ಪಾವತಿ ಲಾಗ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಮುಂದಿನ ಹಂತಕ್ಕೆ ಮುಂದುವರಿಯಿರಿ.',
+        'btn_back_to_expenses': '⬅️ ಖರ್ಚುಗಳಿಗೆ ಹಿಂತಿರುಗಿ',
+        'btn_view_analytics': '📊 ವಿಶ್ಲೇಷಣೆ ವೀಕ್ಷಿಸಿ',
+        'btn_proceed_to_history': '📜 ಹಂತ ೪: ಪಾವತಿ ಇತಿಹಾಸಕ್ಕೆ ಮುಂದುವರಿಯಿರಿ',
+        'history_hero_title': 'ಪಾವತಿ & ಖರ್ಚು ಇತಿಹಾಸ',
+        'history_hero_desc': 'ಎಲ್ಲಾ ಬಿಲ್‌ಗಳು, ಷೇರುಗಳು ಮತ್ತು ವಹಿವಾಟುಗಳ ಸಂಪೂರ್ಣ ದಾಖಲೆ.',
+        'filter_group_label': 'ಗುಂಪಿನ ಪ್ರಕಾರ ಇತಿಹಾಸ ಫಿಲ್ಟರ್ ಮಾಡಿ:',
+        'all_your_groups': 'ನಿಮ್ಮ ಎಲ್ಲಾ ಗುಂಪುಗಳು',
+        'stat_total_tx': 'ಒಟ್ಟು ವಹಿವಾಟುಗಳು',
+        'stat_total_spent': 'ಗುಂಪಿನ ಒಟ್ಟು ಖರ್ಚು',
+        'stat_your_share': 'ನಿಮ್ಮ ಒಟ್ಟು ಪಾಲು',
+        'delete_history_title': '🗑️ ದಾಖಲಾದ ಪಾವತಿ / ಖರ್ಚನ್ನು ಅಳಿಸಿ',
+        'btn_delete_entry': 'ದಾಖಲೆ ಅಳಿಸಿ',
+        'complete_lifecycle_title': 'ಎಲ್ಲಾ ಹಂತಗಳು ಪೂರ್ಣಗೊಂಡಿವೆ! ಹೆಚ್ಚಿನ ಖರ್ಚು ಸೇರಿಸಬೇಕೆ?',
+        'complete_lifecycle_sub': 'ಯಾವುದೇ ಹಿಂದಿನ ಹಂತಕ್ಕೆ ಸುಲಭವಾಗಿ ಮರಳಿ ಹೋಗಿ.',
+        'btn_goto_step1': '👥 ಹಂತ ೧: ಗುಂಪುಗಳ ನಿರ್ವಹಣೆ',
+        'btn_goto_step2': '🧾 ಹಂತ ೨: ಇನ್ನಷ್ಟು ಖರ್ಚು ಸೇರಿಸಿ',
+        'btn_goto_step3': '⚖️ ಹಂತ ೩: ಬಾಕಿ ಲೆಕ್ಕ ಪರಿಶೀಲಿಸಿ',
+        'budgets_hero_title': 'ಗುಂಪು ಬಜೆಟ್‌ಗಳು',
+        'budgets_hero_desc': 'ಖರ್ಚು ಮಿತಿಗಳನ್ನು ಹೊಂದಿಸಿ ಮತ್ತು ಸ್ವಯಂಚಾಲಿತ ಎಚ್ಚರಿಕೆಗಳನ್ನು ಗಮನಿಸಿ.',
+        'simulator_hero_title': 'ವಾಟ್-ಇಫ್ ಖರ್ಚು ಸಿಮ್ಯುಲೇಟರ್',
+        'simulator_hero_desc': 'ಖರ್ಚು ಮಾಡುವ ಮುನ್ನ ಬಜೆಟ್ ಮೇಲಿನ ಪ್ರಭಾವವನ್ನು ಪರೀಕ್ಷಿಸಿ.',
+        'dashboard_hero_title': 'ಹಣಕಾಸು ಅವಲೋಕನ',
+        'dashboard_hero_desc': 'ಹಂಚಿದ ಖರ್ಚುಗಳು, ಬಾಕಿಗಳು ಮತ್ತು ನೈಜ-ಸಮಯದ ಬಜೆಟ್ ಆರೋಗ್ಯವನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ.',
+    },
+    'te': {
+        'app_title': 'స్ప్లిట్‌సెటిల్‌మెంట్ (SplitSettlement)',
+        'app_subtitle': 'ఖర్చుల పంపకం & పరిష్కార వ్యవస్థ',
+        'auth_badge': '🔒 సురక్షిత ప్రవేశం',
+        'welcome_hero_title': 'స్ప్లిట్‌సెటిల్‌మెంట్‌కు స్వాగతం',
+        'welcome_hero_desc': 'స్నేహితులు మరియు సహచరులతో ఖర్చులను పంచుకోవడానికి, బాకీలను పరిష్కరించడానికి మరియు గ్రూప్ బడ్జెట్‌లను నిర్వహించడానికి ఉత్తమ వేదిక.',
+        'tab_signin': '🔐 ఖాతాలోకి లాగిన్ అవ్వండి',
+        'tab_register': '📝 కొత్త ఖాతా సృష్టించండి',
+        'signin_header': 'మీ డాష్‌బోర్డ్ తెరవడానికి మీ పేరు లేదా ఈమెయిల్ నమోదు చేయండి:',
+        'signin_invited_tip': '💡 **స్నేహితులు మిమ్మల్ని గ్రూప్‌లో చేర్చారా?** మీ పేరు మరియు సాధారణ పాస్‌వర్డ్ **123456** తో లాగిన్ అవ్వండి, లేదా సొంత పాస్‌వర్డ్ పెట్టుకోవడానికి **\'కొత్త ఖాతా సృష్టించండి\'** ఉపయోగించండి.',
+        'ident_label': 'పేరు లేదా ఈమెయిల్ *',
+        'ident_placeholder': 'ఉదా: Rajasree లేదా user@example.com',
+        'pwd_label': 'పాస్‌వర్డ్ *',
+        'pwd_placeholder': 'మీ పాస్‌వర్డ్ నమోదు చేయండి',
+        'btn_login': 'డాష్‌బోర్డ్‌లోకి లాగిన్ అవ్వండి',
+        'reg_header': 'ఖాతా సృష్టించి ఖర్చులు పంచుకోవడానికి మీ వివరాలు నమోదు చేయండి:',
+        'fullname_label': 'పూర్తి పేరు *',
+        'fullname_placeholder': 'ఉదా: Rajasree, Priya, Bhoomika',
+        'email_label': 'ఈమెయిల్ చిరునామా *',
+        'email_placeholder': 'ఉదా: name@example.com',
+        'create_pwd_label': 'కొత్త పాస్‌వర్డ్ *',
+        'confirm_pwd_label': 'పాస్‌వర్డ్ నిర్ధారించండి *',
+        'btn_create_account': '🚀 ఖాతా సృష్టించి లాగిన్ అవ్వండి',
+        'nav_groups': '👥 గుంపులు & సభ్యులు',
+        'nav_expenses': '🧾 ఖర్చులు & పంపకం',
+        'nav_balances': '⚖️ బాకీలు (ఎవరు ఎవరికి ఇవ్వాలి)',
+        'nav_budgets': '🐷 గ్రూప్ బడ్జెట్‌లు',
+        'nav_simulator': '🧪 వాట్-ఇఫ్ సిమ్యులేటర్',
+        'nav_dashboard': '📊 డాష్‌బోర్డ్ & విశ్లేషణ',
+        'nav_history': '📜 చెల్లింపు చరిత్ర',
+        'step_1': 'దశ 1: 👥 గుంపులు & సభ్యులు',
+        'step_2': 'దశ 2: 🧾 ఖర్చులు & పంపకం',
+        'step_3': 'దశ 3: ⚖️ ఎవరు ఎవరికి ఇవ్వాలి',
+        'step_4': 'దశ 4: 📜 చెల్లింపు చరిత్ర',
+        'active_profile': 'యాక్టివ్ ప్రొఫైల్',
+        'logged_in': 'లాగిన్ అయ్యారు',
+        'btn_logout': '🚪 లాగ్ అవుట్',
+        'btn_logout_account': '🚪 ఖాతా నుండి లాగ్ అవుట్',
+        'nav_menu_header': 'నావిగేషన్ మెనూ:',
+        'groups_hero_title': 'గ్రూప్ నిర్వహణ',
+        'groups_hero_desc': 'ప్రాజెక్ట్ బృందాలు, రూమ్‌మేట్స్, ప్రయాణాలు మరియు స్నేహితుల గుంపులను నిర్వహించండి.',
+        'tab_view_groups': '📋 మీ గుంపులు',
+        'tab_create_group': '➕ కొత్త గుంపు సృష్టించండి',
+        'no_groups_msg': 'మీరు ఇంకా ఏ గుంపులోనూ లేరు. కొత్త గుంపు ప్రారంభించడానికి \'కొత్త గుంపు సృష్టించండి\' ట్యాబ్‌ని ఎంచుకోండి!',
+        'add_member_title': '➕ సభ్యుడిని చేర్చండి:',
+        'add_member_input': 'గుంపులో చేర్చవలసిన సభ్యుడి పేరు:',
+        'add_member_placeholder': 'ఉదా: Priya లేదా Bhoomika',
+        'btn_add_member': '➕ గుంపులో చేర్చండి',
+        'next_step_group_title': 'సభ్యులను చేర్చడం పూర్తయిందా?',
+        'next_step_group_sub': 'గుంపు సభ్యుల మధ్య బిల్లులు నమోదు చేసి ఖర్చులు పంచడానికి ముందుకు సాగండి.',
+        'btn_next_to_expenses': '➡️ తదుపరి దశ: ఖర్చులను నమోదు చేయండి -',
+        'remove_member_title': '➖ సభ్యుడిని తొలగించండి',
+        'btn_remove_member': 'గుంపు నుండి సభ్యుడిని తొలగించండి',
+        'confirm_delete_group': 'గుంపు తొలగింపును నిర్ధారించండి:',
+        'btn_delete_group': '🗑️ గుంపును తొలగించండి',
+        'group_name_label': 'గుంపు పేరు *',
+        'group_desc_label': 'వివరణ (ఐచ్ఛికం)',
+        'group_budget_label': 'నెలవారీ బడ్జెట్ (₹, ఐచ్ఛికం)',
+        'initial_members_label': 'ప్రారంభ సభ్యులు (ఐచ్ఛికం - కామాలతో వేరుచేసిన పేర్లు):',
+        'btn_create_group': 'గుంపు సృష్టించండి',
+        'expenses_hero_title': 'ఖర్చుల ట్రాకింగ్',
+        'expenses_hero_desc': 'సమాన, శాతం లేదా ప్రత్యేక వాటాలతో బిల్లులను పంచుకోండి.',
+        'tab_add_expense': '➕ కొత్త ఖర్చు నమోదు',
+        'tab_expense_history': '📜 ఖర్చు చరిత్ర & నిర్వహణ',
+        'select_group_label': 'గుంపును ఎంచుకోండి:',
+        'exp_desc_label': 'ఖర్చు వివరణ *',
+        'exp_desc_placeholder': 'ఉదా: కేఫ్ బిల్లు, ప్రింట్‌లు, డిన్నర్',
+        'exp_amt_label': 'మొత్తం సొమ్ము (₹) *',
+        'exp_cat_label': 'వర్గం:',
+        'exp_date_label': 'తేదీ:',
+        'paid_by_label': 'చెల్లించిన వారు (సభ్యులు):',
+        'split_method_label': 'పంపక విధానం:',
+        'split_equal': 'సమాన పంపకం',
+        'split_percentage': 'శాతం ప్రకారం పంపకం',
+        'split_custom': 'ప్రత్యేక పంపకం',
+        'btn_save_expense': '💾 ఖర్చును భద్రపరచి పంచండి',
+        'delete_expense_title': '🗑️ నమోదైన ఖర్చును తొలగించండి',
+        'btn_delete_selected_expense': 'ఎంచుకున్న ఖర్చును తొలగించండి',
+        'next_step_exp_title': 'ఖర్చులు నమోదయ్యాయి! ఎవరు ఎవరికి ఇవ్వాలో చూడాలా?',
+        'next_step_exp_sub': 'నికర బాకీలు మరియు పరిష్కార సూచనలను చూడటానికి ముందుకు సాగండి.',
+        'btn_back_to_groups': '👥 గుంపులకు తిరిగి వెళ్ళండి',
+        'btn_next_to_balances': '⚖️ తదుపరి దశ: ఎవరు ఎవరికి ఇవ్వాలి',
+        'balances_hero_title': 'ఎవరు ఎవరికి ఇవ్వాలి',
+        'balances_hero_desc': 'కనిష్ట నగదు లావాదేవీల డెట్ సింప్లిఫికేషన్ అల్గోరిథం.',
+        'settlement_instructions': '💡 చెల్లింపు పరిష్కార సూచనలు:',
+        'pays': 'చెల్లించాలి:',
+        'all_settled': '✅ ఈ గుంపులో అందరి లెక్కలు పూర్తిగా సరిపోయాయి!',
+        'col_member': 'సభ్యులు',
+        'col_paid': 'చెల్లించినది',
+        'col_share': 'వాటా',
+        'col_net': 'నికర బాకీ',
+        'col_status': 'స్థితి',
+        'status_gets_back': 'రావాలి',
+        'status_owes': 'ఇవ్వాలి',
+        'status_settled': 'సరిపోయింది',
+        'next_step_bal_title': 'బాకీలు చూశారా? చెల్లింపు చరిత్ర చూడటానికి సిద్ధమా?',
+        'next_step_bal_sub': 'పూర్తి లావాదేవీల రికార్డులను చూడటానికి ముందుకు సాగండి.',
+        'btn_back_to_expenses': '⬅️ ఖర్చులకు తిరిగి వెళ్ళండి',
+        'btn_view_analytics': '📊 విశ్లేషణ చూడండి',
+        'btn_proceed_to_history': '📜 దశ 4: చెల్లింపు చరిత్రకు వెళ్ళండి',
+        'history_hero_title': 'చెల్లింపులు & ఖర్చుల చరిత్ర',
+        'history_hero_desc': 'అన్ని బిల్లులు, వాటాలు మరియు లావాదేవీల పూర్తి రికార్డు.',
+        'filter_group_label': 'గుంపు ప్రకారం ఫిల్టర్ చేయండి:',
+        'all_your_groups': 'మీ అన్ని గుంపులు',
+        'stat_total_tx': 'మొత్తం లావాదేవీలు',
+        'stat_total_spent': 'గుంపు మొత్తం ఖర్చు',
+        'stat_your_share': 'మీ మొత్తం వాటా',
+        'delete_history_title': '🗑️ చెల్లింపు / ఖర్చు రికార్డును తొలగించండి',
+        'btn_delete_entry': 'రికార్డు తొలగించండి',
+        'complete_lifecycle_title': 'అన్ని దశలు పూర్తయ్యాయి! మరిన్ని ఖర్చులు నమోదు చేయాలా?',
+        'complete_lifecycle_sub': 'ఏ మునుపటి దశకైనా సులభంగా తిరిగి వెళ్ళండి.',
+        'btn_goto_step1': '👥 దశ 1: గుంపుల నిర్వహణ',
+        'btn_goto_step2': '🧾 దశ 2: మరిన్ని ఖర్చులు నమోదు',
+        'btn_goto_step3': '⚖️ దశ 3: బాకీల తనిఖీ',
+        'budgets_hero_title': 'గ్రూప్ బడ్జెట్‌లు',
+        'budgets_hero_desc': 'ఖర్చు పరిమితులను నిర్ణయించి ఆటోమేటిక్ హెచ్చరికలను గమనించండి.',
+        'simulator_hero_title': 'వాట్-ఇఫ్ ఖర్చుల సిమ్యులేటర్',
+        'simulator_hero_desc': 'ఖర్చు పెట్టకముందే బడ్జెట్‌పై ప్రభావాన్ని అంచనా వేయండి.',
+        'dashboard_hero_title': 'ఆర్థిక అవలోకనం',
+        'dashboard_hero_desc': 'ఖర్చులు, బాకీలు మరియు బడ్జెట్ స్థితిని రియల్ టైమ్‌లో పర్యవేక్షించండి.',
+    },
+    'hi': {
+        'app_title': 'स्प्लिटसेटलमेंट (SplitSettlement)',
+        'app_subtitle': 'खर्च विभाजन और निपटान प्रणाली',
+        'auth_badge': '🔒 सुरक्षित एक्सेस',
+        'welcome_hero_title': 'स्प्लिटसेटलमेंट में आपका स्वागत है',
+        'welcome_hero_desc': 'दोस्तों और टीम के साथ खर्च बांटने, उधारी चुकाने और ग्रुप बजट प्रबंधित करने का सबसे आसान और स्मार्ट तरीका।',
+        'tab_signin': '🔐 खाते में लॉगिन करें',
+        'tab_register': '📝 नया खाता बनाएं',
+        'signin_header': 'अपने डैशबोर्ड तक पहुँचने के लिए अपना नाम या ईमेल दर्ज करें:',
+        'signin_invited_tip': '💡 **दोस्तों ने आपको ग्रुप में जोड़ा है?** आप अपने नाम और डिफ़ॉल्ट पासवर्ड **123456** से लॉगिन कर सकते हैं, या अपना पासवर्ड सेट करने के लिए **\'नया खाता बनाएं\'** पर जाएं।',
+        'ident_label': 'नाम या ईमेल *',
+        'ident_placeholder': 'उदा: Rajasree या user@example.com',
+        'pwd_label': 'पासवर्ड *',
+        'pwd_placeholder': 'अपना पासवर्ड दर्ज करें',
+        'btn_login': 'डैशबोर्ड में लॉगिन करें',
+        'reg_header': 'खाता बनाने और खर्च बांटने के लिए अपना विवरण दर्ज करें:',
+        'fullname_label': 'पूरा नाम *',
+        'fullname_placeholder': 'उदा: Rajasree, Priya, Bhoomika',
+        'email_label': 'ईमेल पता *',
+        'email_placeholder': 'उदा: name@example.com',
+        'create_pwd_label': 'पासवर्ड बनाएं *',
+        'confirm_pwd_label': 'पासवर्ड की पुष्टि करें *',
+        'btn_create_account': '🚀 खाता बनाएं और लॉगिन करें',
+        'nav_groups': '👥 समूह और सदस्य',
+        'nav_expenses': '🧾 खर्च और विभाजन',
+        'nav_balances': '⚖️ बकाया (किसे कितना देना है)',
+        'nav_budgets': '🐷 समूह बजट',
+        'nav_simulator': '🧪 व्हाट-इफ सिम्युलेटर',
+        'nav_dashboard': '📊 डैशबोर्ड और विश्लेषण',
+        'nav_history': '📜 भुगतान इतिहास',
+        'step_1': 'चरण 1: 👥 समूह और सदस्य',
+        'step_2': 'चरण 2: 🧾 खर्च जोड़ें और बांटें',
+        'step_3': 'चरण 3: ⚖️ किसे कितना देना है',
+        'step_4': 'चरण 4: 📜 भुगतान इतिहास',
+        'active_profile': 'सक्रिय प्रोफ़ाइल',
+        'logged_in': 'लॉगिन हैं',
+        'btn_logout': '🚪 लॉग आउट',
+        'btn_logout_account': '🚪 खाते से लॉग आउट करें',
+        'nav_menu_header': 'नेविगेशन मेनू:',
+        'groups_hero_title': 'समूह प्रबंधन',
+        'groups_hero_desc': 'प्रोजेक्ट टीम, रूममेट्स, यात्राओं और दोस्तों के समूहों को व्यवस्थित करें।',
+        'tab_view_groups': '📋 आपके समूह',
+        'tab_create_group': '➕ नया समूह बनाएं',
+        'no_groups_msg': 'आप अभी तक किसी भी समूह में शामिल नहीं हैं। शुरू करने के लिए \'नया समूह बनाएं\' टैब पर जाएं!',
+        'add_member_title': '➕ सदस्य जोड़ें:',
+        'add_member_input': 'समूह में जोड़ने के लिए सदस्य का नाम दर्ज करें:',
+        'add_member_placeholder': 'उदा: Priya या Bhoomika',
+        'btn_add_member': '➕ समूह में जोड़ें',
+        'next_step_group_title': 'सदस्यों को जोड़ना पूरा हो गया?',
+        'next_step_group_sub': 'समूह के सदस्यों के बीच बिल दर्ज करने और खर्च बांटने के लिए आगे बढ़ें।',
+        'btn_next_to_expenses': '➡️ अगला चरण: खर्च दर्ज करें -',
+        'remove_member_title': '➖ समूह से सदस्य हटाएं',
+        'btn_remove_member': 'सदस्य को समूह से हटाएं',
+        'confirm_delete_group': 'समूह को हटाने की पुष्टि करें:',
+        'btn_delete_group': '🗑️ समूह हटाएं',
+        'group_name_label': 'समूह का नाम *',
+        'group_desc_label': 'विवरण (वैकल्पिक)',
+        'group_budget_label': 'मासिक खर्च बजट (₹, वैकल्पिक)',
+        'initial_members_label': 'प्रारंभिक सदस्य (वैकल्पिक - अल्पविराम से अलग किए गए नाम):',
+        'btn_create_group': 'समूह बनाएं',
+        'expenses_hero_title': 'खर्च ट्रैकिंग',
+        'expenses_hero_desc': 'समान, प्रतिशत या कस्टम शेयरों के साथ बिलों को विभाजित करें।',
+        'tab_add_expense': '➕ नया खर्च जोड़ें',
+        'tab_expense_history': '📜 खर्च इतिहास और प्रबंधन',
+        'select_group_label': 'समूह चुनें:',
+        'exp_desc_label': 'खर्च का विवरण *',
+        'exp_desc_placeholder': 'उदा: कैफे मीटिंग, प्रिंटआउट, रात का खाना',
+        'exp_amt_label': 'कुल राशि (₹) *',
+        'exp_cat_label': 'श्रेणी:',
+        'exp_date_label': 'तारीख:',
+        'paid_by_label': 'किसने भुगतान किया (सदस्य):',
+        'split_method_label': 'विभाजन का तरीका:',
+        'split_equal': 'समान विभाजन',
+        'split_percentage': 'प्रतिशत विभाजन',
+        'split_custom': 'कस्टम विभाजन',
+        'btn_save_expense': '💾 खर्च सहेजें और बांटें',
+        'delete_expense_title': '🗑️ दर्ज खर्च को हटाएं',
+        'btn_delete_selected_expense': 'चुने गए खर्च को हटाएं',
+        'next_step_exp_title': 'खर्च दर्ज हो गया! देखना चाहते हैं किसे कितना देना है?',
+        'next_step_exp_sub': 'नेट बकाया और अनुकूलित निपटान निर्देशों को देखने के लिए आगे बढ़ें।',
+        'btn_back_to_groups': '👥 समूहों पर वापस जाएं',
+        'btn_next_to_balances': '⚖️ अगला चरण: किसे कितना देना है',
+        'balances_hero_title': 'किसे कितना देना है',
+        'balances_hero_desc': 'न्यूनतम नकदी प्रवाह ऋण सरलीकरण एल्गोरिदम।',
+        'settlement_instructions': '💡 निपटान निर्देश:',
+        'pays': 'चुकाएगा:',
+        'all_settled': '✅ इस समूह में सभी का हिसाब पूरी तरह से चुकता है!',
+        'col_member': 'सदस्य',
+        'col_paid': 'भुगतान किया',
+        'col_share': 'हिस्सा',
+        'col_net': 'नेट बकाया',
+        'col_status': 'स्थिति',
+        'status_gets_back': 'पाएगा',
+        'status_owes': 'देगा',
+        'status_settled': 'चुकता',
+        'next_step_bal_title': 'हिसाब देख लिया? भुगतान इतिहास देखने के लिए तैयार हैं?',
+        'next_step_bal_sub': 'पूर्ण भुगतान लॉग देखने के लिए अगले चरण पर आगे बढ़ें।',
+        'btn_back_to_expenses': '⬅️ खर्चों पर वापस जाएं',
+        'btn_view_analytics': '📊 विश्लेषण देखें',
+        'btn_proceed_to_history': '📜 चरण 4: भुगतान इतिहास पर आगे बढ़ें',
+        'history_hero_title': 'भुगतान और खर्च का इतिहास',
+        'history_hero_desc': 'सभी बिलों, शेयरों और निपटानों का संपूर्ण ऐतिहासिक रिकॉर्ड।',
+        'filter_group_label': 'समूह के अनुसार इतिहास फ़िल्टर करें:',
+        'all_your_groups': 'आपके सभी समूह',
+        'stat_total_tx': 'कुल लेन-देन',
+        'stat_total_spent': 'समूह का कुल खर्च',
+        'stat_your_share': 'आपका कुल हिस्सा',
+        'delete_history_title': '🗑️ दर्ज भुगतान / खर्च हटाएं',
+        'btn_delete_entry': 'प्रविष्टि हटाएं',
+        'complete_lifecycle_title': 'सभी चरण पूरे हो गए! और खर्च दर्ज करना चाहते हैं?',
+        'complete_lifecycle_sub': 'किसी भी पूर्व चरण पर कभी भी वापस जाएं।',
+        'btn_goto_step1': '👥 चरण 1: समूह प्रबंधन',
+        'btn_goto_step2': '🧾 चरण 2: और खर्च जोड़ें',
+        'btn_goto_step3': '⚖️ चरण 3: बकाया जांचें',
+        'budgets_hero_title': 'समूह बजट',
+        'budgets_hero_desc': 'खर्च सीमाएं निर्धारित करें और स्वचालित अलर्ट देखें।',
+        'simulator_hero_title': 'व्हाट-इफ खर्च सिम्युलेटर',
+        'simulator_hero_desc': 'खर्च करने से पहले बजट पर प्रभाव का परीक्षण करें।',
+        'dashboard_hero_title': 'वित्तीय अवलोकन',
+        'dashboard_hero_desc': 'साझा खर्च, बकाया राशि और बजट स्वास्थ्य को रियल-टाइम में ट्रैक करें।',
+    }
+}
+
+def tr(key):
+    lang_choice = st.session_state.get('interface_language', 'English')
+    l_code = 'en'
+    if 'Kannada' in lang_choice or 'ಕನ್ನಡ' in lang_choice:
+        l_code = 'kn'
+    elif 'Telugu' in lang_choice or 'తెలుగు' in lang_choice:
+        l_code = 'te'
+    elif 'Hindi' in lang_choice or 'हिन्दी' in lang_choice:
+        l_code = 'hi'
+    return TRANSLATIONS.get(l_code, {}).get(key, TRANSLATIONS['en'].get(key, key))
+
+def render_logo(size=44, key="logo"):
+    return f"""
+    <div style="display:inline-flex; align-items:center; justify-content:center; vertical-align:middle; filter: drop-shadow(0 4px 10px rgba(108, 92, 231, 0.28));">
+        <svg width="{size}" height="{size}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="sqGrad_{key}" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#6c5ce7"/>
+                    <stop offset="55%" stop-color="#8c7ae6"/>
+                    <stop offset="100%" stop-color="#4834d4"/>
+                </linearGradient>
+                <linearGradient id="arcGrad1_{key}" x1="20" y1="20" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#55efc4"/>
+                    <stop offset="50%" stop-color="#81ecec"/>
+                    <stop offset="100%" stop-color="#ffffff"/>
+                </linearGradient>
+                <linearGradient id="arcGrad2_{key}" x1="80" y1="20" x2="20" y2="80" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#fd79a8"/>
+                    <stop offset="60%" stop-color="#fab1a0"/>
+                    <stop offset="100%" stop-color="#ffeaa7"/>
+                </linearGradient>
+            </defs>
+            <rect width="100" height="100" rx="26" fill="url(#sqGrad_{key})"/>
+            <circle cx="50" cy="50" r="34" stroke="rgba(255,255,255,0.2)" stroke-width="2.5" stroke-dasharray="4 4"/>
+            <path d="M 28 42 C 28 29, 44 24, 52 24 C 64 24, 72 31, 72 40 C 72 50, 48 51, 48 60 C 48 68, 56 74, 68 74 C 76 74, 80 70, 80 70" 
+                  stroke="url(#arcGrad1_{key})" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M 72 58 C 72 71, 56 76, 48 76 C 36 76, 28 69, 28 60 C 28 50, 52 49, 52 40 C 52 32, 44 26, 32 26" 
+                  stroke="url(#arcGrad2_{key})" stroke-width="4" stroke-linecap="round" stroke-dasharray="6 4"/>
+            <circle cx="50" cy="50" r="7.5" fill="#ffffff"/>
+            <circle cx="50" cy="50" r="3.5" fill="#6c5ce7"/>
+            <circle cx="28" cy="42" r="4.5" fill="#55efc4" stroke="#ffffff" stroke-width="1.5"/>
+            <circle cx="72" cy="58" r="4.5" fill="#fd79a8" stroke="#ffffff" stroke-width="1.5"/>
+        </svg>
+    </div>
+    """
+
+NAV_CANONICAL = ["groups", "expenses", "balances", "budgets", "simulator", "dashboard", "history"]
+
+NAV_LABEL_KEYS = {
+    "groups": "nav_groups",
+    "expenses": "nav_expenses",
+    "balances": "nav_balances",
+    "budgets": "nav_budgets",
+    "simulator": "nav_simulator",
+    "dashboard": "nav_dashboard",
+    "history": "nav_history"
+}
+
+def normalize_nav(page_name):
+    if page_name in NAV_CANONICAL:
+        return page_name
+    pl = page_name.lower()
+    if "group" in pl:
+        return "groups"
+    if "expense" in pl:
+        return "expenses"
+    if "balance" in pl or "who owes" in pl:
+        return "balances"
+    if "budget" in pl:
+        return "budgets"
+    if "simulator" in pl or "what-if" in pl:
+        return "simulator"
+    if "dash" in pl or "analytics" in pl:
+        return "dashboard"
+    if "history" in pl or "payment" in pl:
+        return "history"
+    return "groups"
+
+def navigate_to(page_name, target_group_id=None):
+    st.session_state['nav_selection'] = normalize_nav(page_name)
+    if target_group_id is not None:
+        st.session_state['target_group_id'] = target_group_id
+    st.rerun()
+
+# ==============================================================================
 # AUTHENTICATION SESSION STATE MANAGEMENT
 # ==============================================================================
 if 'authenticated' not in st.session_state:
@@ -424,30 +1003,38 @@ if 'authenticated' not in st.session_state:
 # ==============================================================================
 if not st.session_state['authenticated']:
     # Auth Top Navigation Bar
-    st.markdown("""
-        <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0 1rem 0;">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <div style="width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); display:flex; align-items:center; justify-content:center; color:#ffffff; font-size:1.3rem; box-shadow: 0 4px 12px rgba(108, 92, 231, 0.25);">💳</div>
+    col_auth_left, col_auth_right = st.columns([2.5, 1.5])
+    with col_auth_left:
+        st.markdown(f"""
+            <div style="display:flex; align-items:center; gap:12px; padding: 0.2rem 0;">
+                {render_logo(size=44, key="auth_top_logo")}
                 <div>
-                    <h3 style="margin:0; font-size:1.35rem; color:#2d3436; font-weight:700;">SplitSettlement</h3>
-                    <small style="color:#636e72; font-weight:500;">Expense Split & Settlement Portal</small>
+                    <h3 style="margin:0; font-size:1.35rem; color:#2d3436; font-weight:700;">{tr('app_title')}</h3>
+                    <small style="color:#636e72; font-weight:500;">{tr('app_subtitle')}</small>
                 </div>
             </div>
-            <div>
-                <span class="member-pill" style="border-radius:20px; font-size:0.8rem; background:#ffffff; border:1px solid #dcd6fa; color:#6c5ce7;">
-                    🔒 Secure Access
-                </span>
-            </div>
-        </div>
-        <div style='height:1px; background:#e9ecef; margin-bottom: 2rem;'></div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+    with col_auth_right:
+        c_lang_auth = st.session_state.get('interface_language', 'English')
+        c_lang_auth_idx = LANGUAGE_OPTIONS.index(c_lang_auth) if c_lang_auth in LANGUAGE_OPTIONS else 0
+        sel_auth_lang = st.selectbox(
+            "🌐 Interface Language:",
+            LANGUAGE_OPTIONS,
+            index=c_lang_auth_idx,
+            key="auth_lang_dropdown"
+        )
+        if sel_auth_lang != st.session_state.get('interface_language'):
+            st.session_state['interface_language'] = sel_auth_lang
+            st.rerun()
+
+    st.markdown("<div style='height:1px; background:#e9ecef; margin: 0.75rem 0 1.5rem 0;'></div>", unsafe_allow_html=True)
 
     # Hero Banner
-    st.markdown("""
+    st.markdown(f"""
     <div class="brand-hero" style="text-align:center; padding: 2.2rem 1.5rem;">
-        <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">Welcome to SplitSettlement</h1>
+        <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">{tr('welcome_hero_title')}</h1>
         <p style="font-size: 1.05rem; opacity: 0.95; max-width: 650px; margin: 0 auto;">
-            The smart, stress-free way to share expenses, settle debts, and manage group budgets with friends and teammates.
+            {tr('welcome_hero_desc')}
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -455,16 +1042,16 @@ if not st.session_state['authenticated']:
     # Auth Card with Tabs
     col_l, col_center, col_r = st.columns([1, 2.4, 1])
     with col_center:
-        auth_tab1, auth_tab2 = st.tabs(["🔐 Sign In to Account", "📝 Create New Account"])
+        auth_tab1, auth_tab2 = st.tabs([tr('tab_signin'), tr('tab_register')])
 
         # TAB 1: LOGIN
         with auth_tab1:
-            st.markdown("<p style='color:#636e72; font-size:0.9rem; margin-top:0.5rem;'>Enter your name or email to access your dashboard:</p>", unsafe_allow_html=True)
-            st.info("💡 **Invited to a group by a friend?** You can log in using your name and default password **123456**, or switch to the **'Create New Account'** tab to set your own password and activate your account.")
+            st.markdown(f"<p style='color:#636e72; font-size:0.9rem; margin-top:0.5rem;'>{tr('signin_header')}</p>", unsafe_allow_html=True)
+            st.info(tr('signin_invited_tip'))
             with st.form("login_form"):
-                login_ident = st.text_input("Name or Email *", placeholder="e.g. Rajasree or user@example.com")
-                login_pwd = st.text_input("Password *", type="password", placeholder="Enter your password")
-                submit_login = st.form_submit_button("Log In to Dashboard")
+                login_ident = st.text_input(tr('ident_label'), placeholder=tr('ident_placeholder'))
+                login_pwd = st.text_input(tr('pwd_label'), type="password", placeholder=tr('pwd_placeholder'))
+                submit_login = st.form_submit_button(tr('btn_login'))
 
                 if submit_login:
                     cleaned_ident = login_ident.strip()
@@ -492,13 +1079,13 @@ if not st.session_state['authenticated']:
 
         # TAB 2: REGISTER
         with auth_tab2:
-            st.markdown("<p style='color:#636e72; font-size:0.9rem; margin-top:0.5rem;'>Register your details to create your account and start splitting:</p>", unsafe_allow_html=True)
+            st.markdown(f"<p style='color:#636e72; font-size:0.9rem; margin-top:0.5rem;'>{tr('reg_header')}</p>", unsafe_allow_html=True)
             with st.form("register_form"):
-                reg_name = st.text_input("Full Name *", placeholder="e.g. Rajasree, Priya, Bhoomika")
-                reg_email = st.text_input("Email Address *", placeholder="e.g. name@example.com")
-                reg_pwd = st.text_input("Create Password *", type="password", placeholder="Enter a secure password")
-                reg_confirm = st.text_input("Confirm Password *", type="password", placeholder="Re-enter your password")
-                submit_reg = st.form_submit_button("🚀 Create Account & Log In")
+                reg_name = st.text_input(tr('fullname_label'), placeholder=tr('fullname_placeholder'))
+                reg_email = st.text_input(tr('email_label'), placeholder=tr('email_placeholder'))
+                reg_pwd = st.text_input(tr('create_pwd_label'), type="password", placeholder="Enter a secure password")
+                reg_confirm = st.text_input(tr('confirm_pwd_label'), type="password", placeholder="Re-enter your password")
+                submit_reg = st.form_submit_button(tr('btn_create_account'))
 
                 if submit_reg:
                     c_name = reg_name.strip()
@@ -572,13 +1159,11 @@ current_user_email = st.session_state['user_email']
 # ==============================================================================
 # SIDEBAR NAVIGATION
 # ==============================================================================
-st.sidebar.markdown("""
+st.sidebar.markdown(f"""
 <div style="text-align: center; margin-bottom: 1.25rem;">
-    <div style="width: 52px; height: 52px; background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); color: #ffffff; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 0.5rem; box-shadow: 0 4px 12px rgba(108, 92, 231, 0.25);">
-        💳
-    </div>
-    <h2 style="font-size: 1.25rem; margin: 0; color: #2d3436; font-weight:700;">SplitSettlement</h2>
-    <small style="color: #6c5ce7; font-weight:600;">Purple & White Edition</small>
+    {render_logo(size=54, key="sidebar_logo")}
+    <h2 style="font-size: 1.25rem; margin: 0.35rem 0 0 0; color: #2d3436; font-weight:700;">{tr('app_title')}</h2>
+    <small style="color: #6c5ce7; font-weight:600;">{tr('app_subtitle')}</small>
 </div>
 """, unsafe_allow_html=True)
 
@@ -589,54 +1174,43 @@ st.sidebar.markdown(f"""
     <div class="profile-avatar">{user_initial}</div>
     <div class="profile-info">
         <span class="profile-name">{current_user_name}</span>
-        <span class="profile-status"><span style="color:#00b894; font-size:0.85rem;">●</span> Logged In</span>
+        <span class="profile-status"><span style="color:#00b894; font-size:0.85rem;">●</span> {tr('logged_in')}</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 # Top Sidebar Logout Button
-if st.sidebar.button("🚪 Log Out", key="sidebar_top_logout_btn", use_container_width=True):
+if st.sidebar.button(tr('btn_logout'), key="sidebar_top_logout_btn", use_container_width=True):
     st.session_state.clear()
     st.session_state['authenticated'] = False
     st.rerun()
 
-lang = st.sidebar.selectbox("🌐 Interface Language:", ["English", "ಕನ್ನಡ (Kannada)", "తెలుగు (Telugu)", "हिन्दी (Hindi)"])
-
-NAV_ITEMS = [
-    "👥 Groups & Members",
-    "🧾 Expenses & Splits",
-    "⚖️ Balances (Who Owes Whom)",
-    "🐷 Group Budgets",
-    "🧪 What-If Simulator",
-    "📊 Dashboard & Analytics",
-    "📜 Payment History"
-]
-
-if 'nav_selection' not in st.session_state or st.session_state['nav_selection'] not in NAV_ITEMS:
-    st.session_state['nav_selection'] = NAV_ITEMS[0]
-
-def navigate_to(page_name, target_group_id=None):
-    st.session_state['nav_selection'] = page_name
-    st.session_state['sidebar_nav_key'] = page_name
-    if target_group_id is not None:
-        st.session_state['target_group_id'] = target_group_id
+cur_lang_sb = st.session_state.get('interface_language', 'English')
+lang_idx_sb = LANGUAGE_OPTIONS.index(cur_lang_sb) if cur_lang_sb in LANGUAGE_OPTIONS else 0
+sel_lang_sb = st.sidebar.selectbox(
+    "🌐 Interface Language:",
+    LANGUAGE_OPTIONS,
+    index=lang_idx_sb,
+    key="sb_lang_dropdown"
+)
+if sel_lang_sb != st.session_state.get('interface_language'):
+    st.session_state['interface_language'] = sel_lang_sb
     st.rerun()
 
-def on_nav_change():
-    st.session_state['nav_selection'] = st.session_state['sidebar_nav_key']
+if 'nav_selection' not in st.session_state or st.session_state['nav_selection'] not in NAV_CANONICAL:
+    st.session_state['nav_selection'] = "groups"
 
-current_nav_index = NAV_ITEMS.index(st.session_state['nav_selection'])
+current_nav_index = NAV_CANONICAL.index(st.session_state['nav_selection'])
 menu = st.sidebar.radio(
-    "Navigation Menu:",
-    NAV_ITEMS,
+    tr('nav_menu_header'),
+    NAV_CANONICAL,
     index=current_nav_index,
-    key="sidebar_nav_key",
-    on_change=on_nav_change
+    format_func=lambda k: tr(NAV_LABEL_KEYS[k])
 )
 st.session_state['nav_selection'] = menu
 
 st.sidebar.markdown("---")
-if st.sidebar.button("🚪 Log Out Account", key="sidebar_bottom_logout_btn", use_container_width=True):
+if st.sidebar.button(tr('btn_logout_account'), key="sidebar_bottom_logout_btn", use_container_width=True):
     st.session_state.clear()
     st.session_state['authenticated'] = False
     st.rerun()
@@ -648,12 +1222,12 @@ st.sidebar.caption(f"Engine: **{db_type.upper()}** &bull; Status: **Online**")
 # ==============================================================================
 col_nav_left, col_nav_right = st.columns([2.4, 1.6])
 with col_nav_left:
-    st.markdown("""
+    st.markdown(f"""
         <div style="display:flex; align-items:center; gap:12px; padding: 4px 0;">
-            <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); display:flex; align-items:center; justify-content:center; color:#ffffff; font-size:1.2rem; box-shadow: 0 4px 10px rgba(108, 92, 231, 0.25);">💳</div>
+            {render_logo(size=40, key="top_header_logo")}
             <div>
-                <h3 style="margin:0; font-size:1.25rem; color:#2d3436; font-weight:700; line-height:1.2;">SplitSettlement</h3>
-                <small style="color:#636e72; font-weight:500;">Expense Split & Settlement System</small>
+                <h3 style="margin:0; font-size:1.25rem; color:#2d3436; font-weight:700; line-height:1.2;">{tr('app_title')}</h3>
+                <small style="color:#636e72; font-weight:500;">{tr('app_subtitle')}</small>
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -666,13 +1240,13 @@ with col_nav_right:
                 <div class="profile-avatar">{user_initial}</div>
                 <div class="profile-info">
                     <span class="profile-name">{current_user_name}</span>
-                    <span class="profile-status"><span style="color:#00b894; font-size:0.85rem;">●</span> Active Profile</span>
+                    <span class="profile-status"><span style="color:#00b894; font-size:0.85rem;">●</span> {tr('active_profile')}</span>
                 </div>
             </div>
         """, unsafe_allow_html=True)
     with c_out:
         st.write("")
-        if st.button("🚪 Log Out", key="top_header_logout", use_container_width=True):
+        if st.button(tr('btn_logout'), key="top_header_logout", use_container_width=True):
             st.session_state.clear()
             st.session_state['authenticated'] = False
             st.rerun()
@@ -680,7 +1254,7 @@ with col_nav_right:
 st.markdown("<div style='height:1px; background:#e9ecef; margin: 0.5rem 0 1.25rem 0;'></div>", unsafe_allow_html=True)
 
 # 4-Step Visual Stepper
-cur_step = 1 if "Groups" in menu else (2 if "Expenses" in menu else (3 if "Balances" in menu else (4 if "Dashboard" in menu or "History" in menu else 0)))
+cur_step = 1 if menu == "groups" else (2 if menu == "expenses" else (3 if menu == "balances" else (4 if menu in ("dashboard", "history") else 0)))
 
 s1 = "background:#6c5ce7; color:#ffffff;" if cur_step == 1 else "background:#ffffff; color:#636e72; border:1px solid #e9ecef;"
 s2 = "background:#6c5ce7; color:#ffffff;" if cur_step == 2 else "background:#ffffff; color:#636e72; border:1px solid #e9ecef;"
@@ -689,25 +1263,25 @@ s4 = "background:#6c5ce7; color:#ffffff;" if cur_step == 4 else "background:#fff
 
 st.markdown(f"""
 <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-bottom:1.5rem; flex-wrap:wrap;">
-    <div style="padding:6px 14px; border-radius:20px; font-size:0.83rem; font-weight:600; {s1}; box-shadow:0 2px 6px rgba(108,92,231,0.08);">Step 1: 👥 Groups & Members</div>
+    <div style="padding:6px 14px; border-radius:20px; font-size:0.83rem; font-weight:600; {s1}; box-shadow:0 2px 6px rgba(108,92,231,0.08);">{tr('step_1')}</div>
     <span style="color:#b2bec3; font-weight:700;">➔</span>
-    <div style="padding:6px 14px; border-radius:20px; font-size:0.83rem; font-weight:600; {s2}; box-shadow:0 2px 6px rgba(108,92,231,0.08);">Step 2: 🧾 Add & Split Expenses</div>
+    <div style="padding:6px 14px; border-radius:20px; font-size:0.83rem; font-weight:600; {s2}; box-shadow:0 2px 6px rgba(108,92,231,0.08);">{tr('step_2')}</div>
     <span style="color:#b2bec3; font-weight:700;">➔</span>
-    <div style="padding:6px 14px; border-radius:20px; font-size:0.83rem; font-weight:600; {s3}; box-shadow:0 2px 6px rgba(108,92,231,0.08);">Step 3: ⚖️ Who Owes Whom</div>
+    <div style="padding:6px 14px; border-radius:20px; font-size:0.83rem; font-weight:600; {s3}; box-shadow:0 2px 6px rgba(108,92,231,0.08);">{tr('step_3')}</div>
     <span style="color:#b2bec3; font-weight:700;">➔</span>
-    <div style="padding:6px 14px; border-radius:20px; font-size:0.83rem; font-weight:600; {s4}; box-shadow:0 2px 6px rgba(108,92,231,0.08);">Step 4: 📊 Analytics & Payment History</div>
+    <div style="padding:6px 14px; border-radius:20px; font-size:0.83rem; font-weight:600; {s4}; box-shadow:0 2px 6px rgba(108,92,231,0.08);">{tr('step_4')}</div>
 </div>
 """, unsafe_allow_html=True)
 
 # ==============================================================================
 # 1. DASHBOARD & ANALYTICS
 # ==============================================================================
-if menu == "📊 Dashboard & Analytics":
+if menu == "dashboard":
     # Top Purple Banner Hero
     st.markdown(f"""
     <div class="brand-hero">
-        <h1 style="font-size: 1.85rem; font-weight: 700; margin-bottom: 0.35rem;">Financial Overview</h1>
-        <p style="font-size: 0.98rem; opacity: 0.95; margin: 0;">Welcome back, <strong>{current_user_name}</strong>! Track shared expenses, balances, and real-time budget health.</p>
+        <h1 style="font-size: 1.85rem; font-weight: 700; margin-bottom: 0.35rem;">{tr('dashboard_hero_title')}</h1>
+        <p style="font-size: 0.98rem; opacity: 0.95; margin: 0;">{tr('dashboard_hero_desc')} (User: <strong>{current_user_name}</strong>)</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -850,24 +1424,24 @@ if menu == "📊 Dashboard & Analytics":
         """, unsafe_allow_html=True)
         col_d1, col_d2, col_d3, col_d4 = st.columns(4)
         with col_d1:
-            if st.button("👥 Step 1: Groups & People", key="dash_flow_g", use_container_width=True):
-                navigate_to("👥 Groups & Members")
+            if st.button(tr('step_1'), key="dash_flow_g", use_container_width=True):
+                navigate_to("groups")
         with col_d2:
-            if st.button("🧾 Step 2: Split Bills", key="dash_flow_e", use_container_width=True):
-                navigate_to("🧾 Expenses & Splits")
+            if st.button(tr('step_2'), key="dash_flow_e", use_container_width=True):
+                navigate_to("expenses")
         with col_d3:
-            if st.button("⚖️ Step 3: Who Owes Whom", key="dash_flow_b", use_container_width=True):
-                navigate_to("⚖️ Balances (Who Owes Whom)")
+            if st.button(tr('step_3'), key="dash_flow_b", use_container_width=True):
+                navigate_to("balances")
         with col_d4:
-            if st.button("📜 Step 4: Payment History", key="dash_flow_h", type="primary", use_container_width=True):
-                navigate_to("📜 Payment History")
+            if st.button(tr('step_4'), key="dash_flow_h", type="primary", use_container_width=True):
+                navigate_to("history")
 
 # ==============================================================================
 # 2. GROUPS & MEMBERS (WITH DELETE GROUP & REMOVE MEMBER OPTIONS)
 # ==============================================================================
-elif menu == "👥 Groups & Members":
-    st.markdown("""<div class="brand-hero"><h1>Group Management</h1><p>Organize project teams, roommates, trips, and friends circles.</p></div>""", unsafe_allow_html=True)
-    tab1, tab2 = st.tabs(["📋 View Your Groups", "➕ Create New Group"])
+elif menu == "groups":
+    st.markdown(f"""<div class="brand-hero"><h1>{tr('groups_hero_title')}</h1><p>{tr('groups_hero_desc')}</p></div>""", unsafe_allow_html=True)
+    tab1, tab2 = st.tabs([tr('tab_view_groups'), tr('tab_create_group')])
 
     with tab1:
         my_groups = run_query("""
@@ -881,7 +1455,7 @@ elif menu == "👥 Groups & Members":
         """, (current_user_id,))
 
         if not my_groups:
-            st.info("You do not belong to any groups yet. Switch to the 'Create New Group' tab to start one!")
+            st.info(tr('no_groups_msg'))
         else:
             for g in my_groups:
                 gid = g['id']
@@ -903,15 +1477,15 @@ elif menu == "👥 Groups & Members":
                     st.markdown("<br>", unsafe_allow_html=True)
 
                     # Add Member by Name (Private - No public registered list exposed)
-                    st.markdown(f"<h4 style='font-size:1rem; color:#6c5ce7; margin-bottom:0.4rem;'>➕ Add Member to {g['name']}</h4>", unsafe_allow_html=True)
+                    st.markdown(f"<h4 style='font-size:1rem; color:#6c5ce7; margin-bottom:0.4rem;'>{tr('add_member_title')} {g['name']}</h4>", unsafe_allow_html=True)
                     with st.form(f"add_member_form_{gid}", clear_on_submit=True):
                         col_add_in, col_add_btn = st.columns([3, 1.2])
                         with col_add_in:
-                            mem_name_in = st.text_input(f"Enter Member Name to Add to {g['name']}:", placeholder="e.g. Priya or Bhoomika", key=f"in_mem_{gid}")
+                            mem_name_in = st.text_input(f"{tr('add_member_input')} {g['name']}:", placeholder=tr('add_member_placeholder'), key=f"in_mem_{gid}")
                         with col_add_btn:
                             st.write("")
                             st.write("")
-                            btn_add_mem = st.form_submit_button("➕ Add to Group")
+                            btn_add_mem = st.form_submit_button(tr('btn_add_member'))
 
                         if btn_add_mem:
                             c_name = mem_name_in.strip()
@@ -940,21 +1514,21 @@ elif menu == "👥 Groups & Members":
                     st.markdown(f"""
                     <div style="background: linear-gradient(135deg, #f7f6fe 0%, #edeafe 100%); border: 1.5px solid #dcd6fa; border-radius: 12px; padding: 0.9rem 1.15rem; margin: 1.15rem 0 0.6rem 0;">
                         <span style="background:#6c5ce7; color:#ffffff; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:8px; text-transform:uppercase;">Next Step</span>
-                        <h4 style="margin:4px 0 2px 0; color:#2d3436; font-size:1.02rem;">Done adding members to {g['name']}?</h4>
-                        <small style="color:#636e72;">Proceed to record bills and split expenses among {g['name']} members.</small>
+                        <h4 style="margin:4px 0 2px 0; color:#2d3436; font-size:1.02rem;">{tr('next_step_group_title')} {g['name']}?</h4>
+                        <small style="color:#636e72;">{tr('next_step_group_sub')}</small>
                     </div>
                     """, unsafe_allow_html=True)
-                    if st.button(f"➡️ Proceed to Next Step: Record Expenses for '{g['name']}'", key=f"next_exp_btn_{gid}", type="primary", use_container_width=True):
-                        navigate_to("🧾 Expenses & Splits", target_group_id=gid)
+                    if st.button(f"{tr('btn_next_to_expenses')} '{g['name']}'", key=f"next_exp_btn_{gid}", type="primary", use_container_width=True):
+                        navigate_to("expenses", target_group_id=gid)
 
                     # 4. Remove a Member option
                     removable = [m for m in members if m['id'] != current_user_id]
                     if removable:
-                        with st.expander(f"➖ Remove a Member from {g['name']}"):
+                        with st.expander(f"{tr('remove_member_title')} {g['name']}"):
                             rem_names = [m['name'] for m in removable]
                             rem_map = {m['name']: m['id'] for m in removable}
                             sel_to_rem = st.selectbox(f"Select member to remove:", rem_names, key=f"sel_rem_{gid}")
-                            if st.button("Remove Member from Group", key=f"btn_rem_mem_{gid}"):
+                            if st.button(tr('btn_remove_member'), key=f"btn_rem_mem_{gid}"):
                                 execute_cmd("DELETE FROM group_members WHERE group_id = %s AND user_id = %s", (gid, rem_map[sel_to_rem]))
                                 st.success(f"Removed {sel_to_rem} from {g['name']}!")
                                 st.rerun()
@@ -963,9 +1537,9 @@ elif menu == "👥 Groups & Members":
                     st.markdown("<hr style='margin: 1.25rem 0 0.75rem 0; border:none; border-top: 1px dashed #e9ecef;'>", unsafe_allow_html=True)
                     del_col_chk, del_col_btn = st.columns([3, 1.2])
                     with del_col_chk:
-                        confirm_del = st.checkbox(f"Confirm deletion of '{g['name']}' (and all associated expenses)", key=f"confirm_del_{gid}")
+                        confirm_del = st.checkbox(f"{tr('confirm_delete_group')} '{g['name']}'", key=f"confirm_del_{gid}")
                     with del_col_btn:
-                        if st.button("🗑️ Delete Group", key=f"btn_del_grp_{gid}"):
+                        if st.button(tr('btn_delete_group'), key=f"btn_del_grp_{gid}"):
                             if not confirm_del:
                                 st.warning("Please check the confirmation box to delete this group.")
                             else:
@@ -986,16 +1560,16 @@ elif menu == "👥 Groups & Members":
 
     with tab2:
         with st.form("new_group_form"):
-            g_name = st.text_input("Group Name *", placeholder="e.g. Major Project Team, Flat 302, Weekend Trip")
-            g_desc = st.text_area("Description (Optional)")
-            g_budget = st.number_input("Monthly Spending Budget (₹, Optional)", min_value=0.0, step=500.0, value=12000.0)
+            g_name = st.text_input(tr('group_name_label'), placeholder="e.g. Major Project Team, Flat 302, Weekend Trip")
+            g_desc = st.text_area(tr('group_desc_label'))
+            g_budget = st.number_input(tr('group_budget_label'), min_value=0.0, step=500.0, value=12000.0)
             
             initial_members_str = st.text_input(
-                "Initial Members to Add (Optional - comma separated names):",
-                placeholder="e.g. Priya, Bhoomika"
+                tr('initial_members_label'),
+                placeholder=tr('add_member_placeholder')
             )
 
-            if st.form_submit_button("Create Group"):
+            if st.form_submit_button(tr('btn_create_group')):
                 if not g_name.strip():
                     st.error("Group name is required.")
                 else:
@@ -1028,9 +1602,9 @@ elif menu == "👥 Groups & Members":
 # ==============================================================================
 # 3. EXPENSES & SPLITS (WITH DELETE EXPENSE OPTION)
 # ==============================================================================
-elif menu == "🧾 Expenses & Splits":
-    st.markdown("""<div class="brand-hero"><h1>Expense Tracking</h1><p>Record bills and split with Equal, Percentage, or Custom shares.</p></div>""", unsafe_allow_html=True)
-    tab1, tab2 = st.tabs(["➕ Add New Expense", "📜 Expense History & Management"])
+elif menu == "expenses":
+    st.markdown(f"""<div class="brand-hero"><h1>{tr('expenses_hero_title')}</h1><p>{tr('expenses_hero_desc')}</p></div>""", unsafe_allow_html=True)
+    tab1, tab2 = st.tabs([tr('tab_add_expense'), tr('tab_expense_history')])
 
     user_groups = run_query("""
         SELECT g.id, g.name FROM `groups` g
@@ -1051,7 +1625,7 @@ elif menu == "🧾 Expenses & Splits":
                         default_g_idx = idx
                         break
 
-            chosen_group_name = st.selectbox("Select Group:", g_names, index=default_g_idx)
+            chosen_group_name = st.selectbox(tr('select_group_label'), g_names, index=default_g_idx)
             chosen_group_id = g_options[chosen_group_name]
 
             group_members = run_query("SELECT u.id, u.name FROM group_members gm JOIN users u ON gm.user_id = u.id WHERE gm.group_id = %s", (chosen_group_id,))
@@ -1059,20 +1633,20 @@ elif menu == "🧾 Expenses & Splits":
 
             col1, col2 = st.columns(2)
             with col1:
-                exp_desc = st.text_input("Expense Description *", placeholder="e.g. Cafe Meeting, Printouts, Dinner")
-                exp_amt = st.number_input("Total Amount (₹) *", min_value=0.01, step=50.0, value=900.0)
+                exp_desc = st.text_input(tr('exp_desc_label'), placeholder=tr('exp_desc_placeholder'))
+                exp_amt = st.number_input(tr('exp_amt_label'), min_value=0.01, step=50.0, value=900.0)
             with col2:
-                exp_cat = st.selectbox("Category:", CATEGORIES)
-                exp_date = st.date_input("Date:", value=datetime.date.today())
+                exp_cat = st.selectbox(tr('exp_cat_label'), CATEGORIES)
+                exp_date = st.date_input(tr('exp_date_label'), value=datetime.date.today())
 
-            payer_name = st.selectbox("Paid By (Member):", list(member_dict.keys()), index=list(member_dict.keys()).index(current_user_name) if current_user_name in member_dict else 0)
+            payer_name = st.selectbox(tr('paid_by_label'), list(member_dict.keys()), index=list(member_dict.keys()).index(current_user_name) if current_user_name in member_dict else 0)
             payer_id = member_dict[payer_name]
-            split_type = st.radio("Split Method:", ["Equal Split", "Percentage Split", "Custom Split"], horizontal=True)
+            split_type = st.radio(tr('split_method_label'), [tr('split_equal'), tr('split_percentage'), tr('split_custom')], horizontal=True)
 
             selected_participants = []
             splits_data = []
 
-            if split_type == "Equal Split":
+            if split_type == tr('split_equal'):
                 st.markdown("<small style='color:#636e72;'>Select who participated in this expense:</small>", unsafe_allow_html=True)
                 for m_name, m_id in member_dict.items():
                     if st.checkbox(f"👤 {m_name}", value=True, key=f"part_eq_{m_id}"):
@@ -1083,7 +1657,7 @@ elif menu == "🧾 Expenses & Splits":
                     for pid in selected_participants:
                         splits_data.append((pid, share_per_person, round(100.0/len(selected_participants), 2)))
 
-            elif split_type == "Percentage Split":
+            elif split_type == tr('split_percentage'):
                 total_pct = 0.0
                 pct_inputs = {}
                 cols = st.columns(len(member_dict))
@@ -1100,7 +1674,7 @@ elif menu == "🧾 Expenses & Splits":
                 else:
                     st.error(f"Percentages must sum to 100% (currently {total_pct:.1f}%).")
 
-            elif split_type == "Custom Split":
+            elif split_type == tr('split_custom'):
                 total_cust = 0.0
                 cust_inputs = {}
                 cols = st.columns(len(member_dict))
@@ -1116,11 +1690,11 @@ elif menu == "🧾 Expenses & Splits":
                 else:
                     st.error(f"Custom sum (₹{total_cust:,.2f}) must match total (₹{exp_amt:,.2f}).")
 
-            if st.button("💾 Record Expense", type="primary"):
+            if st.button(tr('btn_save_expense'), type="primary"):
                 if not exp_desc.strip() or not splits_data:
                     st.error("Please fill all required fields.")
                 else:
-                    st_val = 'EQUAL' if split_type == 'Equal Split' else ('PERCENTAGE' if split_type == 'Percentage Split' else 'CUSTOM')
+                    st_val = 'EQUAL' if split_type == tr('split_equal') else ('PERCENTAGE' if split_type == tr('split_percentage') else 'CUSTOM')
                     eid = execute_cmd("""
                         INSERT INTO expenses (group_id, paid_by, description, amount, category, date, split_type)
                         VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -1150,10 +1724,10 @@ elif menu == "🧾 Expenses & Splits":
                 st.dataframe(pd.DataFrame(all_exp), use_container_width=True)
 
                 # Option to Delete an Expense
-                with st.expander("🗑️ Delete a Recorded Expense"):
+                with st.expander(tr('delete_expense_title')):
                     exp_select_map = {f"#{e['ID']}: {e['Description']} (₹{float(e['Amount']):,.2f} on {e['Date']})": e['ID'] for e in all_exp}
                     sel_exp_key = st.selectbox("Select Expense to Delete:", list(exp_select_map.keys()))
-                    if st.button("Delete Selected Expense", key="btn_del_single_exp"):
+                    if st.button(tr('btn_delete_selected_expense'), key="btn_del_single_exp"):
                         target_eid = exp_select_map[sel_exp_key]
                         execute_cmd("DELETE FROM expense_splits WHERE expense_id = %s", (target_eid,))
                         execute_cmd("DELETE FROM expenses WHERE id = %s", (target_eid,))
@@ -1163,26 +1737,26 @@ elif menu == "🧾 Expenses & Splits":
                 st.info("No expenses recorded yet in your groups.")
 
     # Navigation Buttons for Step 2 -> Step 3
-    st.markdown("""
+    st.markdown(f"""
     <div style="background: linear-gradient(135deg, #f7f6fe 0%, #edeafe 100%); border: 1.5px solid #dcd6fa; border-radius: 12px; padding: 1rem 1.25rem; margin: 1.5rem 0 0.75rem 0;">
         <span style="background:#6c5ce7; color:#ffffff; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:8px; text-transform:uppercase;">Next Step</span>
-        <h4 style="margin:4px 0 2px 0; color:#2d3436; font-size:1.05rem;">Expenses Recorded! Ready to See Who Owes Whom?</h4>
-        <small style="color:#636e72;">Proceed to view net balances and optimized settlement instructions.</small>
+        <h4 style="margin:4px 0 2px 0; color:#2d3436; font-size:1.05rem;">{tr('next_step_exp_title')}</h4>
+        <small style="color:#636e72;">{tr('next_step_exp_sub')}</small>
     </div>
     """, unsafe_allow_html=True)
     col_exp_p, col_exp_n = st.columns(2)
     with col_exp_p:
-        if st.button("⬅️ Previous Step: Manage Groups & People", key="exp_to_prev_groups", use_container_width=True):
-            navigate_to("👥 Groups & Members")
+        if st.button(tr('btn_back_to_groups'), key="exp_to_prev_groups", use_container_width=True):
+            navigate_to("groups")
     with col_exp_n:
-        if st.button("➡️ Proceed to Next Step: View Balances (Who Owes Whom)", key="exp_to_next_bal", type="primary", use_container_width=True):
-            navigate_to("⚖️ Balances (Who Owes Whom)")
+        if st.button(tr('btn_next_to_balances'), key="exp_to_next_bal", type="primary", use_container_width=True):
+            navigate_to("balances")
 
 # ==============================================================================
 # 4. BALANCES (WHO OWES WHOM)
 # ==============================================================================
-elif menu == "⚖️ Balances (Who Owes Whom)":
-    st.markdown("""<div class="brand-hero"><h1>Who Owes Whom</h1><p>Optimal minimum cash-flow debt simplification algorithm.</p></div>""", unsafe_allow_html=True)
+elif menu == "balances":
+    st.markdown(f"""<div class="brand-hero"><h1>{tr('balances_hero_title')}</h1><p>{tr('balances_hero_desc')}</p></div>""", unsafe_allow_html=True)
     user_groups = run_query("SELECT g.id, g.name FROM `groups` g JOIN group_members gm ON g.id = gm.group_id WHERE gm.user_id = %s", (current_user_id,))
     if not user_groups:
         st.info("No balances available. Join a group to begin tracking settlements.")
@@ -1204,49 +1778,49 @@ elif menu == "⚖️ Balances (Who Owes Whom)":
                 s = share_rows.get(uid, 0.0)
                 net = p - s
                 net_map[uid] = net
-                status = "Gets Back" if net > 0.01 else ("Owes" if net < -0.01 else "Settled")
-                bal_list.append({'Member': m['name'], 'Paid': f"₹{p:,.2f}", 'Share': f"₹{s:,.2f}", 'Net': f"{'+' if net > 0 else ''}₹{net:,.2f}", 'Status': status})
+                status = tr('status_gets_back') if net > 0.01 else (tr('status_owes') if net < -0.01 else tr('status_settled'))
+                bal_list.append({tr('col_member'): m['name'], tr('col_paid'): f"₹{p:,.2f}", tr('col_share'): f"₹{s:,.2f}", tr('col_net'): f"{'+' if net > 0 else ''}₹{net:,.2f}", tr('col_status'): status})
 
             st.dataframe(pd.DataFrame(bal_list), use_container_width=True)
 
             settlements = simplify_debts(net_map, m_dict)
-            st.markdown("<h4 style='color:#6c5ce7; margin-top:1rem;'>💡 Settlement Instructions:</h4>", unsafe_allow_html=True)
+            st.markdown(f"<h4 style='color:#6c5ce7; margin-top:1rem;'>{tr('settlement_instructions')}</h4>", unsafe_allow_html=True)
             if not settlements:
-                st.success("✅ Everyone is completely settled up in this group!")
+                st.success(tr('all_settled'))
             else:
                 for s in settlements:
                     st.markdown(f"""
                     <div class="settlement-box">
-                        <div><strong style="color:#d63031;">{s['debtor_name']}</strong> pays <strong style="color:#00b894;">{s['creditor_name']}</strong></div>
+                        <div><strong style="color:#d63031;">{s['debtor_name']}</strong> {tr('pays')} <strong style="color:#00b894;">{s['creditor_name']}</strong></div>
                         <strong style="color:#6c5ce7; font-size:1.1rem;">₹{s['amount']:,.2f}</strong>
                     </div>
                     """, unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
         # Navigation for Step 3 -> Step 4
-        st.markdown("""
+        st.markdown(f"""
         <div style="background: linear-gradient(135deg, #f7f6fe 0%, #edeafe 100%); border: 1.5px solid #dcd6fa; border-radius: 12px; padding: 1rem 1.25rem; margin: 1.5rem 0 0.75rem 0;">
             <span style="background:#6c5ce7; color:#ffffff; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:8px; text-transform:uppercase;">Next Step</span>
-            <h4 style="margin:4px 0 2px 0; color:#2d3436; font-size:1.05rem;">Settlements Reviewed! Ready to View Payment History?</h4>
-            <small style="color:#636e72;">Proceed to view full payment logs, or check group budgets and analytics.</small>
+            <h4 style="margin:4px 0 2px 0; color:#2d3436; font-size:1.05rem;">{tr('next_step_bal_title')}</h4>
+            <small style="color:#636e72;">{tr('next_step_bal_sub')}</small>
         </div>
         """, unsafe_allow_html=True)
         col_b_p, col_b_n1, col_b_n2 = st.columns([1, 1, 1.4])
         with col_b_p:
-            if st.button("⬅️ Back to Expenses", key="bal_back_exp", use_container_width=True):
-                navigate_to("🧾 Expenses & Splits")
+            if st.button(tr('btn_back_to_expenses'), key="bal_back_exp", use_container_width=True):
+                navigate_to("expenses")
         with col_b_n1:
-            if st.button("📊 View Analytics", key="bal_to_dash", use_container_width=True):
-                navigate_to("📊 Dashboard & Analytics")
+            if st.button(tr('btn_view_analytics'), key="bal_to_dash", use_container_width=True):
+                navigate_to("dashboard")
         with col_b_n2:
-            if st.button("📜 Proceed to Step 4: Payment History", key="bal_to_hist", type="primary", use_container_width=True):
-                navigate_to("📜 Payment History")
+            if st.button(tr('btn_proceed_to_history'), key="bal_to_hist", type="primary", use_container_width=True):
+                navigate_to("history")
 
 # ==============================================================================
 # 5. GROUP BUDGETS
 # ==============================================================================
-elif menu == "🐷 Group Budgets":
-    st.markdown("""<div class="brand-hero"><h1>Group Budgets</h1><p>Set spending caps and monitor automated threshold alerts.</p></div>""", unsafe_allow_html=True)
+elif menu == "budgets":
+    st.markdown(f"""<div class="brand-hero"><h1>{tr('budgets_hero_title')}</h1><p>{tr('budgets_hero_desc')}</p></div>""", unsafe_allow_html=True)
     budgets = run_query("""
         SELECT g.id, g.name, g.description,
                COALESCE(gb.monthly_budget, 0.00) as budget,
@@ -1281,16 +1855,16 @@ elif menu == "🐷 Group Budgets":
         col_bud_p, col_bud_n = st.columns(2)
         with col_bud_p:
             if st.button("⬅️ Back to Balances", key="bud_back_bal", use_container_width=True):
-                navigate_to("⚖️ Balances (Who Owes Whom)")
+                navigate_to("balances")
         with col_bud_n:
             if st.button("🧪 Next: What-If Simulator", key="bud_to_sim", type="primary", use_container_width=True):
-                navigate_to("🧪 What-If Simulator")
+                navigate_to("simulator")
 
 # ==============================================================================
 # 6. WHAT-IF SIMULATOR
 # ==============================================================================
-elif menu == "🧪 What-If Simulator":
-    st.markdown("""<div class="brand-hero"><h1>What-If Expense Simulator</h1><p>Test hypothetical expenses without affecting recorded data.</p></div>""", unsafe_allow_html=True)
+elif menu == "simulator":
+    st.markdown(f"""<div class="brand-hero"><h1>{tr('simulator_hero_title')}</h1><p>{tr('simulator_hero_desc')}</p></div>""", unsafe_allow_html=True)
     user_groups = run_query("SELECT g.id, g.name FROM `groups` g JOIN group_members gm ON g.id = gm.group_id WHERE gm.user_id = %s", (current_user_id,))
     if not user_groups:
         st.info("Please create a group first.")
@@ -1333,16 +1907,16 @@ elif menu == "🧪 What-If Simulator":
         col_sim_p, col_sim_n = st.columns(2)
         with col_sim_p:
             if st.button("⬅️ Back to Budgets", key="sim_back_bud", use_container_width=True):
-                navigate_to("🐷 Group Budgets")
+                navigate_to("budgets")
         with col_sim_n:
             if st.button("📊 Finish & Go to Dashboard", key="sim_to_dash", type="primary", use_container_width=True):
-                navigate_to("📊 Dashboard & Analytics")
+                navigate_to("dashboard")
 
 # ==============================================================================
 # 7. PAYMENT & EXPENSE HISTORY (Shown at the last)
 # ==============================================================================
-elif menu == "📜 Payment History":
-    st.markdown("""<div class="brand-hero"><h1>Payment & Expense History</h1><p>Complete historical log of all recorded bills, shares, and settlements.</p></div>""", unsafe_allow_html=True)
+elif menu == "history":
+    st.markdown(f"""<div class="brand-hero"><h1>{tr('history_hero_title')}</h1><p>{tr('history_hero_desc')}</p></div>""", unsafe_allow_html=True)
 
     user_groups = run_query("""
         SELECT g.id, g.name FROM `groups` g
@@ -1355,13 +1929,13 @@ elif menu == "📜 Payment History":
         group_ids = [g['id'] for g in user_groups]
         format_p = ','.join(['%s'] * len(group_ids))
 
-        grp_opts = {"All Your Groups": None}
+        grp_opts = {tr("all_your_groups"): None}
         for g in user_groups:
             grp_opts[g['name']] = g['id']
 
         col_f1, col_f2 = st.columns([2, 1])
         with col_f1:
-            sel_grp_filter = st.selectbox("Filter History by Group:", list(grp_opts.keys()))
+            sel_grp_filter = st.selectbox(tr("filter_group_label"), list(grp_opts.keys()))
 
         filtered_gid = grp_opts[sel_grp_filter]
         if filtered_gid:
@@ -1401,17 +1975,17 @@ elif menu == "📜 Payment History":
             <div class="white-card">
                 <div style="display:flex; justify-content:space-around; align-items:center; flex-wrap:wrap; text-align:center;">
                     <div>
-                        <div style="color:#636e72; font-size:0.8rem; text-transform:uppercase; font-weight:600;">Total Transactions</div>
+                        <div style="color:#636e72; font-size:0.8rem; text-transform:uppercase; font-weight:600;">{tr('stat_total_tx')}</div>
                         <strong style="font-size:1.4rem; color:#2d3436;">{len(history_records)}</strong>
                     </div>
                     <div style="width:1px; height:40px; background:#e9ecef;"></div>
                     <div>
-                        <div style="color:#636e72; font-size:0.8rem; text-transform:uppercase; font-weight:600;">Total Group Spending</div>
+                        <div style="color:#636e72; font-size:0.8rem; text-transform:uppercase; font-weight:600;">{tr('stat_total_spent')}</div>
                         <strong style="font-size:1.4rem; color:#6c5ce7;">₹{total_spent_val:,.2f}</strong>
                     </div>
                     <div style="width:1px; height:40px; background:#e9ecef;"></div>
                     <div>
-                        <div style="color:#636e72; font-size:0.8rem; text-transform:uppercase; font-weight:600;">Your Total Share</div>
+                        <div style="color:#636e72; font-size:0.8rem; text-transform:uppercase; font-weight:600;">{tr('stat_your_share')}</div>
                         <strong style="font-size:1.4rem; color:#00b894;">₹{my_share_val:,.2f}</strong>
                     </div>
                 </div>
@@ -1423,10 +1997,10 @@ elif menu == "📜 Payment History":
             df_display['Your_Share'] = df_display['Your_Share'].apply(lambda x: f"₹{float(x):,.2f}")
             st.dataframe(df_display, use_container_width=True)
 
-            with st.expander("🗑️ Delete a Recorded Payment / Expense"):
+            with st.expander(tr('delete_history_title')):
                 del_map = {f"#{r['ID']}: {r['Description']} ({r['Total_Amount']} on {r['Date']} in {r['Group_Name']})": r['ID'] for r in history_records}
                 sel_del_exp = st.selectbox("Select entry to delete:", list(del_map.keys()))
-                if st.button("Delete Entry", key="btn_del_hist_entry"):
+                if st.button(tr('btn_delete_entry'), key="btn_del_hist_entry"):
                     t_eid = del_map[sel_del_exp]
                     execute_cmd("DELETE FROM expense_splits WHERE expense_id = %s", (t_eid,))
                     execute_cmd("DELETE FROM expenses WHERE id = %s", (t_eid,))
@@ -1434,20 +2008,20 @@ elif menu == "📜 Payment History":
                     st.rerun()
 
             # Navigation back to earlier steps from Payment History
-            st.markdown("""
+            st.markdown(f"""
             <div style="background: linear-gradient(135deg, #f7f6fe 0%, #edeafe 100%); border: 1.5px solid #dcd6fa; border-radius: 12px; padding: 1rem 1.25rem; margin: 1.5rem 0 0.75rem 0; text-align:center;">
                 <span style="background:#00b894; color:#ffffff; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:8px; text-transform:uppercase;">Lifecycle Complete</span>
-                <h4 style="margin:4px 0 2px 0; color:#2d3436; font-size:1.05rem;">All Steps Completed! Need to Record More or Adjust Groups?</h4>
-                <small style="color:#636e72;">Jump back to any prior step at any time.</small>
+                <h4 style="margin:4px 0 2px 0; color:#2d3436; font-size:1.05rem;">{tr('complete_lifecycle_title')}</h4>
+                <small style="color:#636e72;">{tr('complete_lifecycle_sub')}</small>
             </div>
             """, unsafe_allow_html=True)
             col_h1, col_h2, col_h3 = st.columns(3)
             with col_h1:
-                if st.button("👥 Step 1: Manage Groups", key="hist_to_grp", use_container_width=True):
-                    navigate_to("👥 Groups & Members")
+                if st.button(tr('btn_goto_step1'), key="hist_to_grp", use_container_width=True):
+                    navigate_to("groups")
             with col_h2:
-                if st.button("🧾 Step 2: Add More Expenses", key="hist_to_exp", use_container_width=True):
-                    navigate_to("🧾 Expenses & Splits")
+                if st.button(tr('btn_goto_step2'), key="hist_to_exp", use_container_width=True):
+                    navigate_to("expenses")
             with col_h3:
-                if st.button("⚖️ Step 3: Check Balances", key="hist_to_bal", use_container_width=True):
-                    navigate_to("⚖️ Balances (Who Owes Whom)")
+                if st.button(tr('btn_goto_step3'), key="hist_to_bal", use_container_width=True):
+                    navigate_to("balances")
