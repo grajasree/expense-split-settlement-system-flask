@@ -18,3 +18,4 @@ __pycache__/
 # Database files & logs
 *.log
 *.sqlite3
+*.sql.bak
