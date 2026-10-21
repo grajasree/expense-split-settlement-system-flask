@@ -558,7 +558,7 @@ st.sidebar.markdown("""
 # Logged-In User Profile Card in Sidebar
 user_initial = current_user_name[0].upper() if current_user_name else "U"
 st.sidebar.markdown(f"""
-<div class="profile-badge" style="width: 100%; justify-content: flex-start; margin-bottom: 1.25rem; background:#f9f8fe;">
+<div class="profile-badge" style="width: 100%; justify-content: flex-start; margin-bottom: 0.5rem; background:#f9f8fe;">
     <div class="profile-avatar">{user_initial}</div>
     <div class="profile-info">
         <span class="profile-name">{current_user_name}</span>
@@ -566,6 +566,12 @@ st.sidebar.markdown(f"""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+# Top Sidebar Logout Button
+if st.sidebar.button("🚪 Log Out", key="sidebar_top_logout_btn", use_container_width=True):
+    st.session_state.clear()
+    st.session_state['authenticated'] = False
+    st.rerun()
 
 lang = st.sidebar.selectbox("🌐 Interface Language:", ["English", "ಕನ್ನಡ (Kannada)", "తెలుగు (Telugu)", "हिन्दी (Hindi)"])
 
@@ -583,11 +589,9 @@ menu = st.sidebar.radio(
 )
 
 st.sidebar.markdown("---")
-if st.sidebar.button("🚪 Log Out", key="sidebar_logout_btn"):
+if st.sidebar.button("🚪 Log Out Account", key="sidebar_bottom_logout_btn", use_container_width=True):
+    st.session_state.clear()
     st.session_state['authenticated'] = False
-    st.session_state['user_id'] = None
-    st.session_state['user_name'] = None
-    st.session_state['user_email'] = None
     st.rerun()
 
 st.sidebar.caption(f"Engine: **{db_type.upper()}** &bull; Status: **Online**")
@@ -595,7 +599,7 @@ st.sidebar.caption(f"Engine: **{db_type.upper()}** &bull; Status: **Online**")
 # ==============================================================================
 # TOP-RIGHT PROFILE BADGE & HEADER (Clean - Showing Name and Logout)
 # ==============================================================================
-col_nav_left, col_nav_right, col_nav_logout = st.columns([3, 1.2, 0.6])
+col_nav_left, col_nav_right = st.columns([2.4, 1.6])
 with col_nav_left:
     st.markdown("""
         <div style="display:flex; align-items:center; gap:12px; padding: 4px 0;">
@@ -608,26 +612,23 @@ with col_nav_left:
     """, unsafe_allow_html=True)
 
 with col_nav_right:
-    st.markdown(f"""
-        <div style="display:flex; justify-content:flex-end; align-items:center; padding: 4px 0;">
-            <div class="profile-badge">
+    c_user, c_out = st.columns([1.5, 1])
+    with c_user:
+        st.markdown(f"""
+            <div class="profile-badge" style="width: 100%;">
                 <div class="profile-avatar">{user_initial}</div>
                 <div class="profile-info">
                     <span class="profile-name">{current_user_name}</span>
                     <span class="profile-status"><span style="color:#00b894; font-size:0.85rem;">●</span> Active Profile</span>
                 </div>
             </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-with col_nav_logout:
-    st.write("")
-    if st.button("Logout", key="top_header_logout"):
-        st.session_state['authenticated'] = False
-        st.session_state['user_id'] = None
-        st.session_state['user_name'] = None
-        st.session_state['user_email'] = None
-        st.rerun()
+        """, unsafe_allow_html=True)
+    with c_out:
+        st.write("")
+        if st.button("🚪 Log Out", key="top_header_logout", use_container_width=True):
+            st.session_state.clear()
+            st.session_state['authenticated'] = False
+            st.rerun()
 
 st.markdown("<div style='height:1px; background:#e9ecef; margin: 0.5rem 0 1.25rem 0;'></div>", unsafe_allow_html=True)
 
