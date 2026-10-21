@@ -575,18 +575,38 @@ if st.sidebar.button("🚪 Log Out", key="sidebar_top_logout_btn", use_container
 
 lang = st.sidebar.selectbox("🌐 Interface Language:", ["English", "ಕನ್ನಡ (Kannada)", "తెలుగు (Telugu)", "हिन्दी (Hindi)"])
 
+NAV_ITEMS = [
+    "📊 Dashboard & Analytics",
+    "👥 Groups & Members",
+    "🧾 Expenses & Splits",
+    "⚖️ Balances (Who Owes Whom)",
+    "🐷 Group Budgets",
+    "🧪 What-If Simulator",
+    "👤 Members Directory"
+]
+
+if 'nav_selection' not in st.session_state or st.session_state['nav_selection'] not in NAV_ITEMS:
+    st.session_state['nav_selection'] = NAV_ITEMS[1]
+
+def navigate_to(page_name, target_group_id=None):
+    st.session_state['nav_selection'] = page_name
+    st.session_state['sidebar_nav_key'] = page_name
+    if target_group_id is not None:
+        st.session_state['target_group_id'] = target_group_id
+    st.rerun()
+
+def on_nav_change():
+    st.session_state['nav_selection'] = st.session_state['sidebar_nav_key']
+
+current_nav_index = NAV_ITEMS.index(st.session_state['nav_selection'])
 menu = st.sidebar.radio(
     "Navigation Menu:",
-    [
-        "📊 Dashboard & Analytics",
-        "👥 Groups & Members",
-        "🧾 Expenses & Splits",
-        "⚖️ Balances (Who Owes Whom)",
-        "🐷 Group Budgets",
-        "🧪 What-If Simulator",
-        "👤 Members Directory"
-    ]
+    NAV_ITEMS,
+    index=current_nav_index,
+    key="sidebar_nav_key",
+    on_change=on_nav_change
 )
+st.session_state['nav_selection'] = menu
 
 st.sidebar.markdown("---")
 if st.sidebar.button("🚪 Log Out Account", key="sidebar_bottom_logout_btn", use_container_width=True):
@@ -631,6 +651,26 @@ with col_nav_right:
             st.rerun()
 
 st.markdown("<div style='height:1px; background:#e9ecef; margin: 0.5rem 0 1.25rem 0;'></div>", unsafe_allow_html=True)
+
+# 4-Step Visual Stepper
+cur_step = 1 if "Groups" in menu else (2 if "Expenses" in menu else (3 if "Balances" in menu else (4 if "Dashboard" in menu else 0)))
+
+s1 = "background:#6c5ce7; color:#ffffff;" if cur_step == 1 else "background:#ffffff; color:#636e72; border:1px solid #e9ecef;"
+s2 = "background:#6c5ce7; color:#ffffff;" if cur_step == 2 else "background:#ffffff; color:#636e72; border:1px solid #e9ecef;"
+s3 = "background:#6c5ce7; color:#ffffff;" if cur_step == 3 else "background:#ffffff; color:#636e72; border:1px solid #e9ecef;"
+s4 = "background:#6c5ce7; color:#ffffff;" if cur_step == 4 else "background:#ffffff; color:#636e72; border:1px solid #e9ecef;"
+
+st.markdown(f"""
+<div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-bottom:1.5rem; flex-wrap:wrap;">
+    <div style="padding:6px 14px; border-radius:20px; font-size:0.83rem; font-weight:600; {s1}; box-shadow:0 2px 6px rgba(108,92,231,0.08);">Step 1: 👥 Groups & Members</div>
+    <span style="color:#b2bec3; font-weight:700;">➔</span>
+    <div style="padding:6px 14px; border-radius:20px; font-size:0.83rem; font-weight:600; {s2}; box-shadow:0 2px 6px rgba(108,92,231,0.08);">Step 2: 🧾 Add & Split Expenses</div>
+    <span style="color:#b2bec3; font-weight:700;">➔</span>
+    <div style="padding:6px 14px; border-radius:20px; font-size:0.83rem; font-weight:600; {s3}; box-shadow:0 2px 6px rgba(108,92,231,0.08);">Step 3: ⚖️ Who Owes Whom</div>
+    <span style="color:#b2bec3; font-weight:700;">➔</span>
+    <div style="padding:6px 14px; border-radius:20px; font-size:0.83rem; font-weight:600; {s4}; box-shadow:0 2px 6px rgba(108,92,231,0.08);">Step 4: 📊 Live Analytics</div>
+</div>
+""", unsafe_allow_html=True)
 
 # ==============================================================================
 # 1. DASHBOARD & ANALYTICS
@@ -775,6 +815,23 @@ if menu == "📊 Dashboard & Analytics":
             st.dataframe(pd.DataFrame(recent), use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
+        st.markdown("""
+        <div class="white-card" style="margin-top:1.5rem; text-align:center;">
+            <h3 style="color:#2d3436; font-size:1.15rem; margin-bottom:0.4rem;">Guided Expense Splitting Lifecycle</h3>
+            <p style="color:#636e72; font-size:0.9rem; margin-bottom:1.15rem;">Navigate seamlessly between all steps of the expense splitting lifecycle:</p>
+        </div>
+        """, unsafe_allow_html=True)
+        col_d1, col_d2, col_d3 = st.columns(3)
+        with col_d1:
+            if st.button("👥 Step 1: Manage Groups & People", key="dash_flow_g", use_container_width=True):
+                navigate_to("👥 Groups & Members")
+        with col_d2:
+            if st.button("🧾 Step 2: Record & Split Bills", key="dash_flow_e", type="primary", use_container_width=True):
+                navigate_to("🧾 Expenses & Splits")
+        with col_d3:
+            if st.button("⚖️ Step 3: Check Who Owes Whom", key="dash_flow_b", use_container_width=True):
+                navigate_to("⚖️ Balances (Who Owes Whom)")
+
 # ==============================================================================
 # 2. GROUPS & MEMBERS (WITH DELETE GROUP & REMOVE MEMBER OPTIONS)
 # ==============================================================================
@@ -858,7 +915,18 @@ elif menu == "👥 Groups & Members":
                                         st.success(f"Added {c_name} to {g['name']}!")
                                         st.rerun()
 
-                    # 3. Remove a Member option
+                    # 3. NEXT STEP: PROCEED TO ADD EXPENSES FOR THIS GROUP
+                    st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #f7f6fe 0%, #edeafe 100%); border: 1.5px solid #dcd6fa; border-radius: 12px; padding: 0.9rem 1.15rem; margin: 1.15rem 0 0.6rem 0;">
+                        <span style="background:#6c5ce7; color:#ffffff; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:8px; text-transform:uppercase;">Next Step</span>
+                        <h4 style="margin:4px 0 2px 0; color:#2d3436; font-size:1.02rem;">Done adding members to {g['name']}?</h4>
+                        <small style="color:#636e72;">Proceed to record bills and split expenses among {g['name']} members.</small>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    if st.button(f"➡️ Proceed to Next Step: Record Expenses for '{g['name']}'", key=f"next_exp_btn_{gid}", type="primary", use_container_width=True):
+                        navigate_to("🧾 Expenses & Splits", target_group_id=gid)
+
+                    # 4. Remove a Member option
                     removable = [m for m in members if m['id'] != current_user_id]
                     if removable:
                         with st.expander(f"➖ Remove a Member from {g['name']}"):
@@ -939,7 +1007,15 @@ elif menu == "🧾 Expenses & Splits":
             st.warning("Please join or create a group first.")
         else:
             g_options = {g['name']: g['id'] for g in user_groups}
-            chosen_group_name = st.selectbox("Select Group:", list(g_options.keys()))
+            g_names = list(g_options.keys())
+            default_g_idx = 0
+            if 'target_group_id' in st.session_state:
+                for idx, g in enumerate(user_groups):
+                    if g['id'] == st.session_state['target_group_id']:
+                        default_g_idx = idx
+                        break
+
+            chosen_group_name = st.selectbox("Select Group:", g_names, index=default_g_idx)
             chosen_group_id = g_options[chosen_group_name]
 
             group_members = run_query("SELECT u.id, u.name FROM group_members gm JOIN users u ON gm.user_id = u.id WHERE gm.group_id = %s", (chosen_group_id,))
@@ -1050,6 +1126,22 @@ elif menu == "🧾 Expenses & Splits":
             else:
                 st.info("No expenses recorded yet in your groups.")
 
+    # Navigation Buttons for Step 2 -> Step 3
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #f7f6fe 0%, #edeafe 100%); border: 1.5px solid #dcd6fa; border-radius: 12px; padding: 1rem 1.25rem; margin: 1.5rem 0 0.75rem 0;">
+        <span style="background:#6c5ce7; color:#ffffff; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:8px; text-transform:uppercase;">Next Step</span>
+        <h4 style="margin:4px 0 2px 0; color:#2d3436; font-size:1.05rem;">Expenses Recorded! Ready to See Who Owes Whom?</h4>
+        <small style="color:#636e72;">Proceed to view net balances and optimized settlement instructions.</small>
+    </div>
+    """, unsafe_allow_html=True)
+    col_exp_p, col_exp_n = st.columns(2)
+    with col_exp_p:
+        if st.button("⬅️ Previous Step: Manage Groups & People", key="exp_to_prev_groups", use_container_width=True):
+            navigate_to("👥 Groups & Members")
+    with col_exp_n:
+        if st.button("➡️ Proceed to Next Step: View Balances (Who Owes Whom)", key="exp_to_next_bal", type="primary", use_container_width=True):
+            navigate_to("⚖️ Balances (Who Owes Whom)")
+
 # ==============================================================================
 # 4. BALANCES (WHO OWES WHOM)
 # ==============================================================================
@@ -1095,6 +1187,25 @@ elif menu == "⚖️ Balances (Who Owes Whom)":
                     """, unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
+        # Navigation for Step 3 -> Step 4
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #f7f6fe 0%, #edeafe 100%); border: 1.5px solid #dcd6fa; border-radius: 12px; padding: 1rem 1.25rem; margin: 1.5rem 0 0.75rem 0;">
+            <span style="background:#6c5ce7; color:#ffffff; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:8px; text-transform:uppercase;">Next Step</span>
+            <h4 style="margin:4px 0 2px 0; color:#2d3436; font-size:1.05rem;">Settlements Reviewed! What's Next?</h4>
+            <small style="color:#636e72;">Check your group budgets, simulate upcoming expenses, or view your live financial dashboard.</small>
+        </div>
+        """, unsafe_allow_html=True)
+        col_b_p, col_b_n1, col_b_n2 = st.columns([1, 1, 1.2])
+        with col_b_p:
+            if st.button("⬅️ Back to Expenses", key="bal_back_exp", use_container_width=True):
+                navigate_to("🧾 Expenses & Splits")
+        with col_b_n1:
+            if st.button("➡️ Next: Group Budgets", key="bal_to_bud", use_container_width=True):
+                navigate_to("🐷 Group Budgets")
+        with col_b_n2:
+            if st.button("📊 View Full Dashboard", key="bal_to_dash", type="primary", use_container_width=True):
+                navigate_to("📊 Dashboard & Analytics")
+
 # ==============================================================================
 # 5. GROUP BUDGETS
 # ==============================================================================
@@ -1130,6 +1241,14 @@ elif menu == "🐷 Group Budgets":
                 st.success("Budget updated!")
                 st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
+
+        col_bud_p, col_bud_n = st.columns(2)
+        with col_bud_p:
+            if st.button("⬅️ Back to Balances", key="bud_back_bal", use_container_width=True):
+                navigate_to("⚖️ Balances (Who Owes Whom)")
+        with col_bud_n:
+            if st.button("🧪 Next: What-If Simulator", key="bud_to_sim", type="primary", use_container_width=True):
+                navigate_to("🧪 What-If Simulator")
 
 # ==============================================================================
 # 6. WHAT-IF SIMULATOR
@@ -1174,6 +1293,14 @@ elif menu == "🧪 What-If Simulator":
             else:
                 st.success(f"✅ Safe: Remaining budget after this expense will be **₹{budget - proj_spent:,.2f}**.")
         st.markdown("</div>", unsafe_allow_html=True)
+
+        col_sim_p, col_sim_n = st.columns(2)
+        with col_sim_p:
+            if st.button("⬅️ Back to Budgets", key="sim_back_bud", use_container_width=True):
+                navigate_to("🐷 Group Budgets")
+        with col_sim_n:
+            if st.button("📊 Finish & Go to Dashboard", key="sim_to_dash", type="primary", use_container_width=True):
+                navigate_to("📊 Dashboard & Analytics")
 
 # ==============================================================================
 # 7. MEMBERS DIRECTORY
