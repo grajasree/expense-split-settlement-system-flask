@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>{% block title %}Expense Split and Settlement System{% endblock %}</title>
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  {% block head_extra %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+  {% if current_user %}
+  <!-- Authenticated Navigation Bar -->
+  <nav class="navbar">
+    <a href="{{ url_for('dashboard.index') }}" class="navbar-brand">
+      <i class="fa-solid fa-wallet"></i>
+      <span>SplitSettlement</span>
+    </a>
+
+    <ul class="nav-links">
+      <li>
+        <a href="{{ url_for('dashboard.index') }}" class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span data-i18n="nav_dashboard">Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('groups.index') }}" class="nav-link {% if 'groups' in request.endpoint %}active{% endif %}">
+          <i class="fa-solid fa-users"></i>
+          <span data-i18n="nav_groups">Groups</span>
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('expenses.index') }}" class="nav-link {% if 'expenses' in request.endpoint %}active{% endif %}">
+          <i class="fa-solid fa-receipt"></i>
+          <span data-i18n="nav_expenses">Expenses</span>
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('balances.index') }}" class="nav-link {% if 'balances' in request.endpoint %}active{% endif %}">
+          <i class="fa-solid fa-scale-balanced"></i>
+          <span data-i18n="nav_balances">Balances</span>
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('budgets.index') }}" class="nav-link {% if 'budgets' in request.endpoint %}active{% endif %}">
+          <i class="fa-solid fa-piggy-bank"></i>
+          <span data-i18n="nav_budgets">Budgets</span>
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('simulator.index') }}" class="nav-link {% if 'simulator' in request.endpoint %}active{% endif %}">
+          <i class="fa-solid fa-flask"></i>
+          <span data-i18n="nav_simulator">Simulator</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="navbar-actions">
+      <!-- Language Selector -->
+      <select id="language-select" class="lang-select" aria-label="Select Language">
+        <option value="en">English</option>
+        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+        <option value="te">తెలుగు (Telugu)</option>
+        <option value="hi">हिन्दी (Hindi)</option>
+      </select>
+
+      <!-- Dark / Light Mode Toggle -->
+      <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
+        <i class="fa-solid fa-moon"></i>
+      </button>
+
+      <!-- User Profile & Logout -->
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: 0.5rem;">
+        <span class="badge badge-purple" style="font-size: 0.85rem;">
+          <i class="fa-solid fa-user"></i> {{ current_user.name }}
+        </span>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-sm" title="Logout">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          <span data-i18n="nav_logout">Logout</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+  {% endif %}
+
+  <!-- Flash Messages -->
+  <main class="{% if current_user %}main-content{% endif %}">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alert-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              <span>{{ message }}</span>
+              <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; cursor: pointer; color: inherit; font-size: 1rem;">&times;</button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% if error_title %}
+      <div class="card empty-state">
+        <div class="empty-state-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <h3>{{ error_title }}</h3>
+        <p>{{ error_message }}</p>
+        <a href="/" class="btn btn-primary">Return to Homepage</a>
+      </div>
+    {% else %}
+      {% block content %}{% endblock %}
+    {% endif %}
+  </main>
+
+  {% if current_user %}
+  <footer class="footer">
+    <p>&copy; 2026 Expense Split and Settlement System &bull; B.Tech Academic Project Review Edition</p>
+  </footer>
+  {% endif %}
+
+  <!-- Core Scripts -->
+  <script>
+    window.currentUserId = {{ current_user.id if current_user else 'null' }};
+  </script>
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/language.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+  {% block scripts_extra %}{% endblock %}
+</body>
+</html>

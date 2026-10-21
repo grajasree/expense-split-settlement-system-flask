@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Expense - Expense Split and Settlement System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Edit Expense</h1>
+    <p class="page-subtitle">Update expense details, split shares, or participants</p>
+  </div>
+  <a href="{{ url_for('expenses.index') }}" class="btn btn-secondary">
+    <i class="fa-solid fa-arrow-left"></i> Cancel
+  </a>
+</div>
+
+<div class="card" style="max-width: 780px; margin: 0 auto;">
+  <form action="{{ url_for('expenses.edit', expense_id=expense.id) }}" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem;">
+      <div class="form-group">
+        <label for="description" class="form-label">Description</label>
+        <input type="text" id="description" name="description" class="form-control" value="{{ expense.description }}" required>
+      </div>
+
+      <div class="form-group">
+        <label for="expense-amount-input" class="form-label">Amount (₹)</label>
+        <input type="number" step="0.01" min="0.01" id="expense-amount-input" name="amount" class="form-control" value="{{ expense.amount }}" required>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+      <div class="form-group">
+        <label for="category" class="form-label">Category</label>
+        <select id="category" name="category" class="form-control">
+          {% for cat in categories %}
+            <option value="{{ cat }}" {% if expense.category == cat %}selected{% endif %}>{{ cat }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="date" class="form-label">Date</label>
+        <input type="date" id="date" name="date" class="form-control" value="{{ expense.date }}" required>
+      </div>
+
+      <div class="form-group">
+        <label for="paid_by" class="form-label">Paid By</label>
+        <select id="paid_by" name="paid_by" class="form-control" required>
+          {% for m in group_members %}
+            <option value="{{ m.id }}" {% if expense.paid_by == m.id %}selected{% endif %}>{{ m.name }} ({{ m.email }})</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Split Method Options -->
+    <div class="form-group" style="margin-top: 1rem;">
+      <label class="form-label">Split Method</label>
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <label class="card" style="margin-bottom: 0; padding: 0.75rem 1.25rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; flex: 1;">
+          <input type="radio" name="split_type" value="EQUAL" {% if expense.split_type == 'EQUAL' %}checked{% endif %} style="accent-color: var(--primary);">
+          <div>
+            <strong>Equal Split</strong>
+          </div>
+        </label>
+
+        <label class="card" style="margin-bottom: 0; padding: 0.75rem 1.25rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; flex: 1;">
+          <input type="radio" name="split_type" value="PERCENTAGE" {% if expense.split_type == 'PERCENTAGE' %}checked{% endif %} style="accent-color: var(--primary);">
+          <div>
+            <strong>Percentage Split</strong>
+          </div>
+        </label>
+
+        <label class="card" style="margin-bottom: 0; padding: 0.75rem 1.25rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; flex: 1;">
+          <input type="radio" name="split_type" value="CUSTOM" {% if expense.split_type == 'CUSTOM' %}checked{% endif %} style="accent-color: var(--primary);">
+          <div>
+            <strong>Custom Split</strong>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Participants List -->
+    <div class="form-group" style="margin-top: 1.5rem;">
+      <label class="form-label">Participants Sharing This Expense</label>
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        {% for m in group_members %}
+          {% set is_part = m.id in existing_splits %}
+          {% set split_data = existing_splits.get(m.id) %}
+          <div class="participant-row card" style="padding: 0.75rem 1rem; margin-bottom: 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0; cursor: pointer;">
+              <input type="checkbox" name="participants" value="{{ m.id }}" {% if is_part %}checked{% endif %} class="participant-checkbox" data-user-id="{{ m.id }}" style="width: 18px; height: 18px; accent-color: var(--primary);">
+              <span><strong>{{ m.name }}</strong> <small class="text-muted">({{ m.email }})</small></span>
+            </label>
+
+            <div class="split-input-wrapper" id="split-input-{{ m.id }}" style="display: flex; align-items: center; gap: 0.5rem;">
+              {% if expense.split_type == 'PERCENTAGE' and is_part %}
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <input type="number" step="0.01" min="0" max="100" name="percentage_{{ m.id }}" value="{{ split_data.share_percentage or 0 }}" class="form-control pct-input" style="width: 85px; padding: 0.35rem 0.5rem;">
+                  <span>%</span>
+                </div>
+              {% elif expense.split_type == 'CUSTOM' and is_part %}
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <span>₹</span>
+                  <input type="number" step="0.01" min="0" name="custom_amount_{{ m.id }}" value="{{ split_data.share_amount or 0 }}" class="form-control custom-amt-input" style="width: 100px; padding: 0.35rem 0.5rem;">
+                </div>
+              {% else %}
+                <span class="badge badge-purple">₹{{ split_data.share_amount if is_part else '0.00' }}</span>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      <div id="split-summary-notice" style="margin-top: 0.75rem; font-weight: 600; font-size: 0.9rem;"></div>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 2rem;">
+      <a href="{{ url_for('expenses.index') }}" class="btn btn-secondary">Cancel</a>
+      <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-floppy-disk"></i> Save Changes
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

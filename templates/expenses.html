@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Expenses - Expense Split and Settlement System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title" data-i18n="nav_expenses">Expenses</h1>
+    <p class="page-subtitle">View, filter, and track all shared expenses across your groups</p>
+  </div>
+  <a href="{{ url_for('expenses.add') }}" class="btn btn-primary">
+    <i class="fa-solid fa-plus-circle"></i>
+    <span data-i18n="action_add_expense">Add Expense</span>
+  </a>
+</div>
+
+<!-- Filters Card -->
+<div class="card" style="padding: 1.25rem; margin-bottom: 1.5rem;">
+  <form method="GET" action="{{ url_for('expenses.index') }}" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+    <!-- Group Filter -->
+    <div style="flex: 1; min-width: 220px;">
+      <label for="group_id" class="form-label">Filter by Group</label>
+      <select id="group_id" name="group_id" class="form-control" onchange="this.form.submit()">
+        <option value="">All Groups</option>
+        {% for g in user_groups %}
+          <option value="{{ g.id }}" {% if selected_group_id == g.id %}selected{% endif %}>{{ g.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Category Filter -->
+    <div style="flex: 1; min-width: 220px;">
+      <label for="category" class="form-label" data-i18n="label_category">Category</label>
+      <select id="category" name="category" class="form-control" onchange="this.form.submit()">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat }}" {% if category_filter == cat %}selected{% endif %}>{{ cat }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <a href="{{ url_for('expenses.index') }}" class="btn btn-secondary btn-sm" style="height: 38px;">
+        <i class="fa-solid fa-rotate-left"></i> Reset
+      </a>
+    </div>
+  </form>
+</div>
+
+<!-- Expenses Table -->
+<div class="card">
+  {% if expenses %}
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Group</th>
+            <th>Category</th>
+            <th>Paid By</th>
+            <th>Total Amount</th>
+            <th>My Share</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for exp in expenses %}
+            <tr>
+              <td>{{ exp.date|date_format }}</td>
+              <td>
+                <strong>{{ exp.description }}</strong>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                  {{ exp.split_type }} split among {{ exp.participant_count }} people
+                </div>
+              </td>
+              <td>
+                <a href="{{ url_for('groups.details', group_id=exp.group_id) }}" style="color: var(--primary); font-weight: 600; text-decoration: none;">
+                  {{ exp.group_name }}
+                </a>
+              </td>
+              <td><span class="badge badge-secondary">{{ exp.category }}</span></td>
+              <td>{{ exp.payer_name }}</td>
+              <td style="font-weight: 700;">{{ exp.amount|currency }}</td>
+              <td>
+                {% if exp.my_share > 0 %}
+                  <span style="font-weight: 700; color: var(--danger);">{{ exp.my_share|currency }}</span>
+                {% else %}
+                  <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+              <td>
+                <div style="display: flex; gap: 0.4rem;">
+                  <a href="{{ url_for('expenses.edit', expense_id=exp.id) }}" class="btn btn-secondary btn-sm" title="Edit">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </a>
+                  <form action="{{ url_for('expenses.delete', expense_id=exp.id) }}" method="POST" onsubmit="return confirm('Delete this expense? Balances will be recalculated.');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" class="btn btn-danger btn-sm" title="Delete">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon"><i class="fa-solid fa-receipt"></i></div>
+      <h3 data-i18n="no_expenses">No expenses found.</h3>
+      <p>Try adjusting your filters or record a new expense.</p>
+      <a href="{{ url_for('expenses.add') }}" class="btn btn-primary btn-sm">Add Expense</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

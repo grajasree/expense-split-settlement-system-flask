@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Balances & Settlements - Expense Split and Settlement System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title" data-i18n="nav_balances">Balances & Settlements</h1>
+    <p class="page-subtitle">Understand exactly who owes whom and simplify group reimbursements</p>
+  </div>
+  <a href="{{ url_for('expenses.add') }}" class="btn btn-primary">
+    <i class="fa-solid fa-plus-circle"></i>
+    <span data-i18n="action_add_expense">Add Expense</span>
+  </a>
+</div>
+
+<!-- My Balance Summary Metrics -->
+<div class="metrics-grid">
+  <!-- Net Balance Status Card -->
+  <div class="metric-card {% if net_balance > 0 %}success{% elif net_balance < 0 %}danger{% else %}info{% endif %}">
+    <div class="metric-icon">
+      <i class="fa-solid fa-scale-balanced"></i>
+    </div>
+    <div class="metric-info">
+      <h3>Your Net Balance</h3>
+      <div class="metric-value" style="color: {% if net_balance > 0 %}var(--success){% elif net_balance < 0 %}var(--danger){% else %}var(--text-primary){% endif %};">
+        {% if net_balance > 0 %}+{{ net_balance|currency }}{% elif net_balance < 0 %}-{{ (-net_balance)|currency }}{% else %}₹0.00{% endif %}
+      </div>
+      <small style="font-weight: 600;">Status: {{ user_status }}</small>
+    </div>
+  </div>
+
+  <!-- Total Paid -->
+  <div class="metric-card info">
+    <div class="metric-icon">
+      <i class="fa-solid fa-arrow-up-from-bracket"></i>
+    </div>
+    <div class="metric-info">
+      <h3 data-i18n="dash_total_paid">Total Amount Paid</h3>
+      <div class="metric-value">{{ total_paid|currency }}</div>
+      <small class="text-secondary">Across all your groups</small>
+    </div>
+  </div>
+
+  <!-- Total Share -->
+  <div class="metric-card warning">
+    <div class="metric-icon">
+      <i class="fa-solid fa-pie-chart"></i>
+    </div>
+    <div class="metric-info">
+      <h3>Your Total Share</h3>
+      <div class="metric-value">{{ total_share|currency }}</div>
+      <small class="text-secondary">Your consumption</small>
+    </div>
+  </div>
+
+  <!-- You Are Owed (Receivable) -->
+  <div class="metric-card success">
+    <div class="metric-icon">
+      <i class="fa-solid fa-hand-holding-dollar"></i>
+    </div>
+    <div class="metric-info">
+      <h3 data-i18n="dash_owed_to_you">You Are Owed</h3>
+      <div class="metric-value" style="color: var(--success);">{{ receivable_from_others|currency }}</div>
+      <small class="text-secondary">To collect from friends</small>
+    </div>
+  </div>
+
+  <!-- You Owe (Payable) -->
+  <div class="metric-card danger">
+    <div class="metric-icon">
+      <i class="fa-solid fa-comments-dollar"></i>
+    </div>
+    <div class="metric-info">
+      <h3 data-i18n="dash_you_owe">You Owe</h3>
+      <div class="metric-value" style="color: var(--danger);">{{ owed_to_others|currency }}</div>
+      <small class="text-secondary">To pay back</small>
+    </div>
+  </div>
+</div>
+
+<!-- Simplified Settlements Section: "Who Owes Whom" -->
+<div class="card" style="margin-bottom: 2rem;">
+  <div class="card-header">
+    <h3 class="card-title">
+      <i class="fa-solid fa-handshake" style="color: var(--primary);"></i>
+      <span data-i18n="who_owes_whom">Who Owes Whom (Simplified Debt Settlements)</span>
+    </h3>
+    <span class="badge badge-purple">Min Cash-Flow Algorithm</span>
+  </div>
+
+  <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+    The system automatically calculates the minimum number of transactions needed to completely settle all group debts without redundant peer-to-peer transfers.
+  </p>
+
+  {% if group_settlements %}
+    <div style="display: flex; flex-direction: column; gap: 1.75rem;">
+      {% for gs in group_settlements %}
+        <div style="background: var(--bg-page); padding: 1.25rem; border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <h4 style="font-size: 1.1rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fa-solid fa-users" style="color: var(--primary);"></i>
+              {{ gs.group_name }}
+            </h4>
+            <div style="font-size: 0.9rem;">
+              Your Group Balance:
+              <strong style="color: {% if gs.my_net > 0 %}var(--success){% elif gs.my_net < 0 %}var(--danger){% else %}var(--text-secondary){% endif %};">
+                {% if gs.my_net > 0 %}+{{ gs.my_net|currency }}{% elif gs.my_net < 0 %}-{{ (-gs.my_net)|currency }}{% else %}₹0.00{% endif %}
+              </strong>
+            </div>
+          </div>
+
+          {% if gs.settlements %}
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 0.75rem;">
+              {% for s in gs.settlements %}
+                <div class="settlement-card" style="background: var(--bg-card); {% if s.debtor_id == current_user.id or s.creditor_id == current_user.id %}border-left: 4px solid var(--primary);{% endif %}">
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-arrow-right" style="color: var(--secondary);"></i>
+                    <div>
+                      <span class="settlement-payer {% if s.debtor_id == current_user.id %}badge badge-danger{% endif %}">
+                        {{ s.debtor_name }}{% if s.debtor_id == current_user.id %} (You){% endif %}
+                      </span>
+                      <span style="font-size: 0.85rem; color: var(--text-secondary); margin: 0 0.35rem;">pays</span>
+                      <span class="settlement-receiver {% if s.creditor_id == current_user.id %}badge badge-success{% endif %}">
+                        {{ s.creditor_name }}{% if s.creditor_id == current_user.id %} (You){% endif %}
+                      </span>
+                    </div>
+                  </div>
+                  <strong style="font-size: 1.1rem; color: var(--primary);">{{ s.amount|currency }}</strong>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div style="text-align: center; padding: 1.25rem; color: var(--text-secondary);">
+              <i class="fa-solid fa-check-double" style="color: var(--success); margin-right: 0.35rem;"></i>
+              Everyone is settled up in this group! No payments required.
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+      <h3 data-i18n="no_expenses">No balances yet.</h3>
+      <p>Join or create groups and add expenses to view settlement suggestions.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

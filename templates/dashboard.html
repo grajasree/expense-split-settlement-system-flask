@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Expense Split and Settlement System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title" data-i18n="dash_title">Financial Overview</h1>
+    <p class="page-subtitle" data-i18n="dash_subtitle">Track your shared spending, group balances, and budget health</p>
+  </div>
+  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <a href="{{ url_for('expenses.add') }}" class="btn btn-primary">
+      <i class="fa-solid fa-plus-circle"></i>
+      <span data-i18n="action_add_expense">Add Expense</span>
+    </a>
+    <a href="{{ url_for('groups.index') }}" class="btn btn-secondary">
+      <i class="fa-solid fa-users"></i>
+      <span data-i18n="action_create_group">Create Group</span>
+    </a>
+  </div>
+</div>
+
+{% if empty_state %}
+  <!-- Empty State for Brand New Users -->
+  <div class="card empty-state">
+    <div class="empty-state-icon">
+      <i class="fa-solid fa-people-roof"></i>
+    </div>
+    <h3 data-i18n="no_groups">You are not a member of any group yet.</h3>
+    <p>To begin splitting bills with your friends, roommates, or trip mates, create a group or ask someone to add your registered email address!</p>
+    <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+      <a href="{{ url_for('groups.index') }}" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> <span data-i18n="action_create_group">Create Group</span>
+      </a>
+      <a href="{{ url_for('simulator.index') }}" class="btn btn-secondary">
+        <i class="fa-solid fa-flask"></i> <span data-i18n="action_simulate">Try Expense Simulator</span>
+      </a>
+    </div>
+  </div>
+{% else %}
+
+  <!-- Budget Warnings & Alerts Banner -->
+  {% if budget_alerts %}
+    <div class="card" style="border-left: 4px solid var(--danger); padding: 1.25rem;">
+      <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--danger); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fa-solid fa-bell"></i>
+        <span data-i18n="dash_budget_alerts">Budget Health & Alerts</span>
+      </h3>
+      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        {% for alert in budget_alerts %}
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-size: 0.925rem;">
+            <span>
+              <strong>{{ alert.group_name }}</strong>: Spent {{ alert.spent|currency }} of {{ alert.budget|currency }} ({{ alert.percent }}%)
+            </span>
+            <span class="badge {{ alert.badge_class }}">{{ alert.status }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Key Metrics Summary Cards -->
+  <div class="metrics-grid">
+    <!-- 1. Total Expenses -->
+    <div class="metric-card primary">
+      <div class="metric-icon">
+        <i class="fa-solid fa-receipt"></i>
+      </div>
+      <div class="metric-info">
+        <h3 data-i18n="dash_total_expenses">Total Group Expenses</h3>
+        <div class="metric-value">{{ total_expenses|currency }}</div>
+      </div>
+    </div>
+
+    <!-- 2. Total Paid By User -->
+    <div class="metric-card info">
+      <div class="metric-icon">
+        <i class="fa-solid fa-wallet"></i>
+      </div>
+      <div class="metric-info">
+        <h3 data-i18n="dash_total_paid">Total Amount You Paid</h3>
+        <div class="metric-value">{{ total_paid|currency }}</div>
+      </div>
+    </div>
+
+    <!-- 3. You Are Owed (Gets Back) -->
+    <div class="metric-card success">
+      <div class="metric-icon">
+        <i class="fa-solid fa-hand-holding-dollar"></i>
+      </div>
+      <div class="metric-info">
+        <h3 data-i18n="dash_owed_to_you">You Are Owed</h3>
+        <div class="metric-value" style="color: var(--success);">{{ others_owe|currency }}</div>
+      </div>
+    </div>
+
+    <!-- 4. You Owe -->
+    <div class="metric-card danger">
+      <div class="metric-icon">
+        <i class="fa-solid fa-comments-dollar"></i>
+      </div>
+      <div class="metric-info">
+        <h3 data-i18n="dash_you_owe">You Owe</h3>
+        <div class="metric-value" style="color: var(--danger);">{{ user_owes|currency }}</div>
+      </div>
+    </div>
+
+    <!-- 5. Active Groups -->
+    <div class="metric-card warning">
+      <div class="metric-icon">
+        <i class="fa-solid fa-users"></i>
+      </div>
+      <div class="metric-info">
+        <h3 data-i18n="dash_groups_count">Active Groups</h3>
+        <div class="metric-value">{{ group_count }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Action Navigation Row -->
+  <div class="card" style="padding: 1rem 1.5rem; margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+      <span style="font-weight: 600; color: var(--text-secondary); font-size: 0.9rem;">
+        <i class="fa-solid fa-bolt" style="color: var(--primary);"></i> Quick Actions:
+      </span>
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <a href="{{ url_for('expenses.add') }}" class="btn btn-primary btn-sm">
+          <i class="fa-solid fa-plus"></i> <span data-i18n="action_add_expense">Add Expense</span>
+        </a>
+        <a href="{{ url_for('groups.index') }}" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-folder-plus"></i> <span data-i18n="action_create_group">Create Group</span>
+        </a>
+        <a href="{{ url_for('groups.index') }}" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-users-viewfinder"></i> <span data-i18n="action_view_groups">View Groups</span>
+        </a>
+        <a href="{{ url_for('balances.index') }}" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-scale-balanced"></i> <span data-i18n="action_view_balances">View Balances</span>
+        </a>
+        <a href="{{ url_for('simulator.index') }}" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-flask"></i> <span data-i18n="action_simulate">What-If Simulator</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row 1: Monthly Trend & Category Breakdown -->
+  <div class="charts-grid">
+    <!-- Chart 1: Monthly Spending -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fa-solid fa-chart-line" style="color: var(--primary);"></i>
+          <span data-i18n="dash_monthly_trend">Monthly Spending Trend</span>
+        </h3>
+      </div>
+      <div class="chart-container">
+        <canvas id="monthlyChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 2: Category Breakdown -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fa-solid fa-chart-pie" style="color: var(--primary);"></i>
+          <span data-i18n="dash_category_breakdown">Expense Category Breakdown</span>
+        </h3>
+      </div>
+      <div class="chart-container">
+        <canvas id="categoryChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row 2: Group Comparison & Budget Usage -->
+  <div class="charts-grid">
+    <!-- Chart 3: Group-wise Spending -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fa-solid fa-chart-column" style="color: var(--primary);"></i>
+          <span data-i18n="dash_group_comparison">Group-wise Spending</span>
+        </h3>
+      </div>
+      <div class="chart-container">
+        <canvas id="groupChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 4: Budget vs Spent -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fa-solid fa-scale-unbalanced-flip" style="color: var(--primary);"></i>
+          <span data-i18n="dash_budget_usage">Group Budget Usage</span>
+        </h3>
+      </div>
+      <div class="chart-container">
+        <canvas id="budgetChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Expenses Table & Group Budgets Summary Grid -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
+    <!-- Recent Transactions -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fa-solid fa-clock-rotate-left" style="color: var(--primary);"></i>
+          <span data-i18n="dash_recent_expenses">Recent Transactions</span>
+        </h3>
+        <a href="{{ url_for('expenses.index') }}" class="btn btn-secondary btn-sm">View All</a>
+      </div>
+
+      {% if recent_expenses %}
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Group</th>
+                <th>Amount</th>
+                <th>My Share</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for exp in recent_expenses %}
+                <tr>
+                  <td>{{ exp.date|date_format }}</td>
+                  <td>
+                    <strong>{{ exp.description }}</strong>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                      Paid by {{ exp.payer_name }} &bull; {{ exp.category }}
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge badge-purple">{{ exp.group_name }}</span>
+                  </td>
+                  <td style="font-weight: 600;">{{ exp.amount|currency }}</td>
+                  <td>
+                    {% if exp.my_share > 0 %}
+                      <span style="font-weight: 600; color: var(--danger);">{{ exp.my_share|currency }}</span>
+                    {% else %}
+                      <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state" style="padding: 2rem 1rem;">
+          <p class="text-muted" data-i18n="no_expenses">No expenses recorded yet.</p>
+          <a href="{{ url_for('expenses.add') }}" class="btn btn-primary btn-sm">Add First Expense</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Group Budget Status Overview -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fa-solid fa-piggy-bank" style="color: var(--primary);"></i>
+          <span>Group Budget Progress</span>
+        </h3>
+        <a href="{{ url_for('budgets.index') }}" class="btn btn-secondary btn-sm">Manage Budgets</a>
+      </div>
+
+      {% if groups_summary %}
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+          {% for g in groups_summary %}
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                <a href="{{ url_for('groups.details', group_id=g.id) }}" style="font-weight: 600; color: var(--text-primary); text-decoration: none;">
+                  {{ g.name }}
+                </a>
+                <span class="badge {{ g.badge_class }}">{{ g.status }}</span>
+              </div>
+
+              {% if g.budget > 0 %}
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-secondary);">
+                  <span>Spent: <strong>{{ g.spent|currency }}</strong></span>
+                  <span>Budget: {{ g.budget|currency }}</span>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar-fill {% if g.raw_percent >= 100 %}progress-fill-danger{% elif g.raw_percent >= 90 %}progress-fill-orange{% elif g.raw_percent >= 75 %}progress-fill-warning{% else %}progress-fill-success{% endif %}" 
+                       style="width: {{ g.percent }}%;"></div>
+                </div>
+              {% else %}
+                <div style="font-size: 0.85rem; color: var(--text-muted);">
+                  Spent: {{ g.spent|currency }} &bull; <em>No budget set</em>
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted" style="text-align: center; padding: 2rem;">No groups available.</p>
+      {% endif %}
+    </div>
+  </div>
+
+{% endif %}
+{% endblock %}

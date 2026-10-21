@@ -1,0 +1,20 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment Variables & Secrets (Keep your MySQL password private!)
+.env
+
+# VS Code & IDE files
+.vscode/
+.idea/
+
+# Database files & logs
+*.log
+*.sqlite3

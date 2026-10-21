@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Add Expense - Expense Split and Settlement System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title" data-i18n="action_add_expense">Add Expense</h1>
+    <p class="page-subtitle">Record a new shared expense with equal, percentage, or custom split</p>
+  </div>
+  <a href="{{ url_for('expenses.index') }}" class="btn btn-secondary">
+    <i class="fa-solid fa-arrow-left"></i> Back to Expenses
+  </a>
+</div>
+
+<div class="card" style="max-width: 780px; margin: 0 auto;">
+  <form action="{{ url_for('expenses.add') }}" method="POST" id="expense-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <!-- Group Selection -->
+    <div class="form-group">
+      <label for="expense-group-select" class="form-label">
+        <span data-i18n="nav_groups">Group</span> <span style="color: var(--danger);">*</span>
+      </label>
+      <select id="expense-group-select" name="group_id" class="form-control" required>
+        <option value="">-- Select Group --</option>
+        {% for g in user_groups %}
+          <option value="{{ g.id }}" {% if preset_group_id == g.id %}selected{% endif %}>{{ g.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Description & Amount -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem;">
+      <div class="form-group">
+        <label for="description" class="form-label">
+          <span data-i18n="label_description">Description</span> <span style="color: var(--danger);">*</span>
+        </label>
+        <input type="text" id="description" name="description" class="form-control" placeholder="e.g. Dinner at Paradise, Groceries, WiFi Bill" required>
+      </div>
+
+      <div class="form-group">
+        <label for="expense-amount-input" class="form-label">
+          <span data-i18n="label_amount">Amount (₹)</span> <span style="color: var(--danger);">*</span>
+        </label>
+        <input type="number" step="0.01" min="0.01" id="expense-amount-input" name="amount" class="form-control" placeholder="0.00" required>
+      </div>
+    </div>
+
+    <!-- Category, Date & Paid By -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+      <div class="form-group">
+        <label for="category" class="form-label" data-i18n="label_category">Category</label>
+        <select id="category" name="category" class="form-control">
+          {% for cat in categories %}
+            <option value="{{ cat }}">{{ cat }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="date" class="form-label" data-i18n="label_date">Date</label>
+        <input type="date" id="date" name="date" class="form-control" required>
+      </div>
+
+      <div class="form-group">
+        <label for="expense-payer-select" class="form-label">
+          <span data-i18n="label_paid_by">Paid By</span> <span style="color: var(--danger);">*</span>
+        </label>
+        <select id="expense-payer-select" name="paid_by" class="form-control" required>
+          <option value="">Select Group First</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Split Method Options -->
+    <div class="form-group" style="margin-top: 1rem;">
+      <label class="form-label" data-i18n="label_split_method">Split Method</label>
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <label class="card" style="margin-bottom: 0; padding: 0.75rem 1.25rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 150px;">
+          <input type="radio" name="split_type" value="EQUAL" checked style="accent-color: var(--primary);">
+          <div>
+            <strong data-i18n="split_equal">Equal Split</strong>
+            <small class="text-secondary" style="display: block; font-size: 0.8rem;">Divided evenly</small>
+          </div>
+        </label>
+
+        <label class="card" style="margin-bottom: 0; padding: 0.75rem 1.25rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 150px;">
+          <input type="radio" name="split_type" value="PERCENTAGE" style="accent-color: var(--primary);">
+          <div>
+            <strong data-i18n="split_percentage">Percentage Split</strong>
+            <small class="text-secondary" style="display: block; font-size: 0.8rem;">Enter % per person</small>
+          </div>
+        </label>
+
+        <label class="card" style="margin-bottom: 0; padding: 0.75rem 1.25rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 150px;">
+          <input type="radio" name="split_type" value="CUSTOM" style="accent-color: var(--primary);">
+          <div>
+            <strong data-i18n="split_custom">Custom Split</strong>
+            <small class="text-secondary" style="display: block; font-size: 0.8rem;">Enter exact amounts</small>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Participants Container (Loaded Dynamically) -->
+    <div class="form-group" style="margin-top: 1.5rem;">
+      <label class="form-label" data-i18n="label_participants">Participants Sharing This Expense</label>
+      <div id="participants-container">
+        <p class="text-muted">Please select a group above to load participants.</p>
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 2rem;">
+      <a href="{{ url_for('expenses.index') }}" class="btn btn-secondary" data-i18n="action_cancel">Cancel</a>
+      <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-check"></i> Save Expense
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+  // Set default date to today
+  document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('date');
+    if (dateInput && !dateInput.value) {
+      dateInput.value = new Date().toISOString().split('T')[0];
+    }
+  });
+</script>
+{% endblock %}

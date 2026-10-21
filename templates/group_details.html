@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}{{ group.name }} - Group Details{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;">
+      <a href="{{ url_for('groups.index') }}" class="btn btn-secondary btn-sm" title="Back to Groups">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+      <h1 class="page-title">{{ group.name }}</h1>
+      <span class="badge {{ budget_info.badge_class }}">{{ budget_info.status }}</span>
+    </div>
+    <p class="page-subtitle">{{ group.description or 'No description provided' }} &bull; Created by {{ group.creator_name }}</p>
+  </div>
+  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <a href="{{ url_for('expenses.add', group_id=group.id) }}" class="btn btn-primary">
+      <i class="fa-solid fa-plus-circle"></i> Add Expense
+    </a>
+    <a href="{{ url_for('simulator.index') }}" class="btn btn-secondary">
+      <i class="fa-solid fa-flask"></i> Simulator
+    </a>
+  </div>
+</div>
+
+<!-- Group Budget Banner / Progress Box -->
+<div class="card" style="margin-bottom: 2rem;">
+  <div class="card-header">
+    <h3 class="card-title">
+      <i class="fa-solid fa-piggy-bank" style="color: var(--primary);"></i>
+      <span>Budget & Spending Status</span>
+    </h3>
+    <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('edit-budget-box').style.display = document.getElementById('edit-budget-box').style.display === 'none' ? 'block' : 'none'">
+      <i class="fa-solid fa-gear"></i> Adjust Budget
+    </button>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+    <div>
+      <small class="text-secondary">Monthly Budget</small>
+      <div style="font-size: 1.35rem; font-weight: 700;">{{ budget_info.budget|currency }}</div>
+    </div>
+    <div>
+      <small class="text-secondary">Total Spent</small>
+      <div style="font-size: 1.35rem; font-weight: 700; color: var(--primary);">{{ budget_info.spent|currency }}</div>
+    </div>
+    <div>
+      <small class="text-secondary">Remaining Budget</small>
+      <div style="font-size: 1.35rem; font-weight: 700; color: {% if budget_info.remaining < 0 %}var(--danger){% else %}var(--success){% endif %};">
+        {{ budget_info.remaining|currency }}
+      </div>
+    </div>
+    <div>
+      <small class="text-secondary">Budget Health</small>
+      <div><span class="badge {{ budget_info.badge_class }}">{{ budget_info.status }} ({{ budget_info.percent }}%)</span></div>
+    </div>
+  </div>
+
+  {% if budget_info.budget > 0 %}
+    <div class="progress-bar-container" style="height: 10px;">
+      <div class="progress-bar-fill {% if budget_info.raw_percent >= 100 %}progress-fill-danger{% elif budget_info.raw_percent >= 90 %}progress-fill-orange{% elif budget_info.raw_percent >= 75 %}progress-fill-warning{% else %}progress-fill-success{% endif %}"
+           style="width: {{ budget_info.percent }}%;"></div>
+    </div>
+  {% else %}
+    <p class="text-muted" style="font-size: 0.85rem; margin-top: 0.5rem;">No spending limit set for this group. Click 'Adjust Budget' to set a monthly threshold.</p>
+  {% endif %}
+
+  <!-- Hidden Adjust Budget Form -->
+  <div id="edit-budget-box" style="display: none; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-color);">
+    <form action="{{ url_for('groups.set_budget', group_id=group.id) }}" method="POST" style="display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div style="flex: 1; min-width: 200px;">
+        <label for="monthly_budget" class="form-label">Set New Monthly Budget (₹)</label>
+        <input type="number" step="0.01" min="0" id="monthly_budget" name="monthly_budget" value="{{ group.monthly_budget }}" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">Update Budget</button>
+    </form>
+  </div>
+</div>
+
+<!-- Two-Column Layout: Members & Balances / Who Owes Whom -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+  <!-- Group Members & Add Member Form -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">
+        <i class="fa-solid fa-users" style="color: var(--primary);"></i>
+        <span>Members ({{ members|length }})</span>
+      </h3>
+    </div>
+
+    <!-- Add Member Form -->
+    <form action="{{ url_for('groups.add_member', group_id=group.id) }}" method="POST" style="margin-bottom: 1.5rem;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div style="display: flex; gap: 0.5rem;">
+        <input type="email" name="email" class="form-control" placeholder="Enter registered user's email" required>
+        <button type="submit" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
+          <i class="fa-solid fa-user-plus"></i> Add
+        </button>
+      </div>
+      <small class="text-secondary" style="font-size: 0.8rem; display: block; margin-top: 0.25rem;">
+        User must be registered before adding to group.
+      </small>
+    </form>
+
+    <!-- Member List -->
+    <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+      {% for m in members %}
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.85rem; background: var(--bg-page); border-radius: var(--radius-md);">
+          <div>
+            <strong>{{ m.name }}</strong>
+            <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ m.email }}</div>
+          </div>
+          <div>
+            {% if m.role == 'creator' %}
+              <span class="badge badge-purple">Creator</span>
+            {% else %}
+              <span class="badge badge-secondary">Member</span>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Who Owes Whom (Simplified Debt Settlements) -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">
+        <i class="fa-solid fa-handshake" style="color: var(--primary);"></i>
+        <span data-i18n="who_owes_whom">Who Owes Whom</span>
+      </h3>
+    </div>
+
+    {% if settlements %}
+      <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+        {% for s in settlements %}
+          <div class="settlement-card">
+            <div>
+              <span class="settlement-payer">{{ s.debtor_name }}</span>
+              <span class="text-secondary" style="margin: 0 0.35rem;">owes</span>
+              <span class="settlement-receiver">{{ s.creditor_name }}</span>
+            </div>
+            <strong style="font-size: 1.05rem; color: var(--primary);">{{ s.amount|currency }}</strong>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state" style="padding: 2rem 1rem;">
+        <i class="fa-solid fa-circle-check" style="font-size: 2.5rem; color: var(--success); margin-bottom: 0.5rem;"></i>
+        <h4 style="font-size: 1.1rem;">All Settled Up!</h4>
+        <p class="text-secondary" style="font-size: 0.85rem;">No outstanding balances inside this group.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Member Balances Table -->
+<div class="card" style="margin-bottom: 2rem;">
+  <div class="card-header">
+    <h3 class="card-title">
+      <i class="fa-solid fa-scale-balanced" style="color: var(--primary);"></i>
+      <span>Member Balance Summary</span>
+    </h3>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Total Paid</th>
+          <th>Total Share</th>
+          <th>Net Balance</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for mb in member_balances %}
+          <tr>
+            <td>
+              <strong>{{ mb.name }}</strong>
+              <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ mb.email }}</div>
+            </td>
+            <td>{{ mb.paid|currency }}</td>
+            <td>{{ mb.share|currency }}</td>
+            <td style="font-weight: 700; color: {% if mb.net > 0 %}var(--success){% elif mb.net < 0 %}var(--danger){% else %}var(--text-secondary){% endif %};">
+              {% if mb.net > 0 %}+{{ mb.net|currency }}{% elif mb.net < 0 %}-{{ (-mb.net)|currency }}{% else %}₹0.00{% endif %}
+            </td>
+            <td>
+              {% if mb.net > 0 %}
+                <span class="badge badge-success"><i class="fa-solid fa-arrow-down-left"></i> Gets Back</span>
+              {% elif mb.net < 0 %}
+                <span class="badge badge-danger"><i class="fa-solid fa-arrow-up-right"></i> Owes</span>
+              {% else %}
+                <span class="badge badge-secondary"><i class="fa-solid fa-check"></i> Settled</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Group Expenses Table -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">
+      <i class="fa-solid fa-receipt" style="color: var(--primary);"></i>
+      <span>Group Expenses ({{ expenses|length }})</span>
+    </h3>
+    <a href="{{ url_for('expenses.add', group_id=group.id) }}" class="btn btn-primary btn-sm">
+      <i class="fa-solid fa-plus"></i> Add Expense
+    </a>
+  </div>
+
+  {% if expenses %}
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th>Paid By</th>
+            <th>Split Method</th>
+            <th>Total Amount</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for exp in expenses %}
+            <tr>
+              <td>{{ exp.date|date_format }}</td>
+              <td><strong>{{ exp.description }}</strong></td>
+              <td><span class="badge badge-secondary">{{ exp.category }}</span></td>
+              <td>{{ exp.payer_name }}</td>
+              <td><span class="badge badge-purple">{{ exp.split_type }}</span></td>
+              <td style="font-weight: 700; color: var(--text-primary);">{{ exp.amount|currency }}</td>
+              <td>
+                <div style="display: flex; gap: 0.4rem;">
+                  <a href="{{ url_for('expenses.edit', expense_id=exp.id) }}" class="btn btn-secondary btn-sm" title="Edit Expense">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </a>
+                  <form action="{{ url_for('expenses.delete', expense_id=exp.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this expense? Balances will be recalculated.');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" class="btn btn-danger btn-sm" title="Delete Expense">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state" style="padding: 2.5rem 1rem;">
+      <p class="text-muted" data-i18n="no_expenses">No expenses recorded for this group yet.</p>
+      <a href="{{ url_for('expenses.add', group_id=group.id) }}" class="btn btn-primary btn-sm">Add First Expense</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
