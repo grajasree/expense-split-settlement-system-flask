@@ -916,40 +916,16 @@ def tr(key):
         l_code = 'hi'
     return TRANSLATIONS.get(l_code, {}).get(key, TRANSLATIONS['en'].get(key, key))
 
-def render_logo(size=44, key="logo"):
-    return f"""
-    <div style="display:inline-flex; align-items:center; justify-content:center; vertical-align:middle; filter: drop-shadow(0 4px 10px rgba(108, 92, 231, 0.28));">
-        <svg width="{size}" height="{size}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <linearGradient id="sqGrad_{key}" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stop-color="#6c5ce7"/>
-                    <stop offset="55%" stop-color="#8c7ae6"/>
-                    <stop offset="100%" stop-color="#4834d4"/>
-                </linearGradient>
-                <linearGradient id="arcGrad1_{key}" x1="20" y1="20" x2="80" y2="80" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stop-color="#55efc4"/>
-                    <stop offset="50%" stop-color="#81ecec"/>
-                    <stop offset="100%" stop-color="#ffffff"/>
-                </linearGradient>
-                <linearGradient id="arcGrad2_{key}" x1="80" y1="20" x2="20" y2="80" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stop-color="#fd79a8"/>
-                    <stop offset="60%" stop-color="#fab1a0"/>
-                    <stop offset="100%" stop-color="#ffeaa7"/>
-                </linearGradient>
-            </defs>
-            <rect width="100" height="100" rx="26" fill="url(#sqGrad_{key})"/>
-            <circle cx="50" cy="50" r="34" stroke="rgba(255,255,255,0.2)" stroke-width="2.5" stroke-dasharray="4 4"/>
-            <path d="M 28 42 C 28 29, 44 24, 52 24 C 64 24, 72 31, 72 40 C 72 50, 48 51, 48 60 C 48 68, 56 74, 68 74 C 76 74, 80 70, 80 70" 
-                  stroke="url(#arcGrad1_{key})" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M 72 58 C 72 71, 56 76, 48 76 C 36 76, 28 69, 28 60 C 28 50, 52 49, 52 40 C 52 32, 44 26, 32 26" 
-                  stroke="url(#arcGrad2_{key})" stroke-width="4" stroke-linecap="round" stroke-dasharray="6 4"/>
-            <circle cx="50" cy="50" r="7.5" fill="#ffffff"/>
-            <circle cx="50" cy="50" r="3.5" fill="#6c5ce7"/>
-            <circle cx="28" cy="42" r="4.5" fill="#55efc4" stroke="#ffffff" stroke-width="1.5"/>
-            <circle cx="72" cy="58" r="4.5" fill="#fd79a8" stroke="#ffffff" stroke-width="1.5"/>
-        </svg>
-    </div>
-    """
+def render_brand_logo(size=44, key="logo"):
+    return (
+        f'<div style="width:{size}px; height:{size}px; border-radius:12px; '
+        f'background:linear-gradient(135deg, #6c5ce7 0%, #8e44ad 50%, #00b894 100%); '
+        f'display:inline-flex; align-items:center; justify-content:center; color:#ffffff; '
+        f'font-size:{int(size*0.52)}px; box-shadow:0 4px 12px rgba(108,92,231,0.3); '
+        f'border:1.5px solid rgba(255,255,255,0.6); vertical-align:middle;">⚖️</div>'
+    )
+
+render_logo = render_brand_logo
 
 NAV_CANONICAL = ["groups", "expenses", "balances", "budgets", "simulator", "dashboard", "history"]
 
@@ -1005,15 +981,15 @@ if not st.session_state['authenticated']:
     # Auth Top Navigation Bar
     col_auth_left, col_auth_right = st.columns([2.5, 1.5])
     with col_auth_left:
-        st.markdown(f"""
-            <div style="display:flex; align-items:center; gap:12px; padding: 0.2rem 0;">
-                {render_logo(size=44, key="auth_top_logo")}
-                <div>
-                    <h3 style="margin:0; font-size:1.35rem; color:#2d3436; font-weight:700;">{tr('app_title')}</h3>
-                    <small style="color:#636e72; font-weight:500;">{tr('app_subtitle')}</small>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
+        logo_html = render_brand_logo(size=42)
+        st.markdown(
+            f'<div style="display:flex; align-items:center; gap:12px; padding:0.2rem 0;">'
+            f'{logo_html}'
+            f'<div><h3 style="margin:0; font-size:1.35rem; color:#2d3436; font-weight:700;">{tr("app_title")}</h3>'
+            f'<small style="color:#636e72; font-weight:500;">{tr("app_subtitle")}</small></div>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
     with col_auth_right:
         c_lang_auth = st.session_state.get('interface_language', 'English')
         c_lang_auth_idx = LANGUAGE_OPTIONS.index(c_lang_auth) if c_lang_auth in LANGUAGE_OPTIONS else 0
@@ -1159,25 +1135,27 @@ current_user_email = st.session_state['user_email']
 # ==============================================================================
 # SIDEBAR NAVIGATION
 # ==============================================================================
-st.sidebar.markdown(f"""
-<div style="text-align: center; margin-bottom: 1.25rem;">
-    {render_logo(size=54, key="sidebar_logo")}
-    <h2 style="font-size: 1.25rem; margin: 0.35rem 0 0 0; color: #2d3436; font-weight:700;">{tr('app_title')}</h2>
-    <small style="color: #6c5ce7; font-weight:600;">{tr('app_subtitle')}</small>
-</div>
-""", unsafe_allow_html=True)
+st.sidebar.markdown(
+    f'<div style="text-align: center; margin-bottom: 1.25rem;">'
+    f'{render_brand_logo(size=52)}'
+    f'<h2 style="font-size: 1.25rem; margin: 0.4rem 0 0 0; color: #2d3436; font-weight:700;">{tr("app_title")}</h2>'
+    f'<small style="color: #6c5ce7; font-weight:600;">{tr("app_subtitle")}</small>'
+    f'</div>',
+    unsafe_allow_html=True
+)
 
 # Logged-In User Profile Card in Sidebar
 user_initial = current_user_name[0].upper() if current_user_name else "U"
-st.sidebar.markdown(f"""
-<div class="profile-badge" style="width: 100%; justify-content: flex-start; margin-bottom: 0.5rem; background:#f9f8fe;">
-    <div class="profile-avatar">{user_initial}</div>
-    <div class="profile-info">
-        <span class="profile-name">{current_user_name}</span>
-        <span class="profile-status"><span style="color:#00b894; font-size:0.85rem;">●</span> {tr('logged_in')}</span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+st.sidebar.markdown(
+    f'<div class="profile-badge" style="width: 100%; justify-content: flex-start; margin-bottom: 0.5rem; background:#f9f8fe;">'
+    f'<div class="profile-avatar">{user_initial}</div>'
+    f'<div class="profile-info">'
+    f'<span class="profile-name">{current_user_name}</span>'
+    f'<span class="profile-status"><span style="color:#00b894; font-size:0.85rem;">●</span> {tr("logged_in")}</span>'
+    f'</div>'
+    f'</div>',
+    unsafe_allow_html=True
+)
 
 # Top Sidebar Logout Button
 if st.sidebar.button(tr('btn_logout'), key="sidebar_top_logout_btn", use_container_width=True):
@@ -1222,28 +1200,28 @@ st.sidebar.caption(f"Engine: **{db_type.upper()}** &bull; Status: **Online**")
 # ==============================================================================
 col_nav_left, col_nav_right = st.columns([2.4, 1.6])
 with col_nav_left:
-    st.markdown(f"""
-        <div style="display:flex; align-items:center; gap:12px; padding: 4px 0;">
-            {render_logo(size=40, key="top_header_logo")}
-            <div>
-                <h3 style="margin:0; font-size:1.25rem; color:#2d3436; font-weight:700; line-height:1.2;">{tr('app_title')}</h3>
-                <small style="color:#636e72; font-weight:500;">{tr('app_subtitle')}</small>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+    st.markdown(
+        f'<div style="display:flex; align-items:center; gap:12px; padding: 4px 0;">'
+        f'{render_brand_logo(size=38)}'
+        f'<div><h3 style="margin:0; font-size:1.25rem; color:#2d3436; font-weight:700; line-height:1.2;">{tr("app_title")}</h3>'
+        f'<small style="color:#636e72; font-weight:500;">{tr("app_subtitle")}</small></div>'
+        f'</div>',
+        unsafe_allow_html=True
+    )
 
 with col_nav_right:
     c_user, c_out = st.columns([1.5, 1])
     with c_user:
-        st.markdown(f"""
-            <div class="profile-badge" style="width: 100%;">
-                <div class="profile-avatar">{user_initial}</div>
-                <div class="profile-info">
-                    <span class="profile-name">{current_user_name}</span>
-                    <span class="profile-status"><span style="color:#00b894; font-size:0.85rem;">●</span> {tr('active_profile')}</span>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="profile-badge" style="width: 100%;">'
+            f'<div class="profile-avatar">{user_initial}</div>'
+            f'<div class="profile-info">'
+            f'<span class="profile-name">{current_user_name}</span>'
+            f'<span class="profile-status"><span style="color:#00b894; font-size:0.85rem;">●</span> {tr("active_profile")}</span>'
+            f'</div>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
     with c_out:
         st.write("")
         if st.button(tr('btn_logout'), key="top_header_logout", use_container_width=True):
