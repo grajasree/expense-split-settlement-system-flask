@@ -286,7 +286,8 @@ def init_connection():
             database=DB_NAME,
             charset='utf8mb4',
             cursorclass=pymysql.cursors.DictCursor,
-            autocommit=True
+            autocommit=True,
+            connect_timeout=3
         )
         return 'mysql', conn
     except Exception:
