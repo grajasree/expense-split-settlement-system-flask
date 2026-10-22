@@ -1873,40 +1873,151 @@ if menu == "dashboard":
 
         st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
 
-        # Charts Row 1: Monthly Expenses & Expense Categories
+        # =========================================================================
+        # EXPENSE ANALYTICS SECTION (Interactive Filters, Metrics & Charts)
+        # =========================================================================
+        st.markdown(clean_html("""
+        <div class="white-card" style="margin-bottom:14px; border-top:4px solid #6c5ce7;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div>
+                    <h3 style="font-size:1.2rem; font-weight:800; color:#2d3748; margin:0;">📊 Expense Analytics</h3>
+                    <p style="color:#718096; font-size:0.85rem; margin:2px 0 0 0;">Interactive breakdown of category spending, monthly trends & averages</p>
+                </div>
+            </div>
+        </div>
+        """), unsafe_allow_html=True)
+
+        # Filters: Group & Date Range
+        with st.expander("🔍 Filter Analytics (by Group & Date Range)", expanded=True):
+            col_fg, col_fs, col_fe = st.columns([1.5, 1, 1])
+            with col_fg:
+                sel_an_gid = st.selectbox(
+                    "Filter by Group:",
+                    options=[0] + group_ids,
+                    format_func=lambda gid: "All Groups" if gid == 0 else next(g['name'] for g in user_groups if g['id'] == gid),
+                    key="an_flt_grp"
+                )
+            with col_fs:
+                an_start_d = st.date_input("Start Date:", value=None, key="an_flt_start")
+            with col_fe:
+                an_end_d = st.date_input("End Date:", value=None, key="an_flt_end")
+
+        # Build dynamic query based on actual database records
+        an_where_clauses = [f"group_id IN ({format_p})"]
+        an_params = list(group_ids)
+
+        if sel_an_gid != 0:
+            an_where_clauses = ["group_id = %s"]
+            an_params = [sel_an_gid]
+
+        if an_start_d:
+            an_where_clauses.append("date >= %s")
+            an_params.append(str(an_start_d))
+        if an_end_d:
+            an_where_clauses.append("date <= %s")
+            an_params.append(str(an_end_d))
+
+        an_where_sql = " AND ".join(an_where_clauses)
+
+        # 1. Total spending under filters
+        an_tot_res = run_query(f"SELECT COALESCE(SUM(amount), 0.00) as val FROM expenses WHERE {an_where_sql}", an_params)
+        an_total_spending = float(an_tot_res[0]['val']) if an_tot_res else 0.0
+
+        # 2. Monthly spending under filters
+        month_rows = run_query(f"""
+            SELECT substr(date, 1, 7) as month_label, SUM(amount) as total
+            FROM expenses WHERE {an_where_sql}
+            GROUP BY month_label ORDER BY month_label ASC
+        """, an_params)
+
+        an_active_months = len(month_rows)
+        an_avg_monthly = round(an_total_spending / an_active_months, 2) if an_active_months > 0 else 0.0
+
+        # Analytics Metrics Cards: Total Spending & Average Monthly Spending
+        col_m1, col_m2, col_m3 = st.columns(3)
+        with col_m1:
+            st.markdown(clean_html(f"""
+            <div class="white-card" style="padding:1rem; border-left:4px solid #6c5ce7;">
+                <div style="font-size:0.75rem; color:#718096; font-weight:700; text-transform:uppercase;">Total Spending</div>
+                <div style="font-size:1.45rem; font-weight:800; color:#6c5ce7;">₹{an_total_spending:,.2f}</div>
+                <div style="font-size:0.72rem; color:#64748b;">Filtered expense total</div>
+            </div>
+            """), unsafe_allow_html=True)
+
+        with col_m2:
+            st.markdown(clean_html(f"""
+            <div class="white-card" style="padding:1rem; border-left:4px solid #00b894;">
+                <div style="font-size:0.75rem; color:#718096; font-weight:700; text-transform:uppercase;">Avg Monthly Spending</div>
+                <div style="font-size:1.45rem; font-weight:800; color:#00b894;">₹{an_avg_monthly:,.2f}</div>
+                <div style="font-size:0.72rem; color:#64748b;">Across active months</div>
+            </div>
+            """), unsafe_allow_html=True)
+
+        with col_m3:
+            st.markdown(clean_html(f"""
+            <div class="white-card" style="padding:1rem; border-left:4px solid #0984e3;">
+                <div style="font-size:0.75rem; color:#718096; font-weight:700; text-transform:uppercase;">Active Months</div>
+                <div style="font-size:1.45rem; font-weight:800; color:#0984e3;">{an_active_months}</div>
+                <div style="font-size:0.72rem; color:#64748b;">With recorded expenses</div>
+            </div>
+            """), unsafe_allow_html=True)
+
+        st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+
+        # Charts: Bar Chart (Monthly Expenses) & Pie Chart (Category Breakdown)
         col_c1, col_c2 = st.columns([1.2, 1], gap="medium")
         with col_c1:
-            st.markdown(clean_html("""<div class="white-card"><h3 style="font-size:1.1rem; font-weight:700; margin:0 0 1rem 0; color:#2d3748;">Monthly Expenses</h3>"""), unsafe_allow_html=True)
-            month_rows = run_query(f"""
-                SELECT substr(date, 1, 7) as month_label, SUM(amount) as total
-                FROM expenses WHERE group_id IN ({format_p})
-                GROUP BY month_label ORDER BY month_label ASC
-            """, group_ids)
+            st.markdown(clean_html("""<div class="white-card"><h3 style="font-size:1.1rem; font-weight:700; margin:0 0 1rem 0; color:#2d3748;">📊 Monthly Expenses (Bar Chart)</h3>"""), unsafe_allow_html=True)
             if month_rows:
                 df_m = pd.DataFrame(month_rows)
-                fig_m = px.bar(df_m, x='month_label', y='total', labels={'month_label': 'Month', 'total': 'Spent (₹)'}, color_discrete_sequence=['#6c5ce7'])
-                fig_m.update_layout(paper_bgcolor='#ffffff', plot_bgcolor='#ffffff', font_color='#2d3436', margin=dict(l=10, r=10, t=10, b=10), height=240)
+                fig_m = px.bar(
+                    df_m,
+                    x='month_label',
+                    y='total',
+                    labels={'month_label': 'Month', 'total': 'Expenses (₹)'},
+                    color_discrete_sequence=['#6c5ce7']
+                )
+                fig_m.update_layout(
+                    paper_bgcolor='#ffffff',
+                    plot_bgcolor='#ffffff',
+                    font_color='#2d3436',
+                    margin=dict(l=10, r=10, t=10, b=10),
+                    height=270
+                )
                 fig_m.update_xaxes(showgrid=False)
                 fig_m.update_yaxes(showgrid=True, gridcolor='#f1f2f6')
                 st.plotly_chart(fig_m, use_container_width=True)
             else:
-                st.info("No expense data recorded yet.")
+                st.info("No expense data recorded for this filter criteria.")
             st.markdown("</div>", unsafe_allow_html=True)
 
         with col_c2:
-            st.markdown(clean_html("""<div class="white-card"><h3 style="font-size:1.1rem; font-weight:700; margin:0 0 1rem 0; color:#2d3748;">Expense Categories</h3>"""), unsafe_allow_html=True)
+            st.markdown(clean_html("""<div class="white-card"><h3 style="font-size:1.1rem; font-weight:700; margin:0 0 1rem 0; color:#2d3748;">🥧 Expenses by Category (Pie Chart)</h3>"""), unsafe_allow_html=True)
             cat_rows = run_query(f"""
                 SELECT category, SUM(amount) as total
-                FROM expenses WHERE group_id IN ({format_p})
+                FROM expenses WHERE {an_where_sql}
                 GROUP BY category ORDER BY total DESC
-            """, group_ids)
+            """, an_params)
             if cat_rows:
                 df_cat = pd.DataFrame(cat_rows)
-                fig_c = px.pie(df_cat, names='category', values='total', hole=0.62, color_discrete_sequence=['#6c5ce7', '#00b894', '#e17055', '#fdcb6e', '#0984e3', '#d63031'])
-                fig_c.update_layout(paper_bgcolor='#ffffff', plot_bgcolor='#ffffff', font_color='#2d3436', margin=dict(l=10, r=10, t=10, b=10), height=240, showlegend=True)
+                fig_c = px.pie(
+                    df_cat,
+                    names='category',
+                    values='total',
+                    hole=0.45,
+                    color_discrete_sequence=['#6c5ce7', '#00b894', '#0984e3', '#fdcb6e', '#e17055', '#e84393', '#00cec9', '#636e72']
+                )
+                fig_c.update_layout(
+                    paper_bgcolor='#ffffff',
+                    plot_bgcolor='#ffffff',
+                    font_color='#2d3436',
+                    margin=dict(l=10, r=10, t=10, b=10),
+                    height=270,
+                    showlegend=True
+                )
                 st.plotly_chart(fig_c, use_container_width=True)
             else:
-                st.info("No expense categories recorded yet.")
+                st.info("No expense categories recorded for this filter criteria.")
             st.markdown("</div>", unsafe_allow_html=True)
 
         # Charts Row 2: Group Spending Comparison, Budget Usage & Recent Expenses

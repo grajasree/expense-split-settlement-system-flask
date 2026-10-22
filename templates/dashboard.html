@@ -143,31 +143,131 @@
     </div>
   </div>
 
-  <!-- Charts Row 1: Monthly Trend & Category Breakdown -->
-  <div class="charts-grid">
-    <!-- Chart 1: Monthly Spending -->
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">
-          <i class="fa-solid fa-chart-line" style="color: var(--primary);"></i>
-          <span data-i18n="dash_monthly_trend">Monthly Spending Trend</span>
+  <!-- ========================================================================= -->
+  <!-- EXPENSE ANALYTICS SECTION (Interactive Filters, Metrics & Charts)        -->
+  <!-- ========================================================================= -->
+  <div class="card" style="margin-bottom: 2rem; border-top: 4px solid var(--primary);">
+    <div class="card-header" style="flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
+      <div>
+        <h3 class="card-title" style="font-size: 1.2rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+          <i class="fa-solid fa-chart-pie" style="color: var(--primary);"></i>
+          <span>Expense Analytics</span>
         </h3>
+        <p style="margin: 0.25rem 0 0 0; font-size: 0.88rem; color: var(--text-secondary);">
+          Live breakdown of category distributions, monthly expense trends, and spending averages
+        </p>
       </div>
-      <div class="chart-container">
-        <canvas id="monthlyChart"></canvas>
+
+      <!-- Filter Controls: Group & Date Range -->
+      <div style="display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap;">
+        <!-- Group Filter -->
+        <div>
+          <label for="analyticsGroupFilter" style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.25rem; text-transform: uppercase;">
+            <i class="fa-solid fa-users"></i> Group
+          </label>
+          <select id="analyticsGroupFilter" class="form-control form-control-sm" style="min-width: 160px; height: 38px; border-radius: 8px; font-weight: 600;">
+            <option value="all">All Groups</option>
+            {% for g in user_groups %}
+              <option value="{{ g.id }}">{{ g.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Start Date Filter -->
+        <div>
+          <label for="analyticsStartDate" style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.25rem; text-transform: uppercase;">
+            <i class="fa-solid fa-calendar"></i> Start Date
+          </label>
+          <input type="date" id="analyticsStartDate" class="form-control form-control-sm" style="height: 38px; border-radius: 8px; font-weight: 500;">
+        </div>
+
+        <!-- End Date Filter -->
+        <div>
+          <label for="analyticsEndDate" style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.25rem; text-transform: uppercase;">
+            <i class="fa-solid fa-calendar"></i> End Date
+          </label>
+          <input type="date" id="analyticsEndDate" class="form-control form-control-sm" style="height: 38px; border-radius: 8px; font-weight: 500;">
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 0.4rem;">
+          <button type="button" id="btnApplyAnalyticsFilter" class="btn btn-primary btn-sm" style="height: 38px; border-radius: 8px; padding: 0 1rem;">
+            <i class="fa-solid fa-filter"></i> Apply
+          </button>
+          <button type="button" id="btnResetAnalyticsFilter" class="btn btn-secondary btn-sm" style="height: 38px; border-radius: 8px; padding: 0 0.85rem;" title="Reset filters">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Chart 2: Category Breakdown -->
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">
-          <i class="fa-solid fa-chart-pie" style="color: var(--primary);"></i>
-          <span data-i18n="dash_category_breakdown">Expense Category Breakdown</span>
-        </h3>
+    <!-- Analytics Key Metrics Row: Total Spending & Average Monthly Spending -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; padding: 1.25rem 1.5rem 0.5rem 1.5rem;">
+      <!-- Total Spending Metric -->
+      <div style="background: linear-gradient(135deg, rgba(108, 92, 231, 0.08) 0%, rgba(162, 155, 254, 0.12) 100%); border: 1px solid rgba(108, 92, 231, 0.2); border-radius: 12px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: #6c5ce7; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);">
+          <i class="fa-solid fa-coins"></i>
+        </div>
+        <div>
+          <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Total Spending</div>
+          <div id="analyticsTotalSpending" style="font-size: 1.45rem; font-weight: 800; color: #6c5ce7; line-height: 1.2;">{{ total_expenses|currency }}</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Filtered expense total</div>
+        </div>
       </div>
-      <div class="chart-container">
-        <canvas id="categoryChart"></canvas>
+
+      <!-- Average Monthly Spending Metric -->
+      <div style="background: linear-gradient(135deg, rgba(0, 184, 148, 0.08) 0%, rgba(0, 206, 201, 0.12) 100%); border: 1px solid rgba(0, 184, 148, 0.2); border-radius: 12px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: #00b894; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 4px 12px rgba(0, 184, 148, 0.3);">
+          <i class="fa-solid fa-chart-column"></i>
+        </div>
+        <div>
+          <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Avg Monthly Spending</div>
+          <div id="analyticsAvgSpending" style="font-size: 1.45rem; font-weight: 800; color: #00b894; line-height: 1.2;">₹0.00</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Across active months</div>
+        </div>
+      </div>
+
+      <!-- Active Months Metric -->
+      <div style="background: linear-gradient(135deg, rgba(9, 132, 227, 0.08) 0%, rgba(116, 185, 255, 0.12) 100%); border: 1px solid rgba(9, 132, 227, 0.2); border-radius: 12px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: #0984e3; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 4px 12px rgba(9, 132, 227, 0.3);">
+          <i class="fa-solid fa-calendar-days"></i>
+        </div>
+        <div>
+          <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Active Months</div>
+          <div id="analyticsActiveMonths" style="font-size: 1.45rem; font-weight: 800; color: #0984e3; line-height: 1.2;">0</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">With recorded expenses</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Grid: Category Pie Chart & Monthly Bar Chart -->
+    <div style="padding: 1rem 1.5rem 1.5rem 1.5rem;">
+      <div class="charts-grid" style="margin-bottom: 0;">
+        <!-- Chart 1: Expenses by Category (Pie Chart - Requirement 1) -->
+        <div class="card" style="box-shadow: none; border: 1px solid var(--border-color); margin: 0;">
+          <div class="card-header">
+            <h3 class="card-title" style="font-size: 1.05rem;">
+              <i class="fa-solid fa-chart-pie" style="color: var(--primary);"></i>
+              <span data-i18n="dash_category_breakdown">Expenses by Category (Pie Chart)</span>
+            </h3>
+          </div>
+          <div class="chart-container" style="height: 290px;">
+            <canvas id="categoryChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Monthly Expenses (Bar Chart - Requirement 2) -->
+        <div class="card" style="box-shadow: none; border: 1px solid var(--border-color); margin: 0;">
+          <div class="card-header">
+            <h3 class="card-title" style="font-size: 1.05rem;">
+              <i class="fa-solid fa-chart-column" style="color: var(--primary);"></i>
+              <span data-i18n="dash_monthly_trend">Monthly Expenses (Bar Chart)</span>
+            </h3>
+          </div>
+          <div class="chart-container" style="height: 290px;">
+            <canvas id="monthlyChart"></canvas>
+          </div>
+        </div>
       </div>
     </div>
   </div>

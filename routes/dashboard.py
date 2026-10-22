@@ -1,5 +1,5 @@
 from decimal import Decimal
-from flask import Blueprint, render_template, session, jsonify
+from flask import Blueprint, render_template, session, jsonify, request
 from db import get_db
 from routes.auth_utils import login_required
 from routes.groups import calculate_group_budget_status, simplify_debts
@@ -144,7 +144,8 @@ def index():
         others_owe=others_owe,
         recent_expenses=recent_expenses,
         budget_alerts=budget_alerts,
-        groups_summary=groups_summary
+        groups_summary=groups_summary,
+        user_groups=user_groups
     )
 
 @dashboard_bp.route('/api/chart-data')
@@ -152,48 +153,86 @@ def index():
 def chart_data():
     """
     Returns live dynamic chart data for Chart.js from MySQL database.
+    Supports filters for group_id, start_date, and end_date.
+    Calculates total spending and average monthly spending from actual records.
     """
     user_id = session['user_id']
+    group_filter = request.args.get('group_id', 'all')
+    start_date = request.args.get('start_date', '').strip()
+    end_date = request.args.get('end_date', '').strip()
+
     db = get_db()
 
     with db.cursor() as cursor:
         cursor.execute("SELECT group_id FROM group_members WHERE user_id = %s", (user_id,))
         user_groups = cursor.fetchall()
-        group_ids = [g['group_id'] for g in user_groups]
+        user_group_ids = [g['group_id'] for g in user_groups]
 
-        if not group_ids:
+        if not user_group_ids:
             return jsonify({
                 'monthly': {'labels': [], 'data': []},
                 'categories': {'labels': [], 'data': []},
                 'group_comparison': {'labels': [], 'data': []},
-                'budget_comparison': {'labels': [], 'spent': [], 'budget': []}
+                'budget_comparison': {'labels': [], 'spent': [], 'budget': []},
+                'total_spending': 0.0,
+                'avg_monthly_spending': 0.0,
+                'active_months_count': 0
             })
 
-        format_p = ','.join(['%s'] * len(group_ids))
+        # Filter target group IDs
+        if group_filter != 'all' and group_filter.isdigit():
+            target_gid = int(group_filter)
+            target_group_ids = [target_gid] if target_gid in user_group_ids else user_group_ids
+        else:
+            target_group_ids = user_group_ids
 
-        # 1. Monthly spending (last 6 months)
+        format_p = ','.join(['%s'] * len(target_group_ids))
+        where_clauses = [f"group_id IN ({format_p})"]
+        params = list(target_group_ids)
+
+        if start_date:
+            where_clauses.append("date >= %s")
+            params.append(start_date)
+        if end_date:
+            where_clauses.append("date <= %s")
+            params.append(end_date)
+
+        where_sql = " AND ".join(where_clauses)
+
+        # 1. Total filtered spending
+        cursor.execute(f"SELECT COALESCE(SUM(amount), 0.00) AS total FROM expenses WHERE {where_sql}", params)
+        total_spending = float(cursor.fetchone()['total'])
+
+        # 2. Monthly spending (matching filters)
         cursor.execute(f"""
             SELECT DATE_FORMAT(date, '%%Y-%%m') AS month_label,
                    COALESCE(SUM(amount), 0.00) AS total
             FROM expenses
-            WHERE group_id IN ({format_p})
+            WHERE {where_sql}
             GROUP BY month_label
             ORDER BY month_label ASC
-            LIMIT 6
-        """, group_ids)
+        """, params)
         monthly_rows = cursor.fetchall()
+        monthly_labels = [r['month_label'] for r in monthly_rows]
+        monthly_data = [float(r['total']) for r in monthly_rows]
 
-        # 2. Category spending breakdown
+        # 3. Average monthly spending
+        active_months = len(monthly_rows)
+        avg_monthly_spending = round(total_spending / active_months, 2) if active_months > 0 else 0.0
+
+        # 4. Category breakdown (matching filters)
         cursor.execute(f"""
             SELECT category, COALESCE(SUM(amount), 0.00) AS total
             FROM expenses
-            WHERE group_id IN ({format_p})
+            WHERE {where_sql}
             GROUP BY category
             ORDER BY total DESC
-        """, group_ids)
+        """, params)
         category_rows = cursor.fetchall()
+        category_labels = [r['category'] for r in category_rows]
+        category_data = [float(r['total']) for r in category_rows]
 
-        # 3. Group-wise spending comparison
+        # 5. Group-wise spending comparison (matching filters)
         cursor.execute(f"""
             SELECT g.name, COALESCE(SUM(e.amount), 0.00) AS total
             FROM `groups` g
@@ -201,10 +240,10 @@ def chart_data():
             WHERE g.id IN ({format_p})
             GROUP BY g.id, g.name
             ORDER BY g.name ASC
-        """, group_ids)
+        """, target_group_ids)
         group_rows = cursor.fetchall()
 
-        # 4. Budget vs Spent per group
+        # 6. Budget vs Spent per group
         cursor.execute(f"""
             SELECT g.name,
                    COALESCE(gb.monthly_budget, 0.00) AS budget,
@@ -213,17 +252,17 @@ def chart_data():
             LEFT JOIN group_budgets gb ON g.id = gb.group_id
             WHERE g.id IN ({format_p})
             ORDER BY g.name ASC
-        """, group_ids)
+        """, target_group_ids)
         budget_rows = cursor.fetchall()
 
     return jsonify({
         'monthly': {
-            'labels': [r['month_label'] for r in monthly_rows],
-            'data': [float(r['total']) for r in monthly_rows]
+            'labels': monthly_labels,
+            'data': monthly_data
         },
         'categories': {
-            'labels': [r['category'] for r in category_rows],
-            'data': [float(r['total']) for r in category_rows]
+            'labels': category_labels,
+            'data': category_data
         },
         'group_comparison': {
             'labels': [r['name'] for r in group_rows],
@@ -233,5 +272,8 @@ def chart_data():
             'labels': [r['name'] for r in budget_rows],
             'spent': [float(r['spent']) for r in budget_rows],
             'budget': [float(r['budget']) for r in budget_rows]
-        }
+        },
+        'total_spending': total_spending,
+        'avg_monthly_spending': avg_monthly_spending,
+        'active_months_count': active_months
     })
