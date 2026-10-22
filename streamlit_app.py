@@ -170,7 +170,7 @@ st.markdown("""
     }
 
     /* Primary Purple Buttons */
-    .stButton>button {
+    .stButton>button, div[data-testid="stFormSubmitButton"]>button {
         background: linear-gradient(135deg, #6c5ce7 0%, #8e44ad 100%) !important;
         color: #ffffff !important;
         border: none !important;
@@ -180,7 +180,11 @@ st.markdown("""
         transition: all 0.2s ease !important;
         box-shadow: 0 4px 12px rgba(108, 92, 231, 0.25) !important;
     }
-    .stButton>button:hover {
+    .stButton>button p, .stButton>button span, div[data-testid="stFormSubmitButton"]>button p, div[data-testid="stFormSubmitButton"]>button span {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+    .stButton>button:hover, div[data-testid="stFormSubmitButton"]>button:hover {
         opacity: 0.92 !important;
         transform: translateY(-1px) !important;
         box-shadow: 0 6px 16px rgba(108, 92, 231, 0.35) !important;
@@ -1763,7 +1767,7 @@ st.markdown("<div style='height:1px; background:#edf2f7; margin: 0.5rem 0 1.5rem
 
 # Fetch current user groups
 user_groups = run_query("""
-    SELECT g.id, g.name, g.description,
+    SELECT g.id, g.name, g.description, g.created_by,
            COALESCE(gb.monthly_budget, 0.00) AS monthly_budget,
            COALESCE((SELECT SUM(amount) FROM expenses WHERE group_id = g.id), 0.00) AS total_spent
     FROM `groups` g
@@ -2019,12 +2023,21 @@ elif menu == "groups":
 
     st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
 
+    all_reg_users = run_query("SELECT id, name, email FROM users WHERE id != %s ORDER BY name ASC", (current_user_id,))
     with st.expander("➕ Create New Group", expanded=open_create_grp):
         with st.form("create_group_form"):
             new_grp_name = st.text_input(tr('group_name_label'), placeholder="e.g. Goa Trip, Hostel Expenses, Family")
             new_grp_desc = st.text_input(tr('group_desc_label'), placeholder="e.g. Vacation with friends, monthly bills")
             new_grp_budget = st.number_input(tr('group_budget_label'), min_value=0.0, step=500.0, value=10000.0)
-            new_grp_members = st.text_area(tr('initial_members_label'), placeholder="Enter names or registered emails separated by commas")
+            
+            sel_registered = st.multiselect(
+                "Select registered users to add:",
+                options=[u['id'] for u in all_reg_users],
+                format_func=lambda uid: next(f"👤 {u['name']} ({u['email']})" for u in all_reg_users if u['id'] == uid),
+                key="ms_new_grp_users"
+            ) if all_reg_users else []
+
+            new_grp_members = st.text_input("Or enter other member emails / names (separated by commas):", placeholder="e.g. friend1@gmail.com, Priya")
             submit_create = st.form_submit_button(tr('btn_create_group'), use_container_width=True)
 
             if submit_create:
@@ -2036,6 +2049,12 @@ elif menu == "groups":
                     execute_cmd("INSERT INTO group_members (group_id, user_id) VALUES (%s, %s)", (new_gid, current_user_id))
                     if new_grp_budget > 0:
                         execute_cmd("INSERT INTO group_budgets (group_id, monthly_budget) VALUES (%s, %s)", (new_gid, new_grp_budget))
+                    
+                    # Add selected registered users
+                    for r_uid in sel_registered:
+                        execute_cmd("INSERT IGNORE INTO group_members (group_id, user_id) VALUES (%s, %s)", (new_gid, r_uid))
+                    
+                    # Add extra members by text
                     if new_grp_members.strip():
                         for raw_item in new_grp_members.split(','):
                             item = raw_item.strip()
@@ -2105,43 +2124,92 @@ elif menu == "groups":
                     else:
                         st.caption("No budget limit configured")
 
-                    with st.expander(f"⚙️ Manage '{grp['name']}'"):
-                        m_list = run_query("SELECT u.id, u.name, u.email FROM group_members gm JOIN users u ON gm.user_id = u.id WHERE gm.group_id = %s", (gid,))
-                        st.markdown("**Members in group:**")
+                    is_manage_open = st.session_state.get(f"manage_exp_{gid}", False)
+                    with st.expander(f"⚙️ Manage '{grp['name']}'", expanded=is_manage_open):
+                        if is_manage_open:
+                            st.session_state[f"manage_exp_{gid}"] = False
+
+                        m_list = run_query("SELECT u.id, u.name, u.email FROM group_members gm JOIN users u ON gm.user_id = u.id WHERE gm.group_id = %s ORDER BY u.name ASC", (gid,))
+                        existing_ids = {m['id'] for m in m_list}
+
+                        st.markdown("<p style='font-weight:700; color:#2d3748; margin-bottom:8px;'>Members in group:</p>", unsafe_allow_html=True)
+                        chip_html = "<div style='display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;'>"
                         for m in m_list:
-                            st.write(f"- {m['name']} ({m['email']})")
-                        
-                        col_add_m, col_del_g = st.columns(2)
-                        with col_add_m:
-                            new_m = st.text_input(f"Add Member Name/Email:", key=f"add_m_in_{gid}")
-                            if st.button("➕ Add Member", key=f"btn_add_m_{gid}", use_container_width=True):
-                                if new_m.strip():
-                                    clean_m = new_m.strip().lower()
-                                    user_matches = run_query("SELECT id FROM users WHERE LOWER(TRIM(email)) = %s OR LOWER(TRIM(name)) = %s", (clean_m, clean_m))
-                                    if user_matches:
-                                        t_uid = user_matches[0]['id']
+                            is_creator = (m['id'] == grp.get('created_by'))
+                            badge_style = "background:#6c5ce7; color:#fff;" if is_creator else "background:#edf2f7; color:#4a5568;"
+                            badge_text = "👑 Creator" if is_creator else "Member"
+                            chip_html += f"<div style='display:inline-flex; align-items:center; background:#ffffff; border:1px solid #e2e8f0; border-radius:20px; padding:5px 12px; font-size:0.85rem; font-weight:600; color:#2d3748; box-shadow:0 1px 3px rgba(0,0,0,0.05);'>👤 {m['name']} <span style='font-size:0.75rem; color:#718096; margin-left:6px;'>({m['email']})</span><span style='{badge_style} border-radius:10px; font-size:0.65rem; padding:2px 7px; margin-left:8px; font-weight:700;'>{badge_text}</span></div>"
+                        chip_html += "</div>"
+                        st.markdown(chip_html, unsafe_allow_html=True)
+
+                        all_users = run_query("SELECT id, name, email FROM users ORDER BY name ASC")
+                        avail_users = [u for u in all_users if u['id'] not in existing_ids]
+
+                        st.markdown("<div style='height:1px; background:#edf2f7; margin:10px 0;'></div>", unsafe_allow_html=True)
+                        st.markdown("<p style='font-weight:700; color:#2d3748; font-size:0.95rem; margin-bottom:6px;'>➕ Add Member to Group</p>", unsafe_allow_html=True)
+
+                        with st.form(f"form_add_member_{gid}", clear_on_submit=True):
+                            if avail_users:
+                                sel_user_id = st.selectbox(
+                                    "Choose from registered users:",
+                                    options=[0] + [u['id'] for u in avail_users],
+                                    format_func=lambda uid: "-- Select a registered user --" if uid == 0 else next(f"👤 {u['name']} ({u['email']})" for u in avail_users if u['id'] == uid),
+                                    key=f"sel_reg_{gid}"
+                                )
+                            else:
+                                sel_user_id = 0
+                                st.info("All registered users are already members of this group!")
+
+                            new_m_input = st.text_input("Or enter a new name or email:", placeholder="e.g. Bhoomika or friend@gmail.com", key=f"text_m_{gid}")
+
+                            btn_add = st.form_submit_button("➕ Add Member", type="primary", use_container_width=True)
+                            if btn_add:
+                                target_uid = None
+                                target_name = ""
+
+                                if sel_user_id and sel_user_id != 0:
+                                    target_uid = sel_user_id
+                                    target_name = next((u['name'] for u in avail_users if u['id'] == sel_user_id), "Member")
+                                elif new_m_input and new_m_input.strip():
+                                    clean_m = new_m_input.strip().lower()
+                                    matches = run_query("SELECT id, name FROM users WHERE LOWER(TRIM(email)) = %s OR LOWER(TRIM(name)) = %s", (clean_m, clean_m))
+                                    if matches:
+                                        target_uid = matches[0]['id']
+                                        target_name = matches[0]['name']
                                     else:
                                         pwd_hash = make_password_hash("123456")
-                                        if '@' in new_m:
-                                            t_email = new_m.strip().lower()
-                                            t_name = new_m.strip().split('@')[0].replace('.', ' ').strip().title()
+                                        if '@' in new_m_input:
+                                            t_email = new_m_input.strip().lower()
+                                            t_name = new_m_input.strip().split('@')[0].replace('.', ' ').strip().title()
                                         else:
-                                            t_name = new_m.strip()
-                                            t_email = f"{re.sub(r'[^a-zA-Z0-9]', '', new_m.strip().lower())}@splitsettle.app"
-                                        
-                                        chk_exist = run_query("SELECT id FROM users WHERE LOWER(TRIM(email)) = %s", (t_email.lower(),))
-                                        if chk_exist:
-                                            t_uid = chk_exist[0]['id']
-                                        else:
-                                            t_uid = execute_cmd("INSERT INTO users (name, email, password_hash) VALUES (%s, %s, %s)", (t_name, t_email, pwd_hash))
-                                    execute_cmd("INSERT IGNORE INTO group_members (group_id, user_id) VALUES (%s, %s)", (gid, t_uid))
-                                    heal_user_accounts()
-                                    st.success(f"Added member to {grp['name']}!")
-                                    st.rerun()
+                                            t_name = new_m_input.strip()
+                                            t_email = f"{re.sub(r'[^a-zA-Z0-9]', '', new_m_input.strip().lower())}@splitsettle.app"
 
-                        with col_del_g:
-                            st.write("")
-                            if st.button("🗑️ Delete Group", key=f"btn_del_grp_{gid}", use_container_width=True):
+                                        chk_exist = run_query("SELECT id, name FROM users WHERE LOWER(TRIM(email)) = %s", (t_email.lower(),))
+                                        if chk_exist:
+                                            target_uid = chk_exist[0]['id']
+                                            target_name = chk_exist[0]['name']
+                                        else:
+                                            target_uid = execute_cmd("INSERT INTO users (name, email, password_hash) VALUES (%s, %s, %s)", (t_name, t_email, pwd_hash))
+                                            target_name = t_name
+
+                                if target_uid:
+                                    if target_uid in existing_ids:
+                                        st.warning(f"⚠️ {target_name} is already in this group.")
+                                    else:
+                                        execute_cmd("INSERT IGNORE INTO group_members (group_id, user_id) VALUES (%s, %s)", (gid, target_uid))
+                                        heal_user_accounts()
+                                        st.session_state[f"manage_exp_{gid}"] = True
+                                        st.success(f"🎉 Successfully added {target_name} to {grp['name']}!")
+                                        st.rerun()
+                                else:
+                                    st.warning("⚠️ Please select a user from the dropdown or enter an email/name.")
+
+                        st.markdown("<div style='height:1px; background:#edf2f7; margin:14px 0 10px 0;'></div>", unsafe_allow_html=True)
+                        with st.expander("⚠️ Danger Zone (Delete Group)"):
+                            st.caption("Permanently delete this group and all its expenses. This action cannot be undone.")
+                            confirm_del = st.checkbox("Confirm group deletion", key=f"chk_del_{gid}")
+                            if st.button("🗑️ Delete Entire Group", key=f"btn_del_grp_{gid}", type="secondary", disabled=not confirm_del, use_container_width=True):
                                 execute_cmd("DELETE FROM expense_splits WHERE expense_id IN (SELECT id FROM expenses WHERE group_id = %s)", (gid,))
                                 execute_cmd("DELETE FROM expenses WHERE group_id = %s", (gid,))
                                 execute_cmd("DELETE FROM group_members WHERE group_id = %s", (gid,))
