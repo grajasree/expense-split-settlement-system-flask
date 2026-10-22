@@ -284,6 +284,11 @@ def setup_sqlite_schema(conn):
             joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     """)
+    try:
+        cur.execute("""DELETE FROM group_members WHERE id NOT IN (SELECT MIN(id) FROM group_members GROUP BY group_id, user_id);""")
+        cur.execute("""CREATE UNIQUE INDEX IF NOT EXISTS idx_group_members_uniq ON group_members(group_id, user_id);""")
+    except Exception:
+        pass
     cur.execute("""
         CREATE TABLE IF NOT EXISTS group_budgets (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -335,6 +340,7 @@ db_type, db_conn = init_connection()
 def run_query(sql, params=None):
     if db_type == 'sqlite':
         sql = sql.replace('`groups`', 'groups_table').replace('groups g', 'groups_table g')
+        sql = re.sub(r'(?i)\bINSERT\s+IGNORE\s+INTO\b', 'INSERT OR IGNORE INTO', sql)
         cur = db_conn.cursor()
         if params:
             cur.execute(sql.replace('%s', '?'), params)
@@ -354,6 +360,7 @@ def run_query(sql, params=None):
 def execute_cmd(sql, params=None):
     if db_type == 'sqlite':
         sql = sql.replace('`groups`', 'groups_table').replace('groups g', 'groups_table g')
+        sql = re.sub(r'(?i)\bINSERT\s+IGNORE\s+INTO\b', 'INSERT OR IGNORE INTO', sql)
         cur = db_conn.cursor()
         if params:
             cur.execute(sql.replace('%s', '?'), params)
@@ -2033,7 +2040,8 @@ elif menu == "groups":
                         for raw_item in new_grp_members.split(','):
                             item = raw_item.strip()
                             if item:
-                                user_matches = run_query("SELECT id FROM users WHERE LOWER(email) = %s OR LOWER(name) = %s", (item.lower(), item.lower()))
+                                clean_item = item.lower()
+                                user_matches = run_query("SELECT id FROM users WHERE LOWER(TRIM(email)) = %s OR LOWER(TRIM(name)) = %s", (clean_item, clean_item))
                                 if user_matches:
                                     t_uid = user_matches[0]['id']
                                 else:
@@ -2044,8 +2052,14 @@ elif menu == "groups":
                                     else:
                                         t_name = item
                                         t_email = f"{re.sub(r'[^a-zA-Z0-9]', '', item.lower())}@splitsettle.app"
-                                    t_uid = execute_cmd("INSERT INTO users (name, email, password_hash) VALUES (%s, %s, %s)", (t_name, t_email, pwd_hash))
+                                    
+                                    chk_exist = run_query("SELECT id FROM users WHERE LOWER(TRIM(email)) = %s", (t_email.lower(),))
+                                    if chk_exist:
+                                        t_uid = chk_exist[0]['id']
+                                    else:
+                                        t_uid = execute_cmd("INSERT INTO users (name, email, password_hash) VALUES (%s, %s, %s)", (t_name, t_email, pwd_hash))
                                 execute_cmd("INSERT IGNORE INTO group_members (group_id, user_id) VALUES (%s, %s)", (new_gid, t_uid))
+                        heal_user_accounts()
                     st.success(f"🎉 Group '{c_name}' created successfully!")
                     st.rerun()
 
@@ -2102,7 +2116,8 @@ elif menu == "groups":
                             new_m = st.text_input(f"Add Member Name/Email:", key=f"add_m_in_{gid}")
                             if st.button("➕ Add Member", key=f"btn_add_m_{gid}", use_container_width=True):
                                 if new_m.strip():
-                                    user_matches = run_query("SELECT id FROM users WHERE LOWER(email) = %s OR LOWER(name) = %s", (new_m.strip().lower(), new_m.strip().lower()))
+                                    clean_m = new_m.strip().lower()
+                                    user_matches = run_query("SELECT id FROM users WHERE LOWER(TRIM(email)) = %s OR LOWER(TRIM(name)) = %s", (clean_m, clean_m))
                                     if user_matches:
                                         t_uid = user_matches[0]['id']
                                     else:
@@ -2113,8 +2128,14 @@ elif menu == "groups":
                                         else:
                                             t_name = new_m.strip()
                                             t_email = f"{re.sub(r'[^a-zA-Z0-9]', '', new_m.strip().lower())}@splitsettle.app"
-                                        t_uid = execute_cmd("INSERT INTO users (name, email, password_hash) VALUES (%s, %s, %s)", (t_name, t_email, pwd_hash))
+                                        
+                                        chk_exist = run_query("SELECT id FROM users WHERE LOWER(TRIM(email)) = %s", (t_email.lower(),))
+                                        if chk_exist:
+                                            t_uid = chk_exist[0]['id']
+                                        else:
+                                            t_uid = execute_cmd("INSERT INTO users (name, email, password_hash) VALUES (%s, %s, %s)", (t_name, t_email, pwd_hash))
                                     execute_cmd("INSERT IGNORE INTO group_members (group_id, user_id) VALUES (%s, %s)", (gid, t_uid))
+                                    heal_user_accounts()
                                     st.success(f"Added member to {grp['name']}!")
                                     st.rerun()
 
