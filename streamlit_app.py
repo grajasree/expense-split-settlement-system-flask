@@ -538,6 +538,47 @@ def heal_user_accounts():
 # Reconcile user accounts automatically
 heal_user_accounts()
 
+def ensure_core_accounts():
+    """
+    Guarantees that Rajasree (rajasree@gmail.com, sree11@gmail.com, rajasree11@gmail.com),
+    Bhoomika (bhoomika@gmail.com), and standard accounts ALWAYS exist with valid passwords,
+    both in MySQL and in SQLite / Streamlit Cloud!
+    """
+    try:
+        core_accounts = [
+            ('Rajasree', 'rajasree@gmail.com', 'sree@11'),
+            ('Rajasree', 'sree11@gmail.com', 'sree@11'),
+            ('Rajasree', 'rajasree11@gmail.com', 'sree@11'),
+            ('Bhoomika', 'bhoomika@gmail.com', '123456'),
+            ('Priya Patel', 'priya@example.com', '123456'),
+            ('Rahul Sharma', 'rahul@example.com', '123456')
+        ]
+        for name, email, pwd in core_accounts:
+            existing = run_query("SELECT id, password_hash FROM users WHERE LOWER(email) = %s OR LOWER(name) = %s", (email.lower(), email.lower()))
+            if not existing:
+                execute_cmd("INSERT INTO users (name, email, password_hash) VALUES (%s, %s, %s)",
+                            (name, email, make_password_hash(pwd)))
+            else:
+                u = existing[0]
+                if u.get('password_hash') in ['scrypt:32768:8:1', 'demo', '123456', None]:
+                    execute_cmd("UPDATE users SET password_hash = %s WHERE id = %s", (make_password_hash(pwd), u['id']))
+
+        # Ensure active group exists
+        grp = run_query("SELECT id FROM `groups` LIMIT 1")
+        if not grp:
+            raj = run_query("SELECT id FROM users WHERE LOWER(email) = %s", ('rajasree@gmail.com',))
+            bho = run_query("SELECT id FROM users WHERE LOWER(email) = %s", ('bhoomika@gmail.com',))
+            if raj and bho:
+                gid = execute_cmd("INSERT INTO `groups` (name, description, created_by) VALUES (%s, %s, %s)",
+                                  ('College Project & Team', 'Academic Major Project expenses & study materials', raj[0]['id']))
+                execute_cmd("INSERT INTO group_members (group_id, user_id, role) VALUES (%s, %s, 'creator')", (gid, raj[0]['id']))
+                execute_cmd("INSERT INTO group_members (group_id, user_id, role) VALUES (%s, %s, 'member')", (gid, bho[0]['id']))
+                execute_cmd("INSERT INTO group_budgets (group_id, monthly_budget) VALUES (%s, %s)", (gid, 15000.00))
+    except Exception:
+        pass
+
+ensure_core_accounts()
+
 # ==============================================================================
 # INTERNATIONALIZATION (I18N) & CREATIVE BRANDING ENGINE
 # ==============================================================================
@@ -1150,10 +1191,15 @@ if not st.session_state['authenticated']:
                     if not cleaned_ident or not login_pwd:
                         st.error("Please provide both identifier and password.")
                     else:
+                        ident_prefix = cleaned_ident.split('@')[0].strip().lower() if '@' in cleaned_ident else cleaned_ident.lower()
                         user_rec = run_query("""
                             SELECT id, name, email, password_hash FROM users
-                            WHERE LOWER(name) = %s OR LOWER(email) = %s
-                        """, (cleaned_ident.lower(), cleaned_ident.lower()))
+                            WHERE LOWER(email) = %s 
+                               OR LOWER(name) = %s
+                               OR LOWER(name) = %s
+                               OR LOWER(email) LIKE %s
+                            ORDER BY CASE WHEN LOWER(email) = %s THEN 1 WHEN email LIKE '%%@gmail.com' THEN 2 ELSE 3 END, id ASC
+                        """, (cleaned_ident.lower(), cleaned_ident.lower(), ident_prefix, f"{ident_prefix}@%", cleaned_ident.lower()))
 
                         if not user_rec:
                             st.session_state['unregistered_attempt'] = {
