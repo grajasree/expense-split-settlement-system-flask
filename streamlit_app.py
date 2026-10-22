@@ -1154,13 +1154,30 @@ def tr(key):
         l_code = 'hi'
     return TRANSLATIONS.get(l_code, {}).get(key, TRANSLATIONS['en'].get(key, key))
 
-def render_brand_logo(size=44, key="logo"):
+def render_brand_logo(size=48, key="logo"):
+    radius = int(size * 0.28)
     return (
-        f'<div style="width:{size}px; height:{size}px; border-radius:12px; '
-        f'background:linear-gradient(135deg, #6c5ce7 0%, #8e44ad 50%, #00b894 100%); '
+        f'<div style="width:{size}px; height:{size}px; border-radius:{radius}px; '
+        f'background:linear-gradient(135deg, #7c4dff 0%, #6c5ce7 40%, #00b894 100%); '
         f'display:inline-flex; align-items:center; justify-content:center; color:#ffffff; '
-        f'font-size:{int(size*0.52)}px; box-shadow:0 4px 12px rgba(108,92,231,0.3); '
-        f'border:1.5px solid rgba(255,255,255,0.6); vertical-align:middle;">⚖️</div>'
+        f'font-size:{int(size*0.50)}px; box-shadow:0 8px 24px rgba(108,92,231,0.38); '
+        f'border:1.5px solid rgba(255,255,255,0.55); vertical-align:middle;">⚖️</div>'
+    )
+
+def render_brand_header(size=64, text_color="#ffffff", sub_color="rgba(255,255,255,0.88)", show_tagline=True):
+    tagline_html = (
+        '<div style="display:inline-block; margin-top:8px; background:rgba(255,255,255,0.16); '
+        'border:1px solid rgba(255,255,255,0.28); color:#ffffff; font-size:0.82rem; font-weight:600; '
+        'padding:3px 14px; border-radius:14px; letter-spacing:0.3px;">Split Smarter, Stay Together</div>'
+        if show_tagline else ''
+    )
+    return (
+        f'<div style="text-align:center; margin-bottom:1.25rem;">'
+        f'{render_brand_logo(size=size)}'
+        f'<h1 style="color:{text_color}; font-size:1.85rem; font-weight:800; margin:10px 0 2px 0; letter-spacing:-0.5px;">SplitSettlement</h1>'
+        f'<p style="color:{sub_color}; font-size:0.95rem; font-weight:500; margin:0;">Expense Split & Settlement System</p>'
+        f'{tagline_html}'
+        f'</div>'
     )
 
 render_logo = render_brand_logo
@@ -1212,11 +1229,102 @@ if 'authenticated' not in st.session_state:
     st.session_state['user_email'] = None
 
 # ==============================================================================
-# SCREEN 1: LOGIN & REGISTRATION PORTAL (When NOT Logged In)
+# SCREEN 1: LOGIN & REGISTRATION PORTAL (Matching Creative Modern Design)
 # ==============================================================================
 if not st.session_state['authenticated']:
-    # Top Bar: Language Dropdown aligned neatly on top right
-    col_empty, col_auth_right = st.columns([2.8, 1.2])
+    # Inject Custom Login Screen Styles
+    st.markdown("""
+    <style>
+        /* Immersive Deep Purple Gradient Viewport */
+        .stApp {
+            background: radial-gradient(circle at 85% 15%, #6f47eb 0%, #5733d6 45%, #4420bf 100%) !important;
+            min-height: 100vh !important;
+        }
+
+        /* Hide Streamlit Header & Sidebar on Login Screen */
+        header[data-testid="stHeader"] {
+            background: transparent !important;
+        }
+        section[data-testid="stSidebar"] {
+            display: none !important;
+        }
+
+        /* Top Bar Language Selector */
+        div[data-testid="stSelectbox"] div[data-baseweb="select"] {
+            background: rgba(255, 255, 255, 0.16) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 14px !important;
+            color: #ffffff !important;
+            backdrop-filter: blur(6px);
+        }
+        div[data-testid="stSelectbox"] div[data-baseweb="select"] * {
+            color: #ffffff !important;
+        }
+
+        /* Floating White Auth Card */
+        .auth-white-card {
+            background: #ffffff !important;
+            border-radius: 22px !important;
+            padding: 2.2rem 2.2rem 1.8rem 2.2rem !important;
+            box-shadow: 0 20px 60px rgba(15, 5, 55, 0.32) !important;
+            color: #2d3436 !important;
+            margin-top: 0.5rem;
+        }
+
+        /* Inputs inside Auth Card */
+        div[data-testid="stTextInput"] input {
+            background-color: #fafbff !important;
+            border: 1.5px solid #e1e8ed !important;
+            border-radius: 10px !important;
+            padding: 0.75rem 1rem !important;
+            font-size: 0.95rem !important;
+            color: #2d3436 !important;
+            transition: all 0.2s ease !important;
+        }
+        div[data-testid="stTextInput"] input:focus {
+            border-color: #5b36e8 !important;
+            background-color: #ffffff !important;
+            box-shadow: 0 0 0 3px rgba(91, 54, 232, 0.15) !important;
+        }
+        div[data-testid="stTextInput"] label {
+            color: #2d3436 !important;
+            font-weight: 600 !important;
+            font-size: 0.88rem !important;
+            margin-bottom: 2px !important;
+        }
+
+        /* Purple Auth Action Submit Buttons */
+        div[data-testid="stFormSubmitButton"] > button {
+            background: linear-gradient(135deg, #6c5ce7 0%, #5031df 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 10px !important;
+            padding: 0.8rem 1.5rem !important;
+            font-size: 1.05rem !important;
+            font-weight: 700 !important;
+            width: 100% !important;
+            box-shadow: 0 8px 22px rgba(91, 54, 232, 0.35) !important;
+            transition: all 0.2s ease !important;
+            margin-top: 0.6rem !important;
+        }
+        div[data-testid="stFormSubmitButton"] > button:hover {
+            background: linear-gradient(135deg, #5b36e8 0%, #431fcf 100%) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 12px 28px rgba(91, 54, 232, 0.45) !important;
+        }
+
+        /* Switch Text and Link Styling */
+        .auth-switch-link {
+            color: #5b36e8 !important;
+            font-weight: 700 !important;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Top Bar: Language Dropdown aligned cleanly on top right
+    col_empty, col_auth_right = st.columns([2.7, 1.3])
     with col_auth_right:
         c_lang_auth = st.session_state.get('interface_language', 'English')
         c_lang_auth_idx = LANGUAGE_OPTIONS.index(c_lang_auth) if c_lang_auth in LANGUAGE_OPTIONS else 0
@@ -1230,34 +1338,161 @@ if not st.session_state['authenticated']:
             st.session_state['interface_language'] = sel_auth_lang
             st.rerun()
 
-    # Hero Banner with Centered Creative Brand Emblem
-    st.markdown(
-        f'<div class="brand-hero" style="text-align:center; padding: 2.2rem 1.5rem; margin-top:0.4rem;">'
-        f'<div style="margin-bottom:0.85rem;">{render_brand_logo(size=56)}</div>'
-        f'<h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">{tr("welcome_hero_title")}</h1>'
-        f'<p style="font-size: 1.05rem; opacity: 0.95; max-width: 650px; margin: 0 auto;">{tr("welcome_hero_desc")}</p>'
-        f'</div>',
-        unsafe_allow_html=True
-    )
+    # Top Brand Header: Centered Squircle Logo & Brand Name (SplitSettlement)
+    st.markdown(clean_html(render_brand_header(size=64, text_color="#ffffff", sub_color="rgba(255,255,255,0.88)", show_tagline=True)), unsafe_allow_html=True)
 
-    # Auth Card with Tabs
-    col_l, col_center, col_r = st.columns([1, 2.4, 1])
-    with col_center:
-        auth_tab1, auth_tab2 = st.tabs([tr('tab_signin'), tr('tab_register')])
+    # 2-Column Responsive Layout: Left Hero with Friends & Coins, Right Floating Card
+    col_hero, col_card = st.columns([1.08, 1.12], gap="large")
 
-        # TAB 1: LOGIN
-        with auth_tab1:
-            st.markdown(f"<p style='color:#636e72; font-size:0.9rem; margin-top:0.5rem;'>{tr('signin_header')}</p>", unsafe_allow_html=True)
-            st.info(tr('signin_invited_tip'))
+    with col_hero:
+        st.markdown(clean_html("""
+        <div style="padding: 1.25rem 0.5rem 0 0.5rem;">
+            <h2 style="color: #ffffff; font-size: 2.35rem; font-weight: 800; line-height: 1.2; margin-bottom: 1.15rem; letter-spacing: -0.5px;">
+                Manage<br>Group Expenses<br>Easily
+            </h2>
+            <p style="color: rgba(255, 255, 255, 0.9); font-size: 1.05rem; line-height: 1.55; max-width: 360px; margin-bottom: 1.5rem;">
+                Split expenses, track balances and stay worry-free with your friends, family or team.
+            </p>
+        </div>
+        """), unsafe_allow_html=True)
+
+        # SVG Vector Illustration: 3 Friends with laptops & floating golden Rupee coins
+        st.markdown(clean_html("""
+        <div style="width:100%; max-width:440px; margin-top:0.5rem;">
+            <svg viewBox="0 0 520 340" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="coinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#ffeaa7"/>
+                  <stop offset="50%" stop-color="#fdcb6e"/>
+                  <stop offset="100%" stop-color="#e17055"/>
+                </linearGradient>
+                <linearGradient id="hillGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#6c5ce7" stop-opacity="0.65"/>
+                  <stop offset="100%" stop-color="#4b38b3" stop-opacity="0.95"/>
+                </linearGradient>
+                <linearGradient id="hillGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#7d5fff" stop-opacity="0.4"/>
+                  <stop offset="100%" stop-color="#5733d1" stop-opacity="0.75"/>
+                </linearGradient>
+                <filter id="coinGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#fdcb6e" flood-opacity="0.45"/>
+                </filter>
+              </defs>
+              <!-- Decorative Hills -->
+              <path d="M-20,270 Q140,200 290,250 T540,230 L540,360 L-20,360 Z" fill="url(#hillGrad2)"/>
+              <path d="M-20,295 Q160,240 340,280 T540,265 L540,360 L-20,360 Z" fill="url(#hillGrad1)"/>
+              
+              <!-- Plants -->
+              <path d="M25,290 Q15,235 48,225 Q42,265 25,290 Z" fill="#00b894" opacity="0.9"/>
+              <path d="M40,290 Q62,245 82,255 Q62,278 40,290 Z" fill="#55efc4" opacity="0.8"/>
+              <path d="M465,275 Q490,225 510,240 Q490,260 465,275 Z" fill="#00b894" opacity="0.9"/>
+
+              <!-- Floating Coin 1 (Top Left) -->
+              <g filter="url(#coinGlow)">
+                <circle cx="80" cy="85" r="26" fill="url(#coinGrad)"/>
+                <circle cx="80" cy="85" r="21" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.7"/>
+                <text x="80" y="94" font-family="'Segoe UI', Roboto, Arial, sans-serif" font-size="24" font-weight="900" fill="#2d3436" text-anchor="middle">₹</text>
+              </g>
+
+              <!-- Floating Coin 2 (Bottom Left) -->
+              <g filter="url(#coinGlow)">
+                <circle cx="65" cy="225" r="20" fill="url(#coinGrad)"/>
+                <circle cx="65" cy="225" r="16" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7"/>
+                <text x="65" y="233" font-family="'Segoe UI', Roboto, Arial, sans-serif" font-size="18" font-weight="900" fill="#2d3436" text-anchor="middle">₹</text>
+              </g>
+
+              <!-- Floating Coin 3 (Right) -->
+              <g filter="url(#coinGlow)">
+                <circle cx="430" cy="115" r="24" fill="url(#coinGrad)"/>
+                <circle cx="430" cy="115" r="19" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.7"/>
+                <text x="430" y="124" font-family="'Segoe UI', Roboto, Arial, sans-serif" font-size="22" font-weight="900" fill="#2d3436" text-anchor="middle">₹</text>
+              </g>
+
+              <!-- Person 1 (Left - Sitting with laptop) -->
+              <g>
+                <path d="M110,185 Q92,192 90,230 Q115,220 120,195 Z" fill="#2d3436"/>
+                <path d="M105,200 Q115,195 130,200 L135,245 L95,245 Z" fill="#6c5ce7"/>
+                <circle cx="116" cy="180" r="13" fill="#ffdfba"/>
+                <path d="M110,215 L140,230 L135,240 Z" fill="#ffdfba"/>
+                <polygon points="128,230 162,225 164,238 130,240" fill="#dfe6e9"/>
+                <polygon points="135,215 158,212 162,226 138,228" fill="#ffffff"/>
+                <path d="M95,245 Q80,270 120,275 Q150,275 140,250 Z" fill="#2d3436"/>
+              </g>
+
+              <!-- Person 2 (Middle - Male with laptop) -->
+              <g>
+                <ellipse cx="215" cy="178" rx="14" ry="11" fill="#2d3436"/>
+                <circle cx="215" cy="186" r="12" fill="#fed330"/>
+                <path d="M198,205 Q215,200 232,205 L236,252 L194,252 Z" fill="#ffffff"/>
+                <path d="M198,210 L185,232 L205,236 Z" fill="#fed330"/>
+                <path d="M232,210 L242,230 L225,236 Z" fill="#fed330"/>
+                <polygon points="190,232 235,232 240,240 185,240" fill="#b2bec3"/>
+                <polygon points="190,232 225,219 228,232 195,234" fill="#ffffff"/>
+                <path d="M194,252 L180,285 L205,285 L215,258 L230,285 L250,285 L236,252 Z" fill="#4834d4"/>
+              </g>
+
+              <!-- Person 3 (Right - Teammate with laptop) -->
+              <g>
+                <ellipse cx="320" cy="188" rx="13" ry="10" fill="#2d3436"/>
+                <circle cx="320" cy="195" r="12" fill="#ffdfba"/>
+                <path d="M304,212 Q320,208 338,212 L342,255 L300,255 Z" fill="#ff7675"/>
+                <polygon points="325,235 360,230 362,242 328,245" fill="#b2bec3"/>
+                <polygon points="332,220 358,216 360,230 335,233" fill="#ffffff"/>
+                <path d="M300,255 Q290,280 330,282 Q355,282 345,255 Z" fill="#1e272e"/>
+              </g>
+            </svg>
+        </div>
+        """), unsafe_allow_html=True)
+
+    with col_card:
+        # Determine current auth mode: login vs register
+        auth_mode = st.session_state.get('auth_mode', 'login')
+
+        st.markdown(clean_html('<div class="auth-white-card">'), unsafe_allow_html=True)
+
+        # Tab Mode Switcher (Clean Top Pills)
+        col_m1, col_m2 = st.columns(2)
+        with col_m1:
+            if st.button("🔑 Login", key="btn_auth_pill_login", type="primary" if auth_mode == "login" else "secondary", use_container_width=True):
+                st.session_state['auth_mode'] = 'login'
+                st.rerun()
+        with col_m2:
+            if st.button("✨ Create Account", key="btn_auth_pill_reg", type="primary" if auth_mode == "register" else "secondary", use_container_width=True):
+                st.session_state['auth_mode'] = 'register'
+                st.rerun()
+
+        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+
+        # ======================================================================
+        # CARD 1: LOGIN (Welcome Back)
+        # ======================================================================
+        if auth_mode == 'login':
+            st.markdown(clean_html("""
+            <div style="text-align: center; margin-bottom: 1.25rem;">
+                <h3 style="color: #2d3436; font-size: 1.6rem; font-weight: 700; margin: 0 0 4px 0;">Welcome Back</h3>
+                <p style="color: #636e72; font-size: 0.92rem; margin: 0;">Login to your account</p>
+            </div>
+            """), unsafe_allow_html=True)
+
             with st.form("login_form"):
-                login_ident = st.text_input(tr('ident_label'), placeholder=tr('ident_placeholder'))
-                login_pwd = st.text_input(tr('pwd_label'), type="password", placeholder=tr('pwd_placeholder'))
-                submit_login = st.form_submit_button(tr('btn_login'))
+                login_ident = st.text_input("Email address", placeholder="Email address", key="login_ident_in")
+                login_pwd = st.text_input("Password", type="password", placeholder="Password", key="login_pwd_in")
+
+                col_rem, col_fog = st.columns([1.1, 1.1])
+                with col_rem:
+                    st.checkbox("Remember me", value=True, key="login_remember_me")
+                with col_fog:
+                    forgot_pwd = st.form_submit_button("Forgot password?", help="Click for password assistance")
+
+                submit_login = st.form_submit_button("Login", use_container_width=True)
+
+                if forgot_pwd:
+                    st.info("💡 **Forgot Password / Account Recovery:** If your account was created by a friend, switch to **'Create Account'** using your email to choose a secure password. If you already have an account, enter your email and password, or reach out to your group admin.")
 
                 if submit_login:
                     cleaned_ident = login_ident.strip()
                     if not cleaned_ident or not login_pwd:
-                        st.error("Please provide both identifier and password.")
+                        st.error("Please enter both your email address and password.")
                     else:
                         ident_prefix = cleaned_ident.split('@')[0].strip().lower() if '@' in cleaned_ident else cleaned_ident.lower()
                         user_rec = run_query("""
@@ -1274,7 +1509,7 @@ if not st.session_state['authenticated']:
                                 'ident': cleaned_ident,
                                 'pwd': login_pwd
                             }
-                            st.error(f"No account found for '{cleaned_ident}'. Click below to create your account in 1 click, or switch to the 'Create New Account' tab.")
+                            st.error(f"No account found for '{cleaned_ident}'. Click below to create your account in 1 click, or switch to Create Account.")
                         else:
                             if 'unregistered_attempt' in st.session_state:
                                 del st.session_state['unregistered_attempt']
@@ -1315,9 +1550,27 @@ if not st.session_state['authenticated']:
                     st.success(f"🎉 Account created successfully! Welcome, {new_name}!")
                     st.rerun()
 
-        # TAB 2: REGISTER
-        with auth_tab2:
-            st.markdown(f"<p style='color:#636e72; font-size:0.9rem; margin-top:0.5rem;'>{tr('reg_header')}</p>", unsafe_allow_html=True)
+            # Switch prompt to Register
+            st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+            col_sw1, col_sw2 = st.columns([1.5, 1])
+            with col_sw1:
+                st.markdown("<p style='text-align:right; color:#636e72; font-size:0.92rem; margin-top:8px;'>Don\'t have an account?</p>", unsafe_allow_html=True)
+            with col_sw2:
+                if st.button("Register", key="switch_to_reg"):
+                    st.session_state['auth_mode'] = 'register'
+                    st.rerun()
+
+        # ======================================================================
+        # CARD 2: REGISTER (Create Account)
+        # ======================================================================
+        else:
+            st.markdown(clean_html("""
+            <div style="text-align: center; margin-bottom: 1.25rem;">
+                <h3 style="color: #2d3436; font-size: 1.6rem; font-weight: 700; margin: 0 0 4px 0;">Create Account</h3>
+                <p style="color: #636e72; font-size: 0.92rem; margin: 0;">Join now and start managing expenses</p>
+            </div>
+            """), unsafe_allow_html=True)
+
             default_reg_email = ""
             default_reg_name = ""
             if st.session_state.get('unregistered_attempt'):
@@ -1329,11 +1582,13 @@ if not st.session_state['authenticated']:
                     default_reg_name = unreg['ident']
 
             with st.form("register_form"):
-                reg_name = st.text_input(tr('fullname_label'), value=default_reg_name, placeholder=tr('fullname_placeholder'))
-                reg_email = st.text_input(tr('email_label'), value=default_reg_email, placeholder=tr('email_placeholder'))
-                reg_pwd = st.text_input(tr('create_pwd_label'), type="password", placeholder="Enter a secure password")
-                reg_confirm = st.text_input(tr('confirm_pwd_label'), type="password", placeholder="Re-enter your password")
-                submit_reg = st.form_submit_button(tr('btn_create_account'))
+                reg_name = st.text_input("Full Name", value=default_reg_name, placeholder="Full Name", key="reg_name_in")
+                reg_email = st.text_input("Email address", value=default_reg_email, placeholder="Email address", key="reg_email_in")
+                reg_pwd = st.text_input("Password", type="password", placeholder="Password", key="reg_pwd_in")
+                reg_confirm = st.text_input("Confirm Password", type="password", placeholder="Confirm Password", key="reg_conf_pwd_in")
+
+                agree_terms = st.checkbox("I agree to the Terms and Conditions", value=True, key="reg_agree_terms")
+                submit_reg = st.form_submit_button("Register", use_container_width=True)
 
                 if submit_reg:
                     c_name = reg_name.strip()
@@ -1347,6 +1602,8 @@ if not st.session_state['authenticated']:
                         st.error("Passwords do not match. Please re-enter.")
                     elif len(reg_pwd) < 4:
                         st.error("Password must be at least 4 characters.")
+                    elif not agree_terms:
+                        st.error("Please agree to the Terms and Conditions to proceed.")
                     else:
                         matches = run_query("""
                             SELECT id, name, email, password_hash FROM users
@@ -1366,7 +1623,6 @@ if not st.session_state['authenticated']:
                         if real_existing:
                             st.warning("An active account with this Name or Email already exists. Please sign in instead.")
                         elif placeholder:
-                            # Claim existing placeholder created when added to a group by a friend
                             claimed_id = placeholder['id']
                             pwd_hash = make_password_hash(reg_pwd)
                             execute_cmd("""
@@ -1394,6 +1650,18 @@ if not st.session_state['authenticated']:
                             st.session_state['user_email'] = c_email
                             st.success(f"🎉 Account created successfully! Welcome, {c_name}!")
                             st.rerun()
+
+            # Switch prompt to Login
+            st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+            col_sw1, col_sw2 = st.columns([1.5, 1])
+            with col_sw1:
+                st.markdown("<p style='text-align:right; color:#636e72; font-size:0.92rem; margin-top:8px;'>Already have an account?</p>", unsafe_allow_html=True)
+            with col_sw2:
+                if st.button("Login", key="switch_to_login"):
+                    st.session_state['auth_mode'] = 'login'
+                    st.rerun()
+
+        st.markdown("</div>", unsafe_allow_html=True)
 
     # Stop execution here until the user logs in
     st.stop()
