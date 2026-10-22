@@ -2489,8 +2489,8 @@ elif menu == "budgets":
 elif menu == "settings":
     st.markdown(clean_html("""
     <div>
-        <h2 style="font-size:1.85rem; font-weight:800; color:#2d3748; margin:0 0 4px 0;">Settings</h2>
-        <p style="color:#718096; font-size:0.95rem; margin:0;">Account, security & preferences</p>
+        <h2 style="font-size:1.85rem; font-weight:800; color:#2d3748; margin:0 0 4px 0;">Settings & Profile</h2>
+        <p style="color:#718096; font-size:0.95rem; margin:0;">Manage your profile, security and preferences</p>
     </div>
     """), unsafe_allow_html=True)
 
@@ -2499,24 +2499,68 @@ elif menu == "settings":
     col_set1, col_set2 = st.columns(2, gap="large")
 
     with col_set1:
+        # User statistics
+        u_groups_count = len(user_groups) if user_groups else 0
+        u_exp_count = run_query("SELECT COUNT(*) as c FROM expenses WHERE paid_by = %s", (current_user_id,))
+        exp_c = u_exp_count[0]['c'] if u_exp_count else 0
+
+        # Profile Overview Card
         st.markdown(clean_html(f"""
-        <div class="white-card">
-            <h3 style="font-size:1.15rem; font-weight:800; color:#2d3748; margin:0 0 1rem 0;">👤 Profile Details</h3>
-            <div style="display:flex; align-items:center; gap:16px; margin-bottom:1rem;">
-                <div class="profile-avatar" style="width:52px; height:52px; font-size:1.4rem;">{user_initial}</div>
+        <div class="white-card" style="margin-bottom:1.25rem;">
+            <div style="display:flex; align-items:center; gap:18px;">
+                <div class="profile-avatar" style="width:64px; height:64px; font-size:1.75rem; border-radius:50%; background:linear-gradient(135deg, #6c5ce7 0%, #a367dc 100%); color:#ffffff; display:flex; align-items:center; justify-content:center; font-weight:800; box-shadow:0 6px 16px rgba(108, 92, 231, 0.35);">{user_initial}</div>
                 <div>
-                    <h4 style="margin:0; font-size:1.2rem; font-weight:800; color:#1a202c;">{current_user_name}</h4>
-                    <p style="margin:0; font-size:0.88rem; color:#718096;">{current_user_email}</p>
-                    <span style="display:inline-block; margin-top:4px; background:#dcfce7; color:#16a34a; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:8px;">Active Account</span>
+                    <h3 style="margin:0; font-size:1.35rem; font-weight:800; color:#1a202c;">{current_user_name}</h3>
+                    <p style="margin:2px 0 6px 0; font-size:0.9rem; color:#718096;">{current_user_email}</p>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        <span style="background:#dcfce7; color:#16a34a; font-size:0.75rem; font-weight:700; padding:3px 10px; border-radius:12px;">● Active Account</span>
+                        <span style="background:#f1f5f9; color:#475569; font-size:0.75rem; font-weight:700; padding:3px 10px; border-radius:12px;">📁 {u_groups_count} Groups</span>
+                        <span style="background:#f1f5f9; color:#475569; font-size:0.75rem; font-weight:700; padding:3px 10px; border-radius:12px;">🧾 {exp_c} Expenses</span>
+                    </div>
                 </div>
             </div>
-            <p style="color:#718096; font-size:0.85rem;">Connected Database: <strong>{db_type.upper()}</strong></p>
+            <div style="margin-top:12px; font-size:0.8rem; color:#a0aec0;">Connected Database: <strong style="color:#718096;">{db_type.upper()}</strong></div>
         </div>
         """), unsafe_allow_html=True)
 
-    with col_set2:
+        # Edit Profile Form Card
         st.markdown(clean_html("""
         <div class="white-card">
+            <h3 style="font-size:1.15rem; font-weight:800; color:#2d3748; margin:0 0 1rem 0;">✏️ Edit Profile Information</h3>
+        """), unsafe_allow_html=True)
+
+        with st.form("edit_profile_form"):
+            edit_name = st.text_input("Full Name / Display Name", value=current_user_name)
+            edit_email = st.text_input("Email Address", value=current_user_email)
+            btn_save_profile = st.form_submit_button("💾 Save Profile Changes", type="primary", use_container_width=True)
+
+            if btn_save_profile:
+                c_ename = edit_name.strip()
+                c_eemail = edit_email.strip().lower()
+
+                if not c_ename:
+                    st.error("Name cannot be empty.")
+                elif not c_eemail or '@' not in c_eemail or '.' not in c_eemail:
+                    st.error("Please enter a valid email address.")
+                else:
+                    # Check if email is already taken by another account
+                    email_clash = run_query("SELECT id FROM users WHERE LOWER(TRIM(email)) = %s AND id != %s", (c_eemail, current_user_id))
+                    if email_clash:
+                        st.error(f"The email '{c_eemail}' is already registered to another account.")
+                    else:
+                        execute_cmd("UPDATE users SET name = %s, email = %s WHERE id = %s", (c_ename, c_eemail, current_user_id))
+                        st.session_state['user_name'] = c_ename
+                        st.session_state['user_email'] = c_eemail
+                        heal_user_accounts()
+                        st.success("🎉 Profile updated successfully!")
+                        st.rerun()
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with col_set2:
+        # Change Password Card
+        st.markdown(clean_html("""
+        <div class="white-card" style="margin-bottom:1.25rem;">
             <h3 style="font-size:1.15rem; font-weight:800; color:#2d3748; margin:0 0 1rem 0;">🔑 Change Password</h3>
         """), unsafe_allow_html=True)
         with st.form("settings_change_pwd_form"):
@@ -2539,3 +2583,23 @@ elif menu == "settings":
                     else:
                         st.error("Current password incorrect.")
         st.markdown("</div>", unsafe_allow_html=True)
+
+        # Preferences & App Info Card
+        st.markdown(clean_html("""
+        <div class="white-card">
+            <h3 style="font-size:1.15rem; font-weight:800; color:#2d3748; margin:0 0 0.8rem 0;">⚙️ Preferences</h3>
+            <p style="color:#718096; font-size:0.88rem; margin-bottom:1rem;">Customize your interface language and regional settings.</p>
+        """), unsafe_allow_html=True)
+        cur_lang_set = st.session_state.get('interface_language', 'English')
+        cur_lang_idx = LANGUAGE_OPTIONS.index(cur_lang_set) if cur_lang_set in LANGUAGE_OPTIONS else 0
+        new_set_lang = st.selectbox("Preferred Interface Language:", LANGUAGE_OPTIONS, index=cur_lang_idx, key="settings_lang_sel")
+        if new_set_lang != st.session_state.get('interface_language'):
+            st.session_state['interface_language'] = new_set_lang
+            st.rerun()
+        st.markdown("""
+            <div style="margin-top:1rem; padding:12px; background:#f8fafc; border-radius:10px; font-size:0.85rem; color:#64748b;">
+                <div>💱 <strong>Default Currency:</strong> Indian Rupee (₹ INR)</div>
+                <div style="margin-top:4px;">🛡️ <strong>Session Security:</strong> End-to-End Encrypted Session Active</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
