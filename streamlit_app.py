@@ -372,6 +372,83 @@ def execute_cmd(sql, params=None):
             return cur.lastrowid
 
 # ==============================================================================
+# BUDGET LIMIT ALERTS ENGINE (High Alert, Low Alert & Safe Thresholds)
+# ==============================================================================
+def get_budget_status(spent, budget):
+    s = float(spent or 0.0)
+    b = float(budget or 0.0)
+    if b <= 0:
+        return {
+            'level': 'NO_BUDGET',
+            'badge': '⚪ No Budget Limit Set',
+            'headline': 'No spending limit set for this group.',
+            'sub': 'Set a monthly spending limit to activate real-time High & Low alerts.',
+            'alert_type': 'info',
+            'pct': 0.0,
+            'color': '#636e72',
+            'bg': '#f8f9fa',
+            'border': '#e9ecef',
+            'icon': 'ℹ️'
+        }
+    pct = (s / b) * 100.0
+    if s > b:
+        over = s - b
+        return {
+            'level': 'OVER_LIMIT',
+            'badge': f'🚨 HIGH ALERT: Over Limit by ₹{over:,.2f}',
+            'headline': f'🚨 CRITICAL HIGH ALERT: Over Budget Limit by ₹{over:,.2f}!',
+            'sub': f'Total spent is ₹{s:,.2f} against the approved limit of ₹{b:,.2f} ({pct:.1f}% used). Please pause unnecessary expenses!',
+            'alert_type': 'error',
+            'pct': pct,
+            'color': '#d63031',
+            'bg': '#ffebee',
+            'border': '#ff7675',
+            'icon': '🚨'
+        }
+    elif pct >= 85.0:
+        rem = b - s
+        return {
+            'level': 'HIGH_ALERT',
+            'badge': f'⚠️ HIGH ALERT: {pct:.1f}% Used',
+            'headline': f'⚠️ HIGH BUDGET LIMIT ALERT: Approaching Spending Cap ({pct:.1f}% used)',
+            'sub': f'Warning: Only ₹{rem:,.2f} remaining out of ₹{b:,.2f}. Budget limit is nearly exhausted!',
+            'alert_type': 'warning',
+            'pct': pct,
+            'color': '#e17055',
+            'bg': '#fff3e0',
+            'border': '#fab1a0',
+            'icon': '⚠️'
+        }
+    elif pct >= 50.0:
+        rem = b - s
+        return {
+            'level': 'MODERATE',
+            'badge': f'🟡 Moderate ({pct:.1f}% Used)',
+            'headline': f'🟡 Moderate Spending: {pct:.1f}% of budget consumed.',
+            'sub': f'Spending is steady. Remaining budget: ₹{rem:,.2f} out of ₹{b:,.2f}.',
+            'alert_type': 'info',
+            'pct': pct,
+            'color': '#b7791f',
+            'bg': '#fffde7',
+            'border': '#ffeaa7',
+            'icon': '🟡'
+        }
+    else:
+        rem = b - s
+        return {
+            'level': 'LOW_SAFE',
+            'badge': f'🟢 LOW ALERT: Safe ({pct:.1f}% Used)',
+            'headline': f'🟢 LOW BUDGET ALERT: Spending is Low & Safe ({pct:.1f}% used)',
+            'sub': f'Healthy budget surplus! Remaining budget limit: ₹{rem:,.2f} out of ₹{b:,.2f}.',
+            'alert_type': 'success',
+            'pct': pct,
+            'color': '#00b894',
+            'bg': '#e8f8f5',
+            'border': '#55efc4',
+            'icon': '🟢'
+        }
+
+# ==============================================================================
 # DEBT SIMPLIFICATION ALGORITHM (Who Owes Whom)
 # ==============================================================================
 def simplify_debts(net_balances, member_dict):
@@ -614,8 +691,8 @@ TRANSLATIONS = {
         'nav_groups': '👥 Groups & Members',
         'nav_expenses': '🧾 Expenses & Splits',
         'nav_balances': '⚖️ Balances (Who Owes Whom)',
-        'nav_budgets': '🐷 Group Budgets',
-        'nav_simulator': '🧪 What-If Simulator',
+        'nav_budgets': '📊 Budgets & Limit Alerts',
+        
         'nav_dashboard': '📊 Dashboard & Analytics',
         'nav_history': '📜 Payment History',
         'step_1': 'Step 1: 👥 Groups & Members',
@@ -702,10 +779,8 @@ TRANSLATIONS = {
         'btn_goto_step1': '👥 Step 1: Manage Groups',
         'btn_goto_step2': '🧾 Step 2: Add More Expenses',
         'btn_goto_step3': '⚖️ Step 3: Check Balances',
-        'budgets_hero_title': 'Group Budgets',
-        'budgets_hero_desc': 'Set spending caps and monitor automated threshold alerts.',
-        'simulator_hero_title': 'What-If Expense Simulator',
-        'simulator_hero_desc': 'Test hypothetical expenses without affecting recorded data.',
+        'budgets_hero_title': 'Group Budgets & Limit Alerts',
+        'budgets_hero_desc': 'Monitor spending limits with real-time High Alert and Low Alert warnings.',
         'dashboard_hero_title': 'Financial Overview',
         'dashboard_hero_desc': 'Track shared expenses, balances, and real-time budget health.',
     },
@@ -735,8 +810,8 @@ TRANSLATIONS = {
         'nav_groups': '👥 ಗುಂಪುಗಳು ಮತ್ತು ಸದಸ್ಯರು',
         'nav_expenses': '🧾 ಖರ್ಚುಗಳು ಮತ್ತು ಹಂಚಿಕೆ',
         'nav_balances': '⚖️ ಬಾಕಿ ಲೆಕ್ಕ (ಯಾರು ಯಾರಿಗೆ ನೀಡಬೇಕು)',
-        'nav_budgets': '🐷 ಗುಂಪು ಬಜೆಟ್‌ಗಳು',
-        'nav_simulator': '🧪 ವಾಟ್-ಇಫ್ ಸಿಮ್ಯುಲೇಟರ್',
+        'nav_budgets': '📊 ಬಜೆಟ್ ಮತ್ತು ಎಚ್ಚರಿಕೆಗಳು',
+        
         'nav_dashboard': '📊 ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ಮತ್ತು ವಿಶ್ಲೇಷಣೆ',
         'nav_history': '📜 ಪಾವತಿ ಇತಿಹಾಸ',
         'step_1': 'ಹಂತ ೧: 👥 ಗುಂಪುಗಳು & ಸದಸ್ಯರು',
@@ -823,10 +898,8 @@ TRANSLATIONS = {
         'btn_goto_step1': '👥 ಹಂತ ೧: ಗುಂಪುಗಳ ನಿರ್ವಹಣೆ',
         'btn_goto_step2': '🧾 ಹಂತ ೨: ಇನ್ನಷ್ಟು ಖರ್ಚು ಸೇರಿಸಿ',
         'btn_goto_step3': '⚖️ ಹಂತ ೩: ಬಾಕಿ ಲೆಕ್ಕ ಪರಿಶೀಲಿಸಿ',
-        'budgets_hero_title': 'ಗುಂಪು ಬಜೆಟ್‌ಗಳು',
+        'budgets_hero_title': 'ಗುಂಪು ಬಜೆಟ್‌ಗಳು ಮತ್ತು ಮಿತಿ ಎಚ್ಚರಿಕೆಗಳು',
         'budgets_hero_desc': 'ಖರ್ಚು ಮಿತಿಗಳನ್ನು ಹೊಂದಿಸಿ ಮತ್ತು ಸ್ವಯಂಚಾಲಿತ ಎಚ್ಚರಿಕೆಗಳನ್ನು ಗಮನಿಸಿ.',
-        'simulator_hero_title': 'ವಾಟ್-ಇಫ್ ಖರ್ಚು ಸಿಮ್ಯುಲೇಟರ್',
-        'simulator_hero_desc': 'ಖರ್ಚು ಮಾಡುವ ಮುನ್ನ ಬಜೆಟ್ ಮೇಲಿನ ಪ್ರಭಾವವನ್ನು ಪರೀಕ್ಷಿಸಿ.',
         'dashboard_hero_title': 'ಹಣಕಾಸು ಅವಲೋಕನ',
         'dashboard_hero_desc': 'ಹಂಚಿದ ಖರ್ಚುಗಳು, ಬಾಕಿಗಳು ಮತ್ತು ನೈಜ-ಸಮಯದ ಬಜೆಟ್ ಆರೋಗ್ಯವನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ.',
     },
@@ -856,8 +929,8 @@ TRANSLATIONS = {
         'nav_groups': '👥 గుంపులు & సభ్యులు',
         'nav_expenses': '🧾 ఖర్చులు & పంపకం',
         'nav_balances': '⚖️ బాకీలు (ఎవరు ఎవరికి ఇవ్వాలి)',
-        'nav_budgets': '🐷 గ్రూప్ బడ్జెట్‌లు',
-        'nav_simulator': '🧪 వాట్-ఇఫ్ సిమ్యులేటర్',
+        'nav_budgets': '📊 బడ్జెట్‌లు & హెచ్చరికలు',
+        
         'nav_dashboard': '📊 డాష్‌బోర్డ్ & విశ్లేషణ',
         'nav_history': '📜 చెల్లింపు చరిత్ర',
         'step_1': 'దశ 1: 👥 గుంపులు & సభ్యులు',
@@ -944,10 +1017,8 @@ TRANSLATIONS = {
         'btn_goto_step1': '👥 దశ 1: గుంపుల నిర్వహణ',
         'btn_goto_step2': '🧾 దశ 2: మరిన్ని ఖర్చులు నమోదు',
         'btn_goto_step3': '⚖️ దశ 3: బాకీల తనిఖీ',
-        'budgets_hero_title': 'గ్రూప్ బడ్జెట్‌లు',
+        'budgets_hero_title': 'గ్రూప్ బడ్జెట్‌లు & పరిమితి హెచ్చరికలు',
         'budgets_hero_desc': 'ఖర్చు పరిమితులను నిర్ణయించి ఆటోమేటిక్ హెచ్చరికలను గమనించండి.',
-        'simulator_hero_title': 'వాట్-ఇఫ్ ఖర్చుల సిమ్యులేటర్',
-        'simulator_hero_desc': 'ఖర్చు పెట్టకముందే బడ్జెట్‌పై ప్రభావాన్ని అంచనా వేయండి.',
         'dashboard_hero_title': 'ఆర్థిక అవలోకనం',
         'dashboard_hero_desc': 'ఖర్చులు, బాకీలు మరియు బడ్జెట్ స్థితిని రియల్ టైమ్‌లో పర్యవేక్షించండి.',
     },
@@ -977,8 +1048,8 @@ TRANSLATIONS = {
         'nav_groups': '👥 समूह और सदस्य',
         'nav_expenses': '🧾 खर्च और विभाजन',
         'nav_balances': '⚖️ बकाया (किसे कितना देना है)',
-        'nav_budgets': '🐷 समूह बजट',
-        'nav_simulator': '🧪 व्हाट-इफ सिम्युलेटर',
+        'nav_budgets': '📊 बजट एवं सीमा अलर्ट',
+        
         'nav_dashboard': '📊 डैशबोर्ड और विश्लेषण',
         'nav_history': '📜 भुगतान इतिहास',
         'step_1': 'चरण 1: 👥 समूह और सदस्य',
@@ -1065,10 +1136,8 @@ TRANSLATIONS = {
         'btn_goto_step1': '👥 चरण 1: समूह प्रबंधन',
         'btn_goto_step2': '🧾 चरण 2: और खर्च जोड़ें',
         'btn_goto_step3': '⚖️ चरण 3: बकाया जांचें',
-        'budgets_hero_title': 'समूह बजट',
+        'budgets_hero_title': 'समूह बजट और सीमा अलर्ट',
         'budgets_hero_desc': 'खर्च सीमाएं निर्धारित करें और स्वचालित अलर्ट देखें।',
-        'simulator_hero_title': 'व्हाट-इफ खर्च सिम्युलेटर',
-        'simulator_hero_desc': 'खर्च करने से पहले बजट पर प्रभाव का परीक्षण करें।',
         'dashboard_hero_title': 'वित्तीय अवलोकन',
         'dashboard_hero_desc': 'साझा खर्च, बकाया राशि और बजट स्वास्थ्य को रियल-टाइम में ट्रैक करें।',
     }
@@ -1096,14 +1165,13 @@ def render_brand_logo(size=44, key="logo"):
 
 render_logo = render_brand_logo
 
-NAV_CANONICAL = ["groups", "expenses", "balances", "budgets", "simulator", "dashboard", "history"]
+NAV_CANONICAL = ["groups", "expenses", "balances", "budgets", "dashboard", "history"]
 
 NAV_LABEL_KEYS = {
     "groups": "nav_groups",
     "expenses": "nav_expenses",
     "balances": "nav_balances",
     "budgets": "nav_budgets",
-    "simulator": "nav_simulator",
     "dashboard": "nav_dashboard",
     "history": "nav_history"
 }
@@ -1120,8 +1188,8 @@ def normalize_nav(page_name):
         return "balances"
     if "budget" in pl:
         return "budgets"
-    if "simulator" in pl or "what-if" in pl:
-        return "simulator"
+    if "simulator" in pl or "what-if" in pl or "alert" in pl:
+        return "budgets"
     if "dash" in pl or "analytics" in pl:
         return "dashboard"
     if "history" in pl or "payment" in pl:
@@ -1670,6 +1738,13 @@ elif menu == "groups":
                     if b > 0:
                         pct = min(s / b, 1.0)
                         st.progress(pct, text=f"Budget Usage: {(s/b)*100:.1f}%")
+                        b_stat = get_budget_status(s, b)
+                        if b_stat['level'] in ['OVER_LIMIT', 'HIGH_ALERT']:
+                            st.warning(b_stat['badge'])
+                        elif b_stat['level'] == 'LOW_SAFE':
+                            st.success(b_stat['badge'])
+                    else:
+                        st.caption("⚪ No budget limit set for this group.")
                     
                     st.markdown("**Group Members:**")
                     members = run_query("SELECT u.id, u.name, gm.role FROM group_members gm JOIN users u ON gm.user_id = u.id WHERE gm.group_id = %s", (gid,))
@@ -1882,6 +1957,29 @@ elif menu == "expenses":
                 else:
                     st.error(f"Custom sum (₹{total_cust:,.2f}) must match total (₹{exp_amt:,.2f}).")
 
+            # Live Budget Limit Alert
+            grp_budget_row = run_query("""
+                SELECT COALESCE(gb.monthly_budget, 0.0) as budget,
+                       COALESCE((SELECT SUM(amount) FROM expenses WHERE group_id = %s), 0.0) as spent
+                FROM `groups` g
+                LEFT JOIN group_budgets gb ON g.id = gb.group_id
+                WHERE g.id = %s
+            """, (chosen_group_id, chosen_group_id))
+
+            if grp_budget_row and float(grp_budget_row[0]['budget']) > 0:
+                g_lim_b = float(grp_budget_row[0]['budget'])
+                g_lim_s = float(grp_budget_row[0]['spent'])
+                proj_spent_val = g_lim_s + float(exp_amt)
+                lim_stat = get_budget_status(proj_spent_val, g_lim_b)
+                if lim_stat['level'] == 'OVER_LIMIT':
+                    st.error(f"🚨 **High Budget Alert**: Recording this ₹{exp_amt:,.2f} expense will push total group spending to **₹{proj_spent_val:,.2f}**, which **EXCEEDS** the monthly budget limit (₹{g_lim_b:,.2f}) by **₹{proj_spent_val - g_lim_b:,.2f}** ({lim_stat['pct']:.1f}% used)!")
+                elif lim_stat['level'] == 'HIGH_ALERT':
+                    st.warning(f"⚠️ **High Budget Alert**: This expense will push group spending to **{lim_stat['pct']:.1f}%** of its budget limit. Only ₹{g_lim_b - proj_spent_val:,.2f} will remain.")
+                elif lim_stat['level'] == 'LOW_SAFE':
+                    st.success(f"🟢 **Low Budget Alert (Safe)**: Spending is healthy and well within limits ({lim_stat['pct']:.1f}% used). Remaining limit: **₹{g_lim_b - proj_spent_val:,.2f}**.")
+                else:
+                    st.info(f"🟡 **Moderate Spending**: Total spending will reach **{lim_stat['pct']:.1f}%** of budget limit. Remaining: **₹{g_lim_b - proj_spent_val:,.2f}**.")
+
             if st.button(tr('btn_save_expense'), type="primary"):
                 if not exp_desc.strip() or not splits_data:
                     st.error("Please fill all required fields.")
@@ -2009,10 +2107,16 @@ elif menu == "balances":
                 navigate_to("history")
 
 # ==============================================================================
-# 5. GROUP BUDGETS
+# 5. GROUP BUDGETS & LIMIT ALERTS (High Alert vs Low Alert)
 # ==============================================================================
 elif menu == "budgets":
-    st.markdown(clean_html(f"""<div class="brand-hero"><h1>{tr('budgets_hero_title')}</h1><p>{tr('budgets_hero_desc')}</p></div>"""), unsafe_allow_html=True)
+    st.markdown(clean_html(f"""
+    <div class="brand-hero">
+        <h1>{tr('budgets_hero_title')}</h1>
+        <p>{tr('budgets_hero_desc')}</p>
+    </div>
+    """), unsafe_allow_html=True)
+
     budgets = run_query("""
         SELECT g.id, g.name, g.description,
                COALESCE(gb.monthly_budget, 0.00) as budget,
@@ -2022,87 +2126,85 @@ elif menu == "budgets":
     """, (current_user_id,))
 
     if not budgets:
-        st.info("No group budgets found. Create a group to set spending targets.")
+        st.info("No group budgets found. Create a group in 'Groups & Members' to start tracking spending limits.")
     else:
+        # High-Level Summary Card
+        tot_b = sum(float(x['budget']) for x in budgets)
+        tot_s = sum(float(x['spent']) for x in budgets)
+        high_alerts = sum(1 for x in budgets if float(x['budget']) > 0 and (float(x['spent']) / float(x['budget']) >= 0.85))
+        safe_groups = sum(1 for x in budgets if float(x['budget']) > 0 and (float(x['spent']) / float(x['budget']) < 0.50))
+
+        st.markdown(clean_html("""<div class="white-card"><h3>🚨 Budget Limit Alert Overview</h3>"""), unsafe_allow_html=True)
+        col_ov1, col_ov2, col_ov3, col_ov4 = st.columns(4)
+        col_ov1.metric("Total Budgets Set", f"₹{tot_b:,.2f}")
+        col_ov2.metric("Total Group Spending", f"₹{tot_s:,.2f}")
+        col_ov3.metric("🔴 High Alert Groups", f"{high_alerts} Groups")
+        col_ov4.metric("🟢 Low/Safe Groups", f"{safe_groups} Groups")
+        st.markdown("</div>", unsafe_allow_html=True)
+
         for b_item in budgets:
-            st.markdown(clean_html(f"""<div class="white-card"><h3 style="color:#2d3436; margin-bottom:0.75rem;">📁 {b_item['name']}</h3>"""), unsafe_allow_html=True)
+            gid = b_item['id']
             b = float(b_item['budget'])
             s = float(b_item['spent'])
-            pct = (s / b * 100) if b > 0 else 0
-            st.write(f"Spent: **₹{s:,.2f}** of **₹{b:,.2f}** ({pct:.1f}%)")
+            stat = get_budget_status(s, b)
+
+            st.markdown(clean_html(f"""
+            <div class="white-card" style="margin-top:1.25rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:0.75rem;">
+                    <h3 style="color:#2d3436; margin:0;">📁 {b_item['name']}</h3>
+                    <span style="background:{stat['bg']}; color:{stat['color']}; border:1.5px solid {stat['border']}; padding:5px 14px; border-radius:16px; font-weight:700; font-size:0.88rem;">
+                        {stat['badge']}
+                    </span>
+                </div>
+            """), unsafe_allow_html=True)
+
+            # Prominent High vs Low Alert Banners
+            if stat['level'] == 'OVER_LIMIT':
+                st.error(f"**{stat['headline']}** - {stat['sub']}")
+            elif stat['level'] == 'HIGH_ALERT':
+                st.warning(f"**{stat['headline']}** - {stat['sub']}")
+            elif stat['level'] == 'LOW_SAFE':
+                st.success(f"**{stat['headline']}** - {stat['sub']}")
+            elif stat['level'] == 'MODERATE':
+                st.info(f"**{stat['headline']}** - {stat['sub']}")
+            else:
+                st.caption(f"{stat['icon']} {stat['headline']} {stat['sub']}")
+
+            m1, m2, m3, m4 = st.columns(4)
+            m1.metric("Monthly Limit", f"₹{b:,.2f}")
+            m2.metric("Current Spent", f"₹{s:,.2f}")
+            m3.metric("Remaining", f"₹{max(0.0, b - s):,.2f}")
+            m4.metric("Budget Usage", f"{stat['pct']:.1f}%")
+
             if b > 0:
-                st.progress(min(s/b, 1.0))
-            new_b = st.number_input(f"Monthly Budget (₹) for {b_item['name']}:", min_value=0.0, step=500.0, value=b, key=f"b_{b_item['id']}")
-            if st.button("Save Budget", key=f"btn_sb_{b_item['id']}"):
-                execute_cmd("""
-                    INSERT INTO group_budgets (group_id, monthly_budget) VALUES (%s, %s)
-                    ON DUPLICATE KEY UPDATE monthly_budget = %s
-                """ if db_type == 'mysql' else """
-                    INSERT OR REPLACE INTO group_budgets (group_id, monthly_budget) VALUES (%s, %s)
-                """, (b_item['id'], new_b, new_b) if db_type == 'mysql' else (b_item['id'], new_b))
-                st.success("Budget updated!")
-                st.rerun()
+                prog_val = min(s / b, 1.0)
+                st.progress(prog_val)
+
+            with st.expander(f"✏️ Set / Update Spending Limit for '{b_item['name']}'"):
+                new_b = st.number_input(f"Monthly Spending Limit (₹):", min_value=0.0, step=500.0, value=b, key=f"b_limit_{gid}")
+                if st.button("Save New Limit", key=f"btn_save_limit_{gid}", type="primary"):
+                    execute_cmd("""
+                        INSERT INTO group_budgets (group_id, monthly_budget) VALUES (%s, %s)
+                        ON DUPLICATE KEY UPDATE monthly_budget = %s
+                    """ if db_type == 'mysql' else """
+                        INSERT OR REPLACE INTO group_budgets (group_id, monthly_budget) VALUES (%s, %s)
+                    """, (gid, new_b, new_b) if db_type == 'mysql' else (gid, new_b))
+                    st.success("Group spending limit updated successfully!")
+                    st.rerun()
+
             st.markdown("</div>", unsafe_allow_html=True)
 
-        col_bud_p, col_bud_n = st.columns(2)
+        st.markdown("<br>", unsafe_allow_html=True)
+        col_bud_p, col_bud_dash, col_bud_hist = st.columns([1, 1.2, 1.2])
         with col_bud_p:
             if st.button("⬅️ Back to Balances", key="bud_back_bal", use_container_width=True):
                 navigate_to("balances")
-        with col_bud_n:
-            if st.button("🧪 Next: What-If Simulator", key="bud_to_sim", type="primary", use_container_width=True):
-                navigate_to("simulator")
-
-# ==============================================================================
-# 6. WHAT-IF SIMULATOR
-# ==============================================================================
-elif menu == "simulator":
-    st.markdown(clean_html(f"""<div class="brand-hero"><h1>{tr('simulator_hero_title')}</h1><p>{tr('simulator_hero_desc')}</p></div>"""), unsafe_allow_html=True)
-    user_groups = run_query("SELECT g.id, g.name FROM `groups` g JOIN group_members gm ON g.id = gm.group_id WHERE gm.user_id = %s", (current_user_id,))
-    if not user_groups:
-        st.info("Please create a group first.")
-    else:
-        g_options = {g['name']: g['id'] for g in user_groups}
-        sim_g_name = st.selectbox("Target Group:", list(g_options.keys()))
-        sim_gid = g_options[sim_g_name]
-
-        g_info = run_query("""
-            SELECT g.name, COALESCE(gb.monthly_budget, 0.00) as budget,
-                   COALESCE((SELECT SUM(amount) FROM expenses WHERE group_id = g.id), 0.00) as spent
-            FROM `groups` g LEFT JOIN group_budgets gb ON g.id = gb.group_id WHERE g.id = %s
-        """, (sim_gid,))[0]
-
-        curr_spent = float(g_info['spent'])
-        budget = float(g_info['budget'])
-
-        sim_desc = st.text_input("Proposed Purchase:", value="Team Celebration Dinner")
-        sim_amt = st.number_input("Proposed Amount (₹):", min_value=1.0, value=3000.0, step=100.0)
-
-        proj_spent = curr_spent + sim_amt
-        curr_pct = (curr_spent / budget * 100) if budget > 0 else 0
-        proj_pct = (proj_spent / budget * 100) if budget > 0 else 0
-
-        st.markdown(clean_html("""<div class="white-card"><h3>Live Impact Projection</h3>"""), unsafe_allow_html=True)
-        m1, m2, m3 = st.columns(3)
-        m1.metric("Group Budget", f"₹{budget:,.2f}")
-        m2.metric("Current Spending", f"₹{curr_spent:,.2f}", f"{curr_pct:.1f}% used")
-        m3.metric("Projected Spending", f"₹{proj_spent:,.2f}", f"+₹{sim_amt:,.2f} ({proj_pct:.1f}%)")
-
-        if budget > 0:
-            if proj_spent > budget:
-                st.error(f"🚨 **Budget Alert**: This proposed expense will exceed the group budget by **₹{proj_spent - budget:,.2f}**!")
-            elif proj_pct >= 90:
-                st.warning(f"⚠️ **High Alert**: This expense will push spending to **{proj_pct:.1f}%** of the budget.")
-            else:
-                st.success(f"✅ Safe: Remaining budget after this expense will be **₹{budget - proj_spent:,.2f}**.")
-        st.markdown("</div>", unsafe_allow_html=True)
-
-        col_sim_p, col_sim_n = st.columns(2)
-        with col_sim_p:
-            if st.button("⬅️ Back to Budgets", key="sim_back_bud", use_container_width=True):
-                navigate_to("budgets")
-        with col_sim_n:
-            if st.button("📊 Finish & Go to Dashboard", key="sim_to_dash", type="primary", use_container_width=True):
+        with col_bud_dash:
+            if st.button("📊 View Full Analytics", key="bud_to_dash", use_container_width=True):
                 navigate_to("dashboard")
+        with col_bud_hist:
+            if st.button("📜 Payment History", key="bud_to_hist", type="primary", use_container_width=True):
+                navigate_to("history")
 
 # ==============================================================================
 # 7. PAYMENT & EXPENSE HISTORY (Shown at the last)
