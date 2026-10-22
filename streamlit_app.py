@@ -51,24 +51,47 @@ st.markdown("""
 <style>
     /* Global App Background */
     .stApp {
-        background-color: #f8f9fa !important;
-        color: #2d3436 !important;
-        font-family: 'Segoe UI', -apple-system, Roboto, sans-serif !important;
+        background-color: #F8FAFC !important;
+        color: #1E1B4B !important;
+        font-family: 'Plus Jakarta Sans', 'Segoe UI', -apple-system, Roboto, sans-serif !important;
     }
     
     /* Header background */
     header[data-testid="stHeader"] {
-        background-color: #f8f9fa !important;
+        background-color: #F8FAFC !important;
     }
 
-    /* Sidebar Styling */
+    /* Sidebar Styling - Midnight Indigo / Clean Premium */
     section[data-testid="stSidebar"] {
-        background-color: #ffffff !important;
-        border-right: 1px solid #e9ecef !important;
-        box-shadow: 2px 0 10px rgba(108, 92, 231, 0.04) !important;
+        background-color: #FFFFFF !important;
+        border-right: 2px solid #BAE6FD !important;
+        box-shadow: 2px 0 16px rgba(67, 56, 202, 0.05) !important;
     }
     section[data-testid="stSidebar"] * {
-        color: #2d3436 !important;
+        color: #1E1B4B !important;
+    }
+
+    /* Active & Hover Sidebar Navigation Items (Midnight Indigo & Ice Blue) */
+    div[data-testid="stRadio"] div[role="radiogroup"] label {
+        border-radius: 10px !important;
+        padding: 7px 12px !important;
+        transition: all 0.2s ease !important;
+        margin-bottom: 3px !important;
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] label:hover {
+        background-color: rgba(186, 230, 253, 0.45) !important;
+        color: #4338CA !important;
+        transform: translateX(2px) !important;
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked),
+    div[data-testid="stRadio"] div[role="radiogroup"] label[data-checked="true"] {
+        background-color: #4338CA !important;
+        box-shadow: 0 4px 14px rgba(67, 56, 202, 0.28) !important;
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) *,
+    div[data-testid="stRadio"] div[role="radiogroup"] label[data-checked="true"] * {
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
     }
     
     /* Top-Right Profile Badge */
@@ -76,29 +99,29 @@ st.markdown("""
         display: inline-flex;
         align-items: center;
         gap: 10px;
-        background: #ffffff;
-        border: 1.5px solid #dcd6fa;
+        background: #FFFFFF;
+        border: 1.5px solid #BAE6FD;
         padding: 5px 14px;
         border-radius: 30px;
-        box-shadow: 0 2px 8px rgba(108, 92, 231, 0.1);
+        box-shadow: 0 2px 8px rgba(67, 56, 202, 0.08);
         transition: all 0.2s ease;
     }
     .profile-badge:hover {
-        border-color: #6c5ce7;
-        box-shadow: 0 4px 12px rgba(108, 92, 231, 0.2);
+        border-color: #4338CA;
+        box-shadow: 0 4px 12px rgba(67, 56, 202, 0.18);
     }
     .profile-avatar {
         width: 34px;
         height: 34px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #6c5ce7 0%, #8e44ad 100%);
-        color: #ffffff;
+        background: linear-gradient(135deg, #4338CA 0%, #312E81 100%);
+        color: #FFFFFF;
         font-weight: 700;
         font-size: 0.95rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 2px 6px rgba(108, 92, 231, 0.3);
+        box-shadow: 0 2px 6px rgba(67, 56, 202, 0.3);
     }
     .profile-info {
         display: flex;
@@ -107,115 +130,130 @@ st.markdown("""
     }
     .profile-name {
         font-weight: 700;
-        color: #2d3436;
+        color: #1E1B4B;
         font-size: 0.92rem;
         line-height: 1.1;
     }
     .profile-status {
         font-size: 0.72rem;
-        color: #00b894;
+        color: #059669;
         font-weight: 600;
         display: flex;
         align-items: center;
         gap: 3px;
     }
 
-    /* Purple Gradient Brand Hero Card */
+    /* Midnight Indigo Brand Hero Card */
     .brand-hero {
-        background: linear-gradient(135deg, #4b38b3 0%, #6c5ce7 50%, #8e44ad 100%);
-        color: #ffffff !important;
+        background: linear-gradient(135deg, #1E1B4B 0%, #312E81 40%, #4338CA 100%);
+        color: #FFFFFF !important;
         padding: 1.75rem 2rem;
         border-radius: 16px;
-        box-shadow: 0 10px 25px rgba(108, 92, 231, 0.22);
+        box-shadow: 0 10px 25px rgba(67, 56, 202, 0.25);
         margin-bottom: 1.75rem;
+        border-top: 3px solid #BAE6FD;
     }
     .brand-hero h1, .brand-hero p, .brand-hero span {
-        color: #ffffff !important;
+        color: #FFFFFF !important;
     }
 
-    /* White Content Cards with Subtle Purple Shadows */
+    /* White Content Cards with Subtle Shadows & Ice Blue Accents */
     .white-card {
-        background: #ffffff;
-        border: 1px solid #e9ecef;
-        border-radius: 14px;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
         padding: 1.5rem;
-        box-shadow: 0 4px 16px rgba(108, 92, 231, 0.06);
+        box-shadow: 0 4px 16px rgba(67, 56, 202, 0.05);
         margin-bottom: 1.5rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .white-card:hover {
+        border-color: #BAE6FD;
+        box-shadow: 0 6px 20px rgba(67, 56, 202, 0.08);
     }
 
     /* Metric Cards */
     div[data-testid="stMetric"] {
-        background-color: #ffffff !important;
-        border: 1px solid #e9ecef !important;
+        background-color: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
         padding: 1.25rem !important;
         border-radius: 14px !important;
-        box-shadow: 0 4px 16px rgba(108, 92, 231, 0.08) !important;
-        border-left: 5px solid #6c5ce7 !important;
-        transition: transform 0.2s ease;
+        box-shadow: 0 4px 16px rgba(67, 56, 202, 0.06) !important;
+        border-left: 5px solid #4338CA !important;
+        transition: transform 0.2s ease, border-color 0.2s ease;
     }
     div[data-testid="stMetric"]:hover {
         transform: translateY(-2px);
+        border-color: #BAE6FD !important;
+        border-left-color: #4338CA !important;
+        box-shadow: 0 6px 20px rgba(67, 56, 202, 0.1) !important;
     }
     div[data-testid="stMetricValue"] {
-        color: #2d3436 !important;
-        font-weight: 700 !important;
+        color: #1E1B4B !important;
+        font-weight: 800 !important;
         font-size: 1.8rem !important;
+        letter-spacing: -0.5px;
     }
     div[data-testid="stMetricLabel"] {
-        color: #636e72 !important;
-        font-weight: 600 !important;
+        color: #475569 !important;
+        font-weight: 700 !important;
         text-transform: uppercase;
         font-size: 0.8rem !important;
         letter-spacing: 0.5px;
     }
 
-    /* Primary Purple Buttons */
+    /* Primary Midnight Indigo Buttons */
     .stButton>button, div[data-testid="stFormSubmitButton"]>button {
-        background: linear-gradient(135deg, #6c5ce7 0%, #8e44ad 100%) !important;
-        color: #ffffff !important;
+        background: linear-gradient(135deg, #4338CA 0%, #312E81 100%) !important;
+        color: #FFFFFF !important;
         border: none !important;
-        border-radius: 8px !important;
-        padding: 0.55rem 1.4rem !important;
-        font-weight: 600 !important;
+        border-radius: 10px !important;
+        padding: 0.6rem 1.4rem !important;
+        font-weight: 700 !important;
         transition: all 0.2s ease !important;
-        box-shadow: 0 4px 12px rgba(108, 92, 231, 0.25) !important;
+        box-shadow: 0 4px 14px rgba(67, 56, 202, 0.28) !important;
     }
     .stButton>button p, .stButton>button span, div[data-testid="stFormSubmitButton"]>button p, div[data-testid="stFormSubmitButton"]>button span {
-        color: #ffffff !important;
+        color: #FFFFFF !important;
         font-weight: 700 !important;
     }
     .stButton>button:hover, div[data-testid="stFormSubmitButton"]>button:hover {
-        opacity: 0.92 !important;
+        background: linear-gradient(135deg, #3730A3 0%, #1E1B4B 100%) !important;
         transform: translateY(-1px) !important;
-        box-shadow: 0 6px 16px rgba(108, 92, 231, 0.35) !important;
+        box-shadow: 0 6px 18px rgba(67, 56, 202, 0.38) !important;
     }
 
     /* Settlement Highlights */
     .settlement-box {
-        background: #ffffff;
-        border: 1px solid #e9ecef;
-        border-left: 5px solid #6c5ce7;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-left: 5px solid #4338CA;
         padding: 1rem 1.25rem;
-        border-radius: 10px;
+        border-radius: 12px;
         margin-bottom: 0.75rem;
-        box-shadow: 0 2px 8px rgba(108, 92, 231, 0.05);
+        box-shadow: 0 2px 8px rgba(67, 56, 202, 0.05);
         display: flex;
         justify-content: space-between;
         align-items: center;
+        transition: border-color 0.2s ease;
+    }
+    .settlement-box:hover {
+        border-color: #BAE6FD;
+        border-left-color: #4338CA;
     }
     
-    /* Member Pill Badges */
+    /* Member Pill Badges (Ice Blue Subtle & Midnight Indigo) */
     .member-pill {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: #f1f0fd;
-        color: #6c5ce7;
-        font-weight: 600;
+        background: #F0F9FF;
+        color: #4338CA;
+        font-weight: 700;
         font-size: 0.85rem;
         padding: 4px 12px;
         border-radius: 20px;
-        border: 1px solid #e0dcfc;
+        border: 1px solid #BAE6FD;
         margin: 4px 4px 4px 0;
     }
 </style>
@@ -1243,7 +1281,7 @@ if not st.session_state['authenticated']:
     <style>
         /* Immersive Deep Purple Gradient Viewport */
         .stApp {
-            background: linear-gradient(135deg, #4f2cdb 0%, #683fea 45%, #7b4df2 100%) !important;
+            background: linear-gradient(135deg, #1E1B4B 0%, #312E81 45%, #4338CA 100%) !important;
             min-height: 100vh !important;
         }
 
@@ -1262,7 +1300,7 @@ if not st.session_state['authenticated']:
             border-radius: 22px !important;
             padding: 2.2rem 2.2rem 1.8rem 2.2rem !important;
             box-shadow: 0 20px 60px rgba(15, 5, 55, 0.35) !important;
-            border: none !important;
+            border-top: 4px solid #BAE6FD !important;
         }
 
         /* Inputs inside Auth Card */
@@ -1276,9 +1314,9 @@ if not st.session_state['authenticated']:
             transition: all 0.2s ease !important;
         }
         div[data-testid="stTextInput"] input:focus {
-            border-color: #5b36e8 !important;
+            border-color: #4338CA !important;
             background-color: #ffffff !important;
-            box-shadow: 0 0 0 3px rgba(91, 54, 232, 0.15) !important;
+            box-shadow: 0 0 0 3px rgba(186, 230, 253, 0.45) !important;
         }
         div[data-testid="stTextInput"] label {
             color: #636e72 !important;
@@ -1289,7 +1327,7 @@ if not st.session_state['authenticated']:
 
         /* Solid Purple Action Button */
         div[data-testid="stFormSubmitButton"] > button {
-            background: linear-gradient(135deg, #6c5ce7 0%, #5031df 100%) !important;
+            background: linear-gradient(135deg, #4338CA 0%, #312E81 100%) !important;
             color: #ffffff !important;
             border: none !important;
             border-radius: 10px !important;
@@ -1297,14 +1335,14 @@ if not st.session_state['authenticated']:
             font-size: 1.05rem !important;
             font-weight: 700 !important;
             width: 100% !important;
-            box-shadow: 0 8px 22px rgba(91, 54, 232, 0.35) !important;
+            box-shadow: 0 8px 22px rgba(67, 56, 202, 0.35) !important;
             transition: all 0.2s ease !important;
             margin-top: 0.6rem !important;
         }
         div[data-testid="stFormSubmitButton"] > button:hover {
-            background: linear-gradient(135deg, #5b36e8 0%, #431fcf 100%) !important;
+            background: linear-gradient(135deg, #3730A3 0%, #1E1B4B 100%) !important;
             transform: translateY(-2px) !important;
-            box-shadow: 0 12px 28px rgba(91, 54, 232, 0.45) !important;
+            box-shadow: 0 12px 28px rgba(67, 56, 202, 0.45) !important;
         }
 
         /* Bottom Switch Button */
@@ -1354,8 +1392,8 @@ if not st.session_state['authenticated']:
                   <stop offset="100%" stop-color="#e17055"/>
                 </linearGradient>
                 <linearGradient id="hillGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#6c5ce7" stop-opacity="0.65"/>
-                  <stop offset="100%" stop-color="#4b38b3" stop-opacity="0.95"/>
+                  <stop offset="0%" stop-color="#4338CA" stop-opacity="0.65"/>
+                  <stop offset="100%" stop-color="#1E1B4B" stop-opacity="0.95"/>
                 </linearGradient>
                 <linearGradient id="hillGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stop-color="#7d5fff" stop-opacity="0.4"/>
@@ -1398,7 +1436,7 @@ if not st.session_state['authenticated']:
               <!-- Person 1 (Left - Sitting with laptop) -->
               <g>
                 <path d="M110,185 Q92,192 90,230 Q115,220 120,195 Z" fill="#2d3436"/>
-                <path d="M105,200 Q115,195 130,200 L135,245 L95,245 Z" fill="#6c5ce7"/>
+                <path d="M105,200 Q115,195 130,200 L135,245 L95,245 Z" fill="#4338CA"/>
                 <circle cx="116" cy="180" r="13" fill="#ffdfba"/>
                 <path d="M110,215 L140,230 L135,240 Z" fill="#ffdfba"/>
                 <polygon points="128,230 162,225 164,238 130,240" fill="#dfe6e9"/>
@@ -1654,7 +1692,7 @@ st.sidebar.markdown(
     f'<div style="text-align: center; margin-bottom: 1.5rem;">'
     f'{render_brand_logo(size=52)}'
     f'<h2 style="font-size: 1.25rem; margin: 0.4rem 0 0 0; color: #2d3436; font-weight:700;">{tr("app_title")}</h2>'
-    f'<small style="color: #6c5ce7; font-weight:600;">{tr("app_subtitle")}</small>'
+    f'<small style="color: #4338CA; font-weight:700;">{tr("app_subtitle")}</small>'
     f'</div>',
     unsafe_allow_html=True
 )
@@ -1877,7 +1915,7 @@ if menu == "dashboard":
         # EXPENSE ANALYTICS SECTION (Interactive Filters, Metrics & Charts)
         # =========================================================================
         st.markdown(clean_html("""
-        <div class="white-card" style="margin-bottom:14px; border-top:4px solid #6c5ce7;">
+        <div class="white-card" style="margin-bottom:14px; border-top:4px solid #4338CA;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                 <div>
                     <h3 style="font-size:1.2rem; font-weight:800; color:#2d3748; margin:0;">📊 Expense Analytics</h3>
@@ -1937,27 +1975,27 @@ if menu == "dashboard":
         col_m1, col_m2, col_m3 = st.columns(3)
         with col_m1:
             st.markdown(clean_html(f"""
-            <div class="white-card" style="padding:1rem; border-left:4px solid #6c5ce7;">
-                <div style="font-size:0.75rem; color:#718096; font-weight:700; text-transform:uppercase;">Total Spending</div>
-                <div style="font-size:1.45rem; font-weight:800; color:#6c5ce7;">₹{an_total_spending:,.2f}</div>
+            <div class="white-card" style="padding:1rem; border-left:4px solid #4338CA; border:1.5px solid #BAE6FD; border-left-width:5px;">
+                <div style="font-size:0.75rem; color:#475569; font-weight:700; text-transform:uppercase;">Total Spending</div>
+                <div style="font-size:1.45rem; font-weight:800; color:#4338CA;">₹{an_total_spending:,.2f}</div>
                 <div style="font-size:0.72rem; color:#64748b;">Filtered expense total</div>
             </div>
             """), unsafe_allow_html=True)
 
         with col_m2:
             st.markdown(clean_html(f"""
-            <div class="white-card" style="padding:1rem; border-left:4px solid #00b894;">
-                <div style="font-size:0.75rem; color:#718096; font-weight:700; text-transform:uppercase;">Avg Monthly Spending</div>
-                <div style="font-size:1.45rem; font-weight:800; color:#00b894;">₹{an_avg_monthly:,.2f}</div>
+            <div class="white-card" style="padding:1rem; border-left:4px solid #0284C7; border:1.5px solid #BAE6FD; border-left-width:5px;">
+                <div style="font-size:0.75rem; color:#475569; font-weight:700; text-transform:uppercase;">Avg Monthly Spending</div>
+                <div style="font-size:1.45rem; font-weight:800; color:#0284C7;">₹{an_avg_monthly:,.2f}</div>
                 <div style="font-size:0.72rem; color:#64748b;">Across active months</div>
             </div>
             """), unsafe_allow_html=True)
 
         with col_m3:
             st.markdown(clean_html(f"""
-            <div class="white-card" style="padding:1rem; border-left:4px solid #0984e3;">
-                <div style="font-size:0.75rem; color:#718096; font-weight:700; text-transform:uppercase;">Active Months</div>
-                <div style="font-size:1.45rem; font-weight:800; color:#0984e3;">{an_active_months}</div>
+            <div class="white-card" style="padding:1rem; border-left:4px solid #059669; border:1.5px solid #BAE6FD; border-left-width:5px;">
+                <div style="font-size:0.75rem; color:#475569; font-weight:700; text-transform:uppercase;">Active Months</div>
+                <div style="font-size:1.45rem; font-weight:800; color:#059669;">{an_active_months}</div>
                 <div style="font-size:0.72rem; color:#64748b;">With recorded expenses</div>
             </div>
             """), unsafe_allow_html=True)
@@ -1975,7 +2013,7 @@ if menu == "dashboard":
                     x='month_label',
                     y='total',
                     labels={'month_label': 'Month', 'total': 'Expenses (₹)'},
-                    color_discrete_sequence=['#6c5ce7']
+                    color_discrete_sequence=['#4338CA']
                 )
                 fig_m.update_layout(
                     paper_bgcolor='#ffffff',
@@ -2005,7 +2043,7 @@ if menu == "dashboard":
                     names='category',
                     values='total',
                     hole=0.45,
-                    color_discrete_sequence=['#6c5ce7', '#00b894', '#0984e3', '#fdcb6e', '#e17055', '#e84393', '#00cec9', '#636e72']
+                    color_discrete_sequence=['#4338CA', '#38BDF8', '#6366F1', '#BAE6FD', '#0284C7', '#818CF8', '#0EA5E9', '#A5B4FC', '#0369A1']
                 )
                 fig_c.update_layout(
                     paper_bgcolor='#ffffff',
@@ -2028,7 +2066,7 @@ if menu == "dashboard":
             grp_spend_data = [{'Group': g['name'], 'Spent': float(g['total_spent'])} for g in user_groups]
             if grp_spend_data:
                 df_g_spend = pd.DataFrame(grp_spend_data)
-                fig_g = px.bar(df_g_spend, x='Group', y='Spent', color_discrete_sequence=['#0984e3'])
+                fig_g = px.bar(df_g_spend, x='Group', y='Spent', color_discrete_sequence=['#4338CA'])
                 fig_g.update_layout(paper_bgcolor='#ffffff', plot_bgcolor='#ffffff', font_color='#2d3436', margin=dict(l=10, r=10, t=10, b=10), height=220)
                 fig_g.update_xaxes(showgrid=False)
                 fig_g.update_yaxes(showgrid=True, gridcolor='#f1f2f6')
@@ -2044,7 +2082,7 @@ if menu == "dashboard":
             # Mockup Circular / Usage Gauge
             st.markdown(clean_html(f"""
             <div style="text-align:center; padding:0.5rem 0;">
-                <div style="display:inline-flex; width:100px; height:100px; border-radius:50%; border:7px solid #6c5ce7; align-items:center; justify-content:center; font-size:1.4rem; font-weight:800; color:#2d3748; margin-bottom:0.5rem;">
+                <div style="display:inline-flex; width:100px; height:100px; border-radius:50%; border:7px solid #4338CA; box-shadow: 0 0 0 3px #BAE6FD; align-items:center; justify-content:center; font-size:1.4rem; font-weight:800; color:#2d3748; margin-bottom:0.5rem;">
                     {b_pct:.0f}%
                 </div>
                 <div style="font-weight:700; font-size:1rem; color:#2d3436;">₹{tot_s:,.2f} of ₹{tot_b:,.2f}</div>
@@ -2198,7 +2236,7 @@ elif menu == "groups":
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:0.9rem; font-weight:600; color:#4a5568; margin-bottom:0.4rem;">
                             <span>👥 {m_count} members</span>
-                            <span style="color:#6c5ce7; font-weight:800;">₹{s:,.2f} spent</span>
+                            <span style="color:#4338CA; font-weight:800;">₹{s:,.2f} spent</span>
                         </div>
                     """), unsafe_allow_html=True)
 
@@ -2219,7 +2257,7 @@ elif menu == "groups":
                         chip_html = "<div style='display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;'>"
                         for m in m_list:
                             is_creator = (m['id'] == grp.get('created_by'))
-                            badge_style = "background:#6c5ce7; color:#fff;" if is_creator else "background:#edf2f7; color:#4a5568;"
+                            badge_style = "background:#4338CA; color:#fff;" if is_creator else "background:#edf2f7; color:#4a5568;"
                             badge_text = "👑 Creator" if is_creator else "Member"
                             chip_html += f"<div style='display:inline-flex; align-items:center; background:#ffffff; border:1px solid #e2e8f0; border-radius:20px; padding:5px 12px; font-size:0.85rem; font-weight:600; color:#2d3748; box-shadow:0 1px 3px rgba(0,0,0,0.05);'>👤 {m['name']} <span style='font-size:0.75rem; color:#718096; margin-left:6px;'>({m['email']})</span><span style='{badge_style} border-radius:10px; font-size:0.65rem; padding:2px 7px; margin-left:8px; font-weight:700;'>{badge_text}</span></div>"
                         chip_html += "</div>"
@@ -2366,7 +2404,7 @@ elif menu == "expenses":
             st.markdown(clean_html("""
             <div class="white-card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                    <h3 style="margin:0; font-size:1.15rem; font-weight:800; color:#6c5ce7;">📋 Split Preview</h3>
+                    <h3 style="margin:0; font-size:1.15rem; font-weight:800; color:#4338CA;">📋 Split Preview</h3>
                 </div>
             """), unsafe_allow_html=True)
 
@@ -2387,7 +2425,7 @@ elif menu == "expenses":
                     st.markdown(clean_html(f"""
                     <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid #f1f2f6;">
                         <span style="font-weight:600; color:#2d3436; font-size:0.92rem;">👤 {m_names[uid]}</span>
-                        <span style="font-weight:700; color:#6c5ce7; font-size:0.95rem;">₹{computed_splits[uid]:,.2f}</span>
+                        <span style="font-weight:700; color:#4338CA; font-size:0.95rem;">₹{computed_splits[uid]:,.2f}</span>
                     </div>
                     """), unsafe_allow_html=True)
 
@@ -2625,7 +2663,7 @@ elif menu == "settings":
         st.markdown(clean_html(f"""
         <div class="white-card" style="margin-bottom:1.25rem;">
             <div style="display:flex; align-items:center; gap:18px;">
-                <div class="profile-avatar" style="width:64px; height:64px; font-size:1.75rem; border-radius:50%; background:linear-gradient(135deg, #6c5ce7 0%, #a367dc 100%); color:#ffffff; display:flex; align-items:center; justify-content:center; font-weight:800; box-shadow:0 6px 16px rgba(108, 92, 231, 0.35);">{user_initial}</div>
+                <div class="profile-avatar" style="width:64px; height:64px; font-size:1.75rem; border-radius:50%; background:linear-gradient(135deg, #4338CA 0%, #312E81 100%); color:#ffffff; display:flex; align-items:center; justify-content:center; font-weight:800; box-shadow:0 6px 16px rgba(67, 56, 202, 0.35);">{user_initial}</div>
                 <div>
                     <h3 style="margin:0; font-size:1.35rem; font-weight:800; color:#1a202c;">{current_user_name}</h3>
                     <p style="margin:2px 0 6px 0; font-size:0.9rem; color:#718096;">{current_user_email}</p>

@@ -1,5 +1,6 @@
 /**
  * Chart.js Integration for Expense Split and Settlement System
+ * Theme: Midnight Indigo (#4338CA) & Ice Blue (#BAE6FD)
  * Fetches dynamic data from /api/chart-data with filter support (Group, Date Range).
  * Calculates Total Spending and Average Monthly Spending dynamically.
  * Adapts to Dark/Light themes seamlessly.
@@ -13,18 +14,22 @@
 
   function getChartThemeColors(isDark) {
     return {
-      textColor: isDark ? '#f1f2f6' : '#2d3436',
-      gridColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
-      cardBg: isDark ? '#181a27' : '#ffffff',
-      purple: '#6c5ce7',
-      purpleLight: 'rgba(108, 92, 231, 0.25)',
-      secondary: '#a29bfe',
-      teal: '#00cec9',
-      green: '#00b894',
-      orange: '#e17055',
-      yellow: '#fdcb6e',
-      pink: '#e84393',
-      blue: '#0984e3'
+      textColor: isDark ? '#F8FAFC' : '#1E1B4B',
+      gridColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(67, 56, 202, 0.06)',
+      cardBg: isDark ? '#151A28' : '#FFFFFF',
+      purple: '#4338CA',
+      purpleHover: '#3730A3',
+      purpleLight: 'rgba(67, 56, 202, 0.18)',
+      secondary: '#BAE6FD',
+      iceBlue: '#BAE6FD',
+      iceBlueDark: '#38BDF8',
+      iceBlueHover: '#7DD3FC',
+      teal: '#0284C7',
+      green: '#059669',
+      orange: '#EA580C',
+      yellow: '#D97706',
+      pink: '#6366F1',
+      blue: '#38BDF8'
     };
   }
 
@@ -92,7 +97,7 @@
       monthsEl.textContent = data.active_months_count || 0;
     }
 
-    // 1. Monthly Expenses Bar Chart (Requirement 2)
+    // 1. Monthly Expenses Bar Chart (Midnight Indigo Theme)
     const monthlyCanvas = document.getElementById('monthlyChart');
     if (monthlyCanvas) {
       if (monthlyChartInstance) monthlyChartInstance.destroy();
@@ -110,8 +115,8 @@
               label: 'Monthly Expenses (₹)',
               data: data.monthly.data,
               backgroundColor: colors.purple,
-              hoverBackgroundColor: '#5642e0',
-              borderRadius: 6,
+              hoverBackgroundColor: colors.purpleHover,
+              borderRadius: 8,
               borderWidth: 0
             }]
           },
@@ -144,7 +149,7 @@
       }
     }
 
-    // 2. Expense Category Breakdown Pie Chart (Requirement 1)
+    // 2. Expense Category Breakdown Pie Chart (Midnight Indigo & Ice Blue Palette)
     const categoryCanvas = document.getElementById('categoryChart');
     if (categoryCanvas) {
       if (categoryChartInstance) categoryChartInstance.destroy();
@@ -155,8 +160,8 @@
       } else {
         removeEmptyNotice(categoryCanvas);
         const palette = [
-          '#6c5ce7', '#00b894', '#0984e3', '#fdcb6e',
-          '#e17055', '#e84393', '#00cec9', '#636e72', '#a29bfe'
+          '#4338CA', '#38BDF8', '#6366F1', '#BAE6FD',
+          '#0284C7', '#818CF8', '#0EA5E9', '#A5B4FC', '#0369A1'
         ];
 
         categoryChartInstance = new Chart(categoryCanvas.getContext('2d'), {
@@ -176,7 +181,7 @@
             plugins: {
               legend: {
                 position: 'right',
-                labels: { color: colors.textColor, boxWidth: 14, font: { size: 11, weight: '600' } }
+                labels: { color: colors.textColor, boxWidth: 14, font: { size: 11, weight: '700' } }
               },
               tooltip: {
                 callbacks: {
@@ -211,8 +216,9 @@
             datasets: [{
               label: 'Total Expenses (₹)',
               data: data.group_comparison.data,
-              backgroundColor: colors.blue,
-              borderRadius: 6
+              backgroundColor: colors.purple,
+              hoverBackgroundColor: colors.purpleHover,
+              borderRadius: 8
             }]
           },
           options: {
@@ -223,7 +229,7 @@
             },
             scales: {
               x: {
-                ticks: { color: colors.textColor },
+                ticks: { color: colors.textColor, font: { weight: '600' } },
                 grid: { display: false }
               },
               y: {
@@ -239,7 +245,7 @@
       }
     }
 
-    // 4. Budget Usage Chart (Group Spending vs Budget)
+    // 4. Budget Usage Chart (Group Spending vs Budget) - Midnight Indigo & Ice Blue Accents
     const budgetCanvas = document.getElementById('budgetChart');
     if (budgetCanvas) {
       if (budgetChartInstance) budgetChartInstance.destroy();
@@ -257,14 +263,17 @@
               {
                 label: 'Spent Amount (₹)',
                 data: data.budget_comparison.spent,
-                backgroundColor: '#e17055',
-                borderRadius: 6
+                backgroundColor: colors.purple,
+                hoverBackgroundColor: colors.purpleHover,
+                borderRadius: 8
               },
               {
                 label: 'Monthly Budget (₹)',
                 data: data.budget_comparison.budget,
-                backgroundColor: '#00b894',
-                borderRadius: 6
+                backgroundColor: colors.secondary,
+                borderColor: colors.iceBlueDark,
+                borderWidth: 1.5,
+                borderRadius: 8
               }
             ]
           },
@@ -274,12 +283,12 @@
             plugins: {
               legend: {
                 position: 'top',
-                labels: { color: colors.textColor }
+                labels: { color: colors.textColor, font: { weight: '600' } }
               }
             },
             scales: {
               x: {
-                ticks: { color: colors.textColor },
+                ticks: { color: colors.textColor, font: { weight: '600' } },
                 grid: { display: false }
               },
               y: {
@@ -305,7 +314,7 @@
       emptyNotice.style.textAlign = 'center';
       emptyNotice.style.padding = '4rem 1rem';
       emptyNotice.style.color = 'var(--text-secondary)';
-      emptyNotice.innerHTML = `<i class="fa-solid fa-chart-pie" style="font-size: 2.5rem; margin-bottom: 0.5rem; opacity: 0.5;"></i><p>${message}</p>`;
+      emptyNotice.innerHTML = `<i class="fa-solid fa-chart-pie" style="font-size: 2.5rem; margin-bottom: 0.5rem; opacity: 0.5; color: var(--primary);"></i><p>${message}</p>`;
       canvas.style.display = 'none';
       parent.appendChild(emptyNotice);
     }
