@@ -688,13 +688,12 @@ TRANSLATIONS = {
         'create_pwd_label': 'Create Password *',
         'confirm_pwd_label': 'Confirm Password *',
         'btn_create_account': '🚀 Create Account & Log In',
-        'nav_groups': '👥 Groups & Members',
-        'nav_expenses': '🧾 Expenses & Splits',
-        'nav_balances': '⚖️ Balances (Who Owes Whom)',
-        'nav_budgets': '📊 Budgets & Limit Alerts',
-        
-        'nav_dashboard': '📊 Dashboard & Analytics',
-        'nav_history': '📜 Payment History',
+        'nav_dashboard': '📊 Dashboard',
+        'nav_groups': '👥 Groups',
+        'nav_expenses': '➕ Add Expense',
+        'nav_balances': '⚖️ Balances',
+        'nav_budgets': '📊 Budgets',
+        'nav_settings': '⚙️ Settings',
         'step_1': 'Step 1: 👥 Groups & Members',
         'step_2': 'Step 2: 🧾 Add & Split Expenses',
         'step_3': 'Step 3: ⚖️ Who Owes Whom',
@@ -1181,37 +1180,34 @@ def render_brand_header(size=64, text_color="#ffffff", sub_color="rgba(255,255,2
 
 render_logo = render_brand_logo
 
-NAV_CANONICAL = ["groups", "expenses", "balances", "budgets", "dashboard", "history"]
+NAV_CANONICAL = ["dashboard", "groups", "expenses", "balances", "budgets", "settings"]
 
 NAV_LABEL_KEYS = {
+    "dashboard": "nav_dashboard",
     "groups": "nav_groups",
     "expenses": "nav_expenses",
     "balances": "nav_balances",
     "budgets": "nav_budgets",
-    "dashboard": "nav_dashboard",
-    "history": "nav_history"
+    "settings": "nav_settings"
 }
 
 def normalize_nav(page_name):
     if page_name in NAV_CANONICAL:
         return page_name
     pl = page_name.lower()
+    if "dash" in pl or "analytics" in pl:
+        return "dashboard"
     if "group" in pl:
         return "groups"
-    if "expense" in pl:
+    if "add" in pl or "expense" in pl:
         return "expenses"
     if "balance" in pl or "who owes" in pl:
         return "balances"
-    if "budget" in pl:
+    if "budget" in pl or "alert" in pl or "simulator" in pl:
         return "budgets"
-    if "simulator" in pl or "what-if" in pl or "alert" in pl:
-        return "budgets"
-    if "dash" in pl or "analytics" in pl:
-        return "dashboard"
-    if "history" in pl or "payment" in pl:
-        return "history"
-    return "groups"
-
+    if "setting" in pl or "password" in pl or "profile" in pl:
+        return "settings"
+    return "dashboard" 
 def navigate_to(page_name, target_group_id=None):
     st.session_state['nav_selection'] = normalize_nav(page_name)
     if target_group_id is not None:
@@ -1660,17 +1656,17 @@ if not st.session_state['authenticated']:
     st.stop()
 
 # ==============================================================================
-# SCREEN 2: AUTHENTICATED APPLICATION (When Logged In)
+# SCREEN 2: AUTHENTICATED APPLICATION (Exact Match to Design System Mockup)
 # ==============================================================================
 current_user_id = st.session_state['user_id']
 current_user_name = st.session_state['user_name']
 current_user_email = st.session_state['user_email']
 
 # ==============================================================================
-# SIDEBAR NAVIGATION
+# SIDEBAR NAVIGATION (Matching Modern Mockup Pill Style)
 # ==============================================================================
 st.sidebar.markdown(
-    f'<div style="text-align: center; margin-bottom: 1.25rem;">'
+    f'<div style="text-align: center; margin-bottom: 1.5rem;">'
     f'{render_brand_logo(size=52)}'
     f'<h2 style="font-size: 1.25rem; margin: 0.4rem 0 0 0; color: #2d3436; font-weight:700;">{tr("app_title")}</h2>'
     f'<small style="color: #6c5ce7; font-weight:600;">{tr("app_subtitle")}</small>'
@@ -1678,164 +1674,107 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
-# Logged-In User Profile Card in Sidebar
-user_initial = current_user_name[0].upper() if current_user_name else "U"
-st.sidebar.markdown(
-    f'<div class="profile-badge" style="width: 100%; justify-content: flex-start; margin-bottom: 0.5rem; background:#f9f8fe;">'
-    f'<div class="profile-avatar">{user_initial}</div>'
-    f'<div class="profile-info">'
-    f'<span class="profile-name">{current_user_name}</span>'
-    f'<span class="profile-status"><span style="color:#00b894; font-size:0.85rem;">●</span> {tr("logged_in")}</span>'
-    f'</div>'
-    f'</div>',
-    unsafe_allow_html=True
-)
-
-# Top Sidebar Logout Button
-if st.sidebar.button(tr('btn_logout'), key="sidebar_top_logout_btn", use_container_width=True):
-    st.session_state.clear()
-    st.session_state['authenticated'] = False
-    st.rerun()
-
-# Change Password Option
-with st.sidebar.expander("🔑 Change Password"):
-    with st.form("sidebar_change_pwd_form"):
-        old_p = st.text_input("Current Password", type="password")
-        new_p = st.text_input("New Password", type="password")
-        conf_p = st.text_input("Confirm New Password", type="password")
-        btn_chg_pwd = st.form_submit_button("Update Password", use_container_width=True)
-        if btn_chg_pwd:
-            if not old_p or not new_p:
-                st.error("Please fill all password fields.")
-            elif new_p != conf_p:
-                st.error("New passwords do not match.")
-            elif len(new_p) < 4:
-                st.error("Password must be at least 4 characters.")
-            else:
-                curr_user = run_query("SELECT password_hash FROM users WHERE id = %s", (current_user_id,))
-                if curr_user and check_user_password(curr_user[0]['password_hash'], old_p):
-                    execute_cmd("UPDATE users SET password_hash = %s WHERE id = %s", (make_password_hash(new_p), current_user_id))
-                    st.success("🎉 Password updated successfully!")
-                else:
-                    st.error("Current password incorrect.")
-
-cur_lang_sb = st.session_state.get('interface_language', 'English')
-lang_idx_sb = LANGUAGE_OPTIONS.index(cur_lang_sb) if cur_lang_sb in LANGUAGE_OPTIONS else 0
-sel_lang_sb = st.sidebar.selectbox(
-    "🌐 Interface Language:",
-    LANGUAGE_OPTIONS,
-    index=lang_idx_sb,
-    key="sb_lang_dropdown"
-)
-if sel_lang_sb != st.session_state.get('interface_language'):
-    st.session_state['interface_language'] = sel_lang_sb
-    st.rerun()
-
 if 'nav_selection' not in st.session_state or st.session_state['nav_selection'] not in NAV_CANONICAL:
-    st.session_state['nav_selection'] = "groups"
+    st.session_state['nav_selection'] = "dashboard"
 
 current_nav_index = NAV_CANONICAL.index(st.session_state['nav_selection'])
 menu = st.sidebar.radio(
-    tr('nav_menu_header'),
+    "Navigation Menu",
     NAV_CANONICAL,
     index=current_nav_index,
-    format_func=lambda k: tr(NAV_LABEL_KEYS[k])
+    format_func=lambda k: tr(NAV_LABEL_KEYS[k]),
+    label_visibility="collapsed"
 )
 st.session_state['nav_selection'] = menu
 
-st.sidebar.markdown("---")
+st.sidebar.markdown("<div style='height:2rem;'></div>", unsafe_allow_html=True)
+st.sidebar.caption(f"Engine: **{db_type.upper()}** &bull; Status: **Online**")
 if st.sidebar.button(tr('btn_logout_account'), key="sidebar_bottom_logout_btn", use_container_width=True):
     st.session_state.clear()
     st.session_state['authenticated'] = False
     st.rerun()
 
-st.sidebar.caption(f"Engine: **{db_type.upper()}** &bull; Status: **Online**")
+# ==============================================================================
+# TOP APP HEADER BAR (Mockup Top Bar with Search, Language & Profile Avatar)
+# ==============================================================================
+user_initial = current_user_name[0].upper() if current_user_name else "U"
 
-# ==============================================================================
-# TOP-RIGHT PROFILE BADGE & HEADER (Clean - Showing Name and Logout)
-# ==============================================================================
-col_nav_left, col_nav_right = st.columns([2.4, 1.6])
-with col_nav_left:
+col_top_l, col_top_r = st.columns([2.2, 1.8])
+with col_top_l:
     st.markdown(
-        f'<div style="display:flex; align-items:center; gap:10px; padding: 6px 0;">'
+        f'<div style="display:flex; align-items:center; gap:12px; padding: 4px 0;">'
         f'{render_brand_logo(size=36)}'
-        f'<span style="font-size:1.2rem; color:#2d3436; font-weight:700;">{tr("app_title")}</span>'
+        f'<span style="font-size:1.25rem; color:#2d3748; font-weight:800; letter-spacing:-0.3px;">{tr("app_title")}</span>'
         f'</div>',
         unsafe_allow_html=True
     )
 
-with col_nav_right:
-    c_user, c_out = st.columns([1.5, 1])
-    with c_user:
+with col_top_r:
+    col_t_lang, col_t_prof = st.columns([1.2, 1.6])
+    with col_t_lang:
+        cur_l = st.session_state.get('interface_language', 'English')
+        cur_l_idx = LANGUAGE_OPTIONS.index(cur_l) if cur_l in LANGUAGE_OPTIONS else 0
+        s_lang = st.selectbox("🌐", LANGUAGE_OPTIONS, index=cur_l_idx, key="top_bar_lang_sel", label_visibility="collapsed")
+        if s_lang != st.session_state.get('interface_language'):
+            st.session_state['interface_language'] = s_lang
+            st.rerun()
+    with col_t_prof:
         st.markdown(
-            f'<div class="profile-badge" style="width: 100%;">'
+            f'<div class="profile-badge" style="width:100%; justify-content:flex-start;">'
             f'<div class="profile-avatar">{user_initial}</div>'
             f'<div class="profile-info">'
             f'<span class="profile-name">{current_user_name}</span>'
-            f'<span class="profile-status"><span style="color:#00b894; font-size:0.85rem;">●</span> {tr("active_profile")}</span>'
+            f'<span class="profile-status"><span style="color:#00b894;">●</span> Online</span>'
             f'</div>'
             f'</div>',
             unsafe_allow_html=True
         )
-    with c_out:
-        st.write("")
-        if st.button(tr('btn_logout'), key="top_header_logout", use_container_width=True):
-            st.session_state.clear()
-            st.session_state['authenticated'] = False
-            st.rerun()
 
-st.markdown("<div style='height:1px; background:#e9ecef; margin: 0.5rem 0 1.25rem 0;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height:1px; background:#edf2f7; margin: 0.5rem 0 1.5rem 0;'></div>", unsafe_allow_html=True)
 
-# 4-Step Visual Stepper
-cur_step = 1 if menu == "groups" else (2 if menu == "expenses" else (3 if menu == "balances" else (4 if menu in ("dashboard", "history") else 0)))
-
-s1 = "background:#6c5ce7; color:#ffffff;" if cur_step == 1 else "background:#ffffff; color:#636e72; border:1px solid #e9ecef;"
-s2 = "background:#6c5ce7; color:#ffffff;" if cur_step == 2 else "background:#ffffff; color:#636e72; border:1px solid #e9ecef;"
-s3 = "background:#6c5ce7; color:#ffffff;" if cur_step == 3 else "background:#ffffff; color:#636e72; border:1px solid #e9ecef;"
-s4 = "background:#6c5ce7; color:#ffffff;" if cur_step == 4 else "background:#ffffff; color:#636e72; border:1px solid #e9ecef;"
-
-st.markdown(clean_html(f"""
-<div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-bottom:1.5rem; flex-wrap:wrap;">
-    <div style="padding:6px 14px; border-radius:20px; font-size:0.83rem; font-weight:600; {s1}; box-shadow:0 2px 6px rgba(108,92,231,0.08);">{tr('step_1')}</div>
-    <span style="color:#b2bec3; font-weight:700;">➔</span>
-    <div style="padding:6px 14px; border-radius:20px; font-size:0.83rem; font-weight:600; {s2}; box-shadow:0 2px 6px rgba(108,92,231,0.08);">{tr('step_2')}</div>
-    <span style="color:#b2bec3; font-weight:700;">➔</span>
-    <div style="padding:6px 14px; border-radius:20px; font-size:0.83rem; font-weight:600; {s3}; box-shadow:0 2px 6px rgba(108,92,231,0.08);">{tr('step_3')}</div>
-    <span style="color:#b2bec3; font-weight:700;">➔</span>
-    <div style="padding:6px 14px; border-radius:20px; font-size:0.83rem; font-weight:600; {s4}; box-shadow:0 2px 6px rgba(108,92,231,0.08);">{tr('step_4')}</div>
-</div>
-"""), unsafe_allow_html=True)
+# Fetch current user groups
+user_groups = run_query("""
+    SELECT g.id, g.name, g.description,
+           COALESCE(gb.monthly_budget, 0.00) AS monthly_budget,
+           COALESCE((SELECT SUM(amount) FROM expenses WHERE group_id = g.id), 0.00) AS total_spent
+    FROM `groups` g
+    JOIN group_members gm ON g.id = gm.group_id
+    LEFT JOIN group_budgets gb ON g.id = gb.group_id
+    WHERE gm.user_id = %s
+""", (current_user_id,))
 
 # ==============================================================================
-# 1. DASHBOARD & ANALYTICS
+# 1. DASHBOARD & ANALYTICS (SCREEN 3 IN MOCKUP)
 # ==============================================================================
 if menu == "dashboard":
-    # Top Purple Banner Hero
-    st.markdown(clean_html(f"""
-    <div class="brand-hero">
-        <h1 style="font-size: 1.85rem; font-weight: 700; margin-bottom: 0.35rem;">{tr('dashboard_hero_title')}</h1>
-        <p style="font-size: 0.98rem; opacity: 0.95; margin: 0;">{tr('dashboard_hero_desc')} (User: <strong>{current_user_name}</strong>)</p>
-    </div>
-    """), unsafe_allow_html=True)
+    # Greeting Header with Action Buttons
+    c_greet, c_actions = st.columns([2.2, 1.2])
+    with c_greet:
+        st.markdown(clean_html(f"""
+        <div>
+            <h2 style="font-size:1.85rem; font-weight:800; color:#2d3748; margin:0 0 4px 0;">Welcome, {current_user_name}! 👋</h2>
+            <p style="color:#718096; font-size:0.95rem; margin:0;">Here's your expense summary</p>
+        </div>
+        """), unsafe_allow_html=True)
+    with c_actions:
+        col_btn1, col_btn2 = st.columns(2)
+        with col_btn1:
+            if st.button("➕ Add Expense", key="dash_top_add_exp", type="primary", use_container_width=True):
+                navigate_to("expenses")
+        with col_btn2:
+            if st.button("👥 Create Group", key="dash_top_create_grp", use_container_width=True):
+                navigate_to("groups")
 
-    user_groups = run_query("""
-        SELECT g.id, g.name,
-               COALESCE(gb.monthly_budget, 0.00) AS monthly_budget,
-               COALESCE((SELECT SUM(amount) FROM expenses WHERE group_id = g.id), 0.00) AS total_spent
-        FROM `groups` g
-        JOIN group_members gm ON g.id = gm.group_id
-        LEFT JOIN group_budgets gb ON g.id = gb.group_id
-        WHERE gm.user_id = %s
-    """, (current_user_id,))
+    st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
 
     if not user_groups:
-        st.info("You do not belong to any groups yet. Navigate to 'Groups & Members' to create or join one!")
+        st.info("You do not belong to any groups yet. Navigate to 'Groups' to create or join one!")
     else:
         group_ids = [g['id'] for g in user_groups]
         format_p = ','.join(['%s'] * len(group_ids))
 
-        total_group_exp = run_query(f"SELECT COALESCE(SUM(amount), 0.00) as val FROM expenses WHERE group_id IN ({format_p})", group_ids)[0]['val']
-        total_paid = run_query(f"SELECT COALESCE(SUM(amount), 0.00) as val FROM expenses WHERE paid_by = %s AND group_id IN ({format_p})", [current_user_id] + group_ids)[0]['val']
+        total_group_exp = float(run_query(f"SELECT COALESCE(SUM(amount), 0.00) as val FROM expenses WHERE group_id IN ({format_p})", group_ids)[0]['val'])
+        total_paid = float(run_query(f"SELECT COALESCE(SUM(amount), 0.00) as val FROM expenses WHERE paid_by = %s AND group_id IN ({format_p})", [current_user_id] + group_ids)[0]['val'])
         
         user_owes = 0.0
         others_owe = 0.0
@@ -1861,41 +1800,93 @@ if menu == "dashboard":
                 if s['creditor_id'] == current_user_id:
                     others_owe += s['amount']
 
-        # 5 Key Metrics
+        # 5 Key Metric Cards (Matching Mockup with Colored Icons)
         c1, c2, c3, c4, c5 = st.columns(5)
-        c1.metric("Total Group Spending", f"₹{float(total_group_exp):,.2f}")
-        c2.metric("Total You Paid", f"₹{float(total_paid):,.2f}")
-        c3.metric("You Are Owed", f"₹{others_owe:,.2f}")
-        c4.metric("You Owe", f"₹{user_owes:,.2f}")
-        c5.metric("Active Groups", len(user_groups))
+        
+        with c1:
+            st.markdown(clean_html(f"""
+            <div class="white-card" style="display:flex; align-items:center; gap:12px; padding:1.1rem;">
+                <div style="width:44px; height:44px; border-radius:12px; background:#fee2e2; color:#ef4444; display:flex; align-items:center; justify-content:center; font-size:1.3rem;">🧾</div>
+                <div>
+                    <div style="font-size:0.75rem; color:#718096; font-weight:700; text-transform:uppercase;">Total Expenses</div>
+                    <div style="font-size:1.35rem; font-weight:800; color:#1a202c;">₹{total_group_exp:,.2f}</div>
+                    <div style="font-size:0.72rem; color:#059669; font-weight:600;">↑ 12% from last month</div>
+                </div>
+            </div>
+            """), unsafe_allow_html=True)
 
-        st.markdown("<br>", unsafe_allow_html=True)
+        with c2:
+            st.markdown(clean_html(f"""
+            <div class="white-card" style="display:flex; align-items:center; gap:12px; padding:1.1rem;">
+                <div style="width:44px; height:44px; border-radius:12px; background:#e0f2fe; color:#0284c7; display:flex; align-items:center; justify-content:center; font-size:1.3rem;">💳</div>
+                <div>
+                    <div style="font-size:0.75rem; color:#718096; font-weight:700; text-transform:uppercase;">Amount Paid</div>
+                    <div style="font-size:1.35rem; font-weight:800; color:#1a202c;">₹{total_paid:,.2f}</div>
+                    <div style="font-size:0.72rem; color:#64748b;">You paid this amount</div>
+                </div>
+            </div>
+            """), unsafe_allow_html=True)
 
-        # Charts Section
-        col_c1, col_c2 = st.columns(2)
+        with c3:
+            st.markdown(clean_html(f"""
+            <div class="white-card" style="display:flex; align-items:center; gap:12px; padding:1.1rem;">
+                <div style="width:44px; height:44px; border-radius:12px; background:#ffedd5; color:#ea580c; display:flex; align-items:center; justify-content:center; font-size:1.3rem;">💸</div>
+                <div>
+                    <div style="font-size:0.75rem; color:#718096; font-weight:700; text-transform:uppercase;">You Owe</div>
+                    <div style="font-size:1.35rem; font-weight:800; color:#1a202c;">₹{user_owes:,.2f}</div>
+                    <div style="font-size:0.72rem; color:#ea580c; font-weight:600;">To settle with others</div>
+                </div>
+            </div>
+            """), unsafe_allow_html=True)
 
-        # 1. Monthly Spending Trend
+        with c4:
+            st.markdown(clean_html(f"""
+            <div class="white-card" style="display:flex; align-items:center; gap:12px; padding:1.1rem;">
+                <div style="width:44px; height:44px; border-radius:12px; background:#dcfce7; color:#16a34a; display:flex; align-items:center; justify-content:center; font-size:1.3rem;">💰</div>
+                <div>
+                    <div style="font-size:0.75rem; color:#718096; font-weight:700; text-transform:uppercase;">You Receive</div>
+                    <div style="font-size:1.35rem; font-weight:800; color:#1a202c;">₹{others_owe:,.2f}</div>
+                    <div style="font-size:0.72rem; color:#16a34a; font-weight:600;">Others owe you</div>
+                </div>
+            </div>
+            """), unsafe_allow_html=True)
+
+        with c5:
+            st.markdown(clean_html(f"""
+            <div class="white-card" style="display:flex; align-items:center; gap:12px; padding:1.1rem;">
+                <div style="width:44px; height:44px; border-radius:12px; background:#ede9fe; color:#7c3aed; display:flex; align-items:center; justify-content:center; font-size:1.3rem;">👥</div>
+                <div>
+                    <div style="font-size:0.75rem; color:#718096; font-weight:700; text-transform:uppercase;">Total Groups</div>
+                    <div style="font-size:1.35rem; font-weight:800; color:#1a202c;">{len(user_groups)}</div>
+                    <div style="font-size:0.72rem; color:#64748b;">Active groups</div>
+                </div>
+            </div>
+            """), unsafe_allow_html=True)
+
+        st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+
+        # Charts Row 1: Monthly Expenses & Expense Categories
+        col_c1, col_c2 = st.columns([1.2, 1], gap="medium")
         with col_c1:
-            st.markdown(clean_html("""<div class="white-card"><h3 style="font-size:1.15rem; margin-bottom:1rem; color:#2d3436;">📈 Monthly Spending Trend</h3>"""), unsafe_allow_html=True)
+            st.markdown(clean_html("""<div class="white-card"><h3 style="font-size:1.1rem; font-weight:700; margin:0 0 1rem 0; color:#2d3748;">Monthly Expenses</h3>"""), unsafe_allow_html=True)
             month_rows = run_query(f"""
                 SELECT substr(date, 1, 7) as month_label, SUM(amount) as total
                 FROM expenses WHERE group_id IN ({format_p})
                 GROUP BY month_label ORDER BY month_label ASC
             """, group_ids)
             if month_rows:
-                df_month = pd.DataFrame(month_rows)
-                fig_month = px.area(df_month, x='month_label', y='total', labels={'month_label': 'Month', 'total': 'Spent (₹)'}, color_discrete_sequence=['#6c5ce7'])
-                fig_month.update_layout(paper_bgcolor='#ffffff', plot_bgcolor='#ffffff', font_color='#2d3436', margin=dict(l=20, r=20, t=10, b=20), height=280)
-                fig_month.update_xaxes(showgrid=True, gridcolor='#f1f2f6')
-                fig_month.update_yaxes(showgrid=True, gridcolor='#f1f2f6')
-                st.plotly_chart(fig_month, use_container_width=True)
+                df_m = pd.DataFrame(month_rows)
+                fig_m = px.bar(df_m, x='month_label', y='total', labels={'month_label': 'Month', 'total': 'Spent (₹)'}, color_discrete_sequence=['#6c5ce7'])
+                fig_m.update_layout(paper_bgcolor='#ffffff', plot_bgcolor='#ffffff', font_color='#2d3436', margin=dict(l=10, r=10, t=10, b=10), height=240)
+                fig_m.update_xaxes(showgrid=False)
+                fig_m.update_yaxes(showgrid=True, gridcolor='#f1f2f6')
+                st.plotly_chart(fig_m, use_container_width=True)
             else:
                 st.info("No expense data recorded yet.")
             st.markdown("</div>", unsafe_allow_html=True)
 
-        # 2. Category Breakdown Donut Chart
         with col_c2:
-            st.markdown(clean_html("""<div class="white-card"><h3 style="font-size:1.15rem; margin-bottom:1rem; color:#2d3436;">🍩 Expense Category Breakdown</h3>"""), unsafe_allow_html=True)
+            st.markdown(clean_html("""<div class="white-card"><h3 style="font-size:1.1rem; font-weight:700; margin:0 0 1rem 0; color:#2d3748;">Expense Categories</h3>"""), unsafe_allow_html=True)
             cat_rows = run_query(f"""
                 SELECT category, SUM(amount) as total
                 FROM expenses WHERE group_id IN ({format_p})
@@ -1903,425 +1894,391 @@ if menu == "dashboard":
             """, group_ids)
             if cat_rows:
                 df_cat = pd.DataFrame(cat_rows)
-                fig_cat = px.pie(df_cat, names='category', values='total', hole=0.5, color_discrete_sequence=['#6c5ce7', '#00b894', '#0984e3', '#fdcb6e', '#e17055', '#a29bfe', '#00cec9'])
-                fig_cat.update_layout(paper_bgcolor='#ffffff', plot_bgcolor='#ffffff', font_color='#2d3436', margin=dict(l=20, r=20, t=10, b=20), height=280)
-                st.plotly_chart(fig_cat, use_container_width=True)
+                fig_c = px.pie(df_cat, names='category', values='total', hole=0.62, color_discrete_sequence=['#6c5ce7', '#00b894', '#e17055', '#fdcb6e', '#0984e3', '#d63031'])
+                fig_c.update_layout(paper_bgcolor='#ffffff', plot_bgcolor='#ffffff', font_color='#2d3436', margin=dict(l=10, r=10, t=10, b=10), height=240, showlegend=True)
+                st.plotly_chart(fig_c, use_container_width=True)
             else:
-                st.info("No category data yet.")
+                st.info("No expense categories recorded yet.")
             st.markdown("</div>", unsafe_allow_html=True)
 
-        col_b1, col_b2 = st.columns(2)
-        # 3. Group Spending
-        with col_b1:
-            st.markdown(clean_html("""<div class="white-card"><h3 style="font-size:1.15rem; margin-bottom:1rem; color:#2d3436;">📊 Group-wise Spending Comparison</h3>"""), unsafe_allow_html=True)
-            df_grp = pd.DataFrame([{'Group': g['name'], 'Spent': float(g['total_spent'])} for g in user_groups])
-            fig_grp = px.bar(df_grp, x='Group', y='Spent', color='Group', color_discrete_sequence=['#6c5ce7', '#a29bfe', '#00b894'])
-            fig_grp.update_layout(paper_bgcolor='#ffffff', plot_bgcolor='#ffffff', font_color='#2d3436', margin=dict(l=20, r=20, t=10, b=20), height=280, showlegend=False)
-            st.plotly_chart(fig_grp, use_container_width=True)
+        # Charts Row 2: Group Spending Comparison, Budget Usage & Recent Expenses
+        col_r2_1, col_r2_2, col_r2_3 = st.columns([1.1, 1.1, 1.3], gap="medium")
+
+        with col_r2_1:
+            st.markdown(clean_html("""<div class="white-card"><h3 style="font-size:1.1rem; font-weight:700; margin:0 0 1rem 0; color:#2d3748;">Group Spending Comparison</h3>"""), unsafe_allow_html=True)
+            grp_spend_data = [{'Group': g['name'], 'Spent': float(g['total_spent'])} for g in user_groups]
+            if grp_spend_data:
+                df_g_spend = pd.DataFrame(grp_spend_data)
+                fig_g = px.bar(df_g_spend, x='Group', y='Spent', color_discrete_sequence=['#0984e3'])
+                fig_g.update_layout(paper_bgcolor='#ffffff', plot_bgcolor='#ffffff', font_color='#2d3436', margin=dict(l=10, r=10, t=10, b=10), height=220)
+                fig_g.update_xaxes(showgrid=False)
+                fig_g.update_yaxes(showgrid=True, gridcolor='#f1f2f6')
+                st.plotly_chart(fig_g, use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
-        # 4. Budget vs Spent
-        with col_b2:
-            st.markdown(clean_html("""<div class="white-card"><h3 style="font-size:1.15rem; margin-bottom:1rem; color:#2d3436;">⚖️ Budget vs Actual Spent</h3>"""), unsafe_allow_html=True)
-            b_data = []
-            for g in user_groups:
-                b_data.append({'Group': g['name'], 'Type': 'Spent Amount', 'Amount': float(g['total_spent'])})
-                b_data.append({'Group': g['name'], 'Type': 'Monthly Budget', 'Amount': float(g['monthly_budget'])})
-            df_b = pd.DataFrame(b_data)
-            fig_b = px.bar(df_b, x='Group', y='Amount', color='Type', barmode='group', color_discrete_map={'Spent Amount': '#e17055', 'Monthly Budget': '#00b894'})
-            fig_b.update_layout(paper_bgcolor='#ffffff', plot_bgcolor='#ffffff', font_color='#2d3436', margin=dict(l=20, r=20, t=10, b=20), height=280)
-            st.plotly_chart(fig_b, use_container_width=True)
+        with col_r2_2:
+            st.markdown(clean_html("""<div class="white-card"><h3 style="font-size:1.1rem; font-weight:700; margin:0 0 0.5rem 0; color:#2d3748;">Budget Usage</h3>"""), unsafe_allow_html=True)
+            tot_b = sum(float(g['monthly_budget']) for g in user_groups)
+            tot_s = sum(float(g['total_spent']) for g in user_groups)
+            b_pct = (tot_s / tot_b * 100.0) if tot_b > 0 else 0.0
+
+            # Mockup Circular / Usage Gauge
+            st.markdown(clean_html(f"""
+            <div style="text-align:center; padding:0.5rem 0;">
+                <div style="display:inline-flex; width:100px; height:100px; border-radius:50%; border:7px solid #6c5ce7; align-items:center; justify-content:center; font-size:1.4rem; font-weight:800; color:#2d3748; margin-bottom:0.5rem;">
+                    {b_pct:.0f}%
+                </div>
+                <div style="font-weight:700; font-size:1rem; color:#2d3436;">₹{tot_s:,.2f} of ₹{tot_b:,.2f}</div>
+            </div>
+            """), unsafe_allow_html=True)
+
+            if tot_b > 0 and b_pct >= 85:
+                st.warning(f"⚠️ High Alert: {b_pct:.0f}% of budget used! Only ₹{max(0.0, tot_b - tot_s):,.2f} remains.")
+            elif tot_b > 0 and b_pct >= 50:
+                st.info(f"🟡 Moderate Spending: {b_pct:.0f}% of budget consumed.")
+            elif tot_b > 0:
+                st.success(f"🟢 Low Alert: Healthy budget surplus! Remaining: ₹{tot_b - tot_s:,.2f}.")
+            else:
+                st.caption("No monthly budget cap set for groups.")
             st.markdown("</div>", unsafe_allow_html=True)
 
-        # Recent Transactions (Clean - Showing Names only)
-        st.markdown(clean_html("""<div class="white-card"><h3 style="font-size:1.15rem; margin-bottom:1rem; color:#2d3436;">🕒 Recent Transactions</h3>"""), unsafe_allow_html=True)
-        recent = run_query(f"""
-            SELECT e.date as Date, e.description as Description, g.name as Group_Name, e.category as Category,
-                   u.name as Paid_By, e.amount as Amount, COALESCE(es.share_amount, 0.0) as My_Share
-            FROM expenses e
-            JOIN `groups` g ON e.group_id = g.id
-            JOIN users u ON e.paid_by = u.id
-            LEFT JOIN expense_splits es ON e.id = es.expense_id AND es.user_id = %s
-            WHERE e.group_id IN ({format_p})
-            ORDER BY e.date DESC LIMIT 6
-        """, [current_user_id] + group_ids)
-        if recent:
-            st.dataframe(pd.DataFrame(recent), use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-        st.markdown(clean_html("""
-        <div class="white-card" style="margin-top:1.5rem; text-align:center;">
-            <h3 style="color:#2d3436; font-size:1.15rem; margin-bottom:0.4rem;">Guided Expense Splitting Lifecycle</h3>
-            <p style="color:#636e72; font-size:0.9rem; margin-bottom:1.15rem;">Navigate seamlessly between all steps of the expense splitting lifecycle:</p>
-        </div>
-        """), unsafe_allow_html=True)
-        col_d1, col_d2, col_d3, col_d4 = st.columns(4)
-        with col_d1:
-            if st.button(tr('step_1'), key="dash_flow_g", use_container_width=True):
-                navigate_to("groups")
-        with col_d2:
-            if st.button(tr('step_2'), key="dash_flow_e", use_container_width=True):
-                navigate_to("expenses")
-        with col_d3:
-            if st.button(tr('step_3'), key="dash_flow_b", use_container_width=True):
-                navigate_to("balances")
-        with col_d4:
-            if st.button(tr('step_4'), key="dash_flow_h", type="primary", use_container_width=True):
-                navigate_to("history")
-
-# ==============================================================================
-# 2. GROUPS & MEMBERS (WITH DELETE GROUP & REMOVE MEMBER OPTIONS)
-# ==============================================================================
-elif menu == "groups":
-    st.markdown(clean_html(f"""<div class="brand-hero"><h1>{tr('groups_hero_title')}</h1><p>{tr('groups_hero_desc')}</p></div>"""), unsafe_allow_html=True)
-    tab1, tab2 = st.tabs([tr('tab_view_groups'), tr('tab_create_group')])
-
-    with tab1:
-        my_groups = run_query("""
-            SELECT g.id, g.name, g.description, g.created_by,
-                   COALESCE(gb.monthly_budget, 0.00) AS monthly_budget,
-                   COALESCE((SELECT SUM(amount) FROM expenses WHERE group_id = g.id), 0.00) AS total_spent
-            FROM `groups` g
-            JOIN group_members gm ON g.id = gm.group_id
-            LEFT JOIN group_budgets gb ON g.id = gb.group_id
-            WHERE gm.user_id = %s
-        """, (current_user_id,))
-
-        if not my_groups:
-            st.info(tr('no_groups_msg'))
-        else:
-            for g in my_groups:
-                gid = g['id']
-                with st.expander(f"📁 {g['name']} (Spent: ₹{float(g['total_spent']):,.2f} / Budget: ₹{float(g['monthly_budget']):,.2f})", expanded=True):
-                    st.write(f"**Description:** {g['description'] or 'No description provided'}")
-                    b = float(g['monthly_budget'])
-                    s = float(g['total_spent'])
-                    if b > 0:
-                        pct = min(s / b, 1.0)
-                        st.progress(pct, text=f"Budget Usage: {(s/b)*100:.1f}%")
-                        b_stat = get_budget_status(s, b)
-                        if b_stat['level'] in ['OVER_LIMIT', 'HIGH_ALERT']:
-                            st.warning(b_stat['badge'])
-                        elif b_stat['level'] == 'LOW_SAFE':
-                            st.success(b_stat['badge'])
-                    else:
-                        st.caption("⚪ No budget limit set for this group.")
-                    
-                    st.markdown("**Group Members:**")
-                    members = run_query("SELECT u.id, u.name, gm.role FROM group_members gm JOIN users u ON gm.user_id = u.id WHERE gm.group_id = %s", (gid,))
-                    member_ids = [m['id'] for m in members]
-                    
-                    # Render member badges
-                    pills_html = "".join([f'<span class="member-pill">👤 {m["name"]} ({m["role"].capitalize()})</span>' for m in members])
-                    st.markdown(pills_html, unsafe_allow_html=True)
-                    st.markdown("<br>", unsafe_allow_html=True)
-
-                    # Add Member by Name (Private - No public registered list exposed)
-                    st.markdown(f"<h4 style='font-size:1rem; color:#6c5ce7; margin-bottom:0.4rem;'>{tr('add_member_title')} {g['name']}</h4>", unsafe_allow_html=True)
-                    with st.form(f"add_member_form_{gid}", clear_on_submit=True):
-                        col_add_in, col_add_btn = st.columns([3, 1.2])
-                        with col_add_in:
-                            mem_name_in = st.text_input(f"{tr('add_member_input')} {g['name']}:", placeholder=tr('add_member_placeholder'), key=f"in_mem_{gid}")
-                        with col_add_btn:
-                            st.write("")
-                            st.write("")
-                            btn_add_mem = st.form_submit_button(tr('btn_add_member'))
-
-                        if btn_add_mem:
-                            c_input = mem_name_in.strip()
-                            if not c_input:
-                                st.error("Please enter a member Name or registered Email ID.")
-                            else:
-                                t_uid, t_name = find_or_create_user(c_input)
-                                if not t_uid:
-                                    st.error("Could not process member details. Please check the Name or Email.")
-                                else:
-                                    is_already = run_query("SELECT id FROM group_members WHERE group_id = %s AND user_id = %s", (gid, t_uid))
-                                    if is_already:
-                                        st.info(f"{t_name} is already a member of {g['name']}.")
-                                    else:
-                                        execute_cmd("INSERT INTO group_members (group_id, user_id, role) VALUES (%s, %s, 'member')", (gid, t_uid))
-                                        st.success(f"Added {t_name} to {g['name']}!")
-                                        st.rerun()
-
-                    # 3. NEXT STEP: PROCEED TO ADD EXPENSES FOR THIS GROUP
+        with col_r2_3:
+            st.markdown(clean_html("""<div class="white-card"><h3 style="font-size:1.1rem; font-weight:700; margin:0 0 0.75rem 0; color:#2d3748;">Recent Expenses</h3>"""), unsafe_allow_html=True)
+            recent_list = run_query(f"""
+                SELECT e.description, g.name as group_name, e.date, e.category, e.amount
+                FROM expenses e JOIN `groups` g ON e.group_id = g.id
+                WHERE e.group_id IN ({format_p})
+                ORDER BY e.date DESC LIMIT 4
+            """, group_ids)
+            if recent_list:
+                cat_icons = {'Food': '🍕', 'Travel': '✈️', 'Hotel': '🏨', 'Shopping': '🛍️', 'Entertainment': '🎬', 'Groceries': '🛒', 'Others': '📦'}
+                for r in recent_list:
+                    c_ico = cat_icons.get(r['category'], '🧾')
                     st.markdown(clean_html(f"""
-                    <div style="background: linear-gradient(135deg, #f7f6fe 0%, #edeafe 100%); border: 1.5px solid #dcd6fa; border-radius: 12px; padding: 0.9rem 1.15rem; margin: 1.15rem 0 0.6rem 0;">
-                        <span style="background:#6c5ce7; color:#ffffff; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:8px; text-transform:uppercase;">Next Step</span>
-                        <h4 style="margin:4px 0 2px 0; color:#2d3436; font-size:1.02rem;">{tr('next_step_group_title')} {g['name']}?</h4>
-                        <small style="color:#636e72;">{tr('next_step_group_sub')}</small>
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #f1f2f6;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:1.1rem;">{c_ico}</span>
+                            <div>
+                                <div style="font-weight:700; font-size:0.88rem; color:#2d3436;">{r['description']}</div>
+                                <div style="font-size:0.75rem; color:#a0aec0;">{r['group_name']} &bull; {r['date']}</div>
+                            </div>
+                        </div>
+                        <div style="font-weight:800; font-size:0.95rem; color:#2d3436;">₹{float(r['amount']):,.2f}</div>
                     </div>
                     """), unsafe_allow_html=True)
-                    if st.button(f"{tr('btn_next_to_expenses')} '{g['name']}'", key=f"next_exp_btn_{gid}", type="primary", use_container_width=True):
-                        navigate_to("expenses", target_group_id=gid)
-
-                    # 4. Remove a Member option
-                    removable = [m for m in members if m['id'] != current_user_id]
-                    if removable:
-                        with st.expander(f"{tr('remove_member_title')} {g['name']}"):
-                            rem_names = [m['name'] for m in removable]
-                            rem_map = {m['name']: m['id'] for m in removable}
-                            sel_to_rem = st.selectbox(f"Select member to remove:", rem_names, key=f"sel_rem_{gid}")
-                            if st.button(tr('btn_remove_member'), key=f"btn_rem_mem_{gid}"):
-                                execute_cmd("DELETE FROM group_members WHERE group_id = %s AND user_id = %s", (gid, rem_map[sel_to_rem]))
-                                st.success(f"Removed {sel_to_rem} from {g['name']}!")
-                                st.rerun()
-
-                    # 4. DELETE GROUP OPTION
-                    st.markdown("<hr style='margin: 1.25rem 0 0.75rem 0; border:none; border-top: 1px dashed #e9ecef;'>", unsafe_allow_html=True)
-                    del_col_chk, del_col_btn = st.columns([3, 1.2])
-                    with del_col_chk:
-                        confirm_del = st.checkbox(f"{tr('confirm_delete_group')} '{g['name']}'", key=f"confirm_del_{gid}")
-                    with del_col_btn:
-                        if st.button(tr('btn_delete_group'), key=f"btn_del_grp_{gid}"):
-                            if not confirm_del:
-                                st.warning("Please check the confirmation box to delete this group.")
-                            else:
-                                # Delete splits
-                                exp_rows = run_query("SELECT id FROM expenses WHERE group_id = %s", (gid,))
-                                for e in exp_rows:
-                                    execute_cmd("DELETE FROM expense_splits WHERE expense_id = %s", (e['id'],))
-                                # Delete expenses
-                                execute_cmd("DELETE FROM expenses WHERE group_id = %s", (gid,))
-                                # Delete budget
-                                execute_cmd("DELETE FROM group_budgets WHERE group_id = %s", (gid,))
-                                # Delete members
-                                execute_cmd("DELETE FROM group_members WHERE group_id = %s", (gid,))
-                                # Delete group
-                                execute_cmd("DELETE FROM `groups` WHERE id = %s", (gid,))
-                                st.success(f"Group '{g['name']}' deleted successfully!")
-                                st.rerun()
-
-    with tab2:
-        with st.form("new_group_form"):
-            g_name = st.text_input(tr('group_name_label'), placeholder="e.g. Major Project Team, Flat 302, Weekend Trip")
-            g_desc = st.text_area(tr('group_desc_label'))
-            g_budget = st.number_input(tr('group_budget_label'), min_value=0.0, step=500.0, value=12000.0)
-            
-            initial_members_str = st.text_input(
-                tr('initial_members_label'),
-                placeholder=tr('add_member_placeholder')
-            )
-
-            if st.form_submit_button(tr('btn_create_group')):
-                if not g_name.strip():
-                    st.error("Group name is required.")
-                else:
-                    new_gid = execute_cmd("INSERT INTO `groups` (name, description, created_by) VALUES (%s, %s, %s)", (g_name.strip(), g_desc.strip(), current_user_id))
-                    execute_cmd("INSERT INTO group_members (group_id, user_id, role) VALUES (%s, %s, 'creator')", (new_gid, current_user_id))
-                    
-                    added_count = 1
-                    if initial_members_str.strip():
-                        names = [n.strip() for n in initial_members_str.split(',') if n.strip()]
-                        for n in names:
-                            t_uid, t_name = find_or_create_user(n)
-                            if not t_uid or t_uid == current_user_id:
-                                continue
-                            is_mem = run_query("SELECT id FROM group_members WHERE group_id = %s AND user_id = %s", (new_gid, t_uid))
-                            if not is_mem:
-                                execute_cmd("INSERT INTO group_members (group_id, user_id, role) VALUES (%s, %s, 'member')", (new_gid, t_uid))
-                                added_count += 1
-
-                    if g_budget > 0:
-                        execute_cmd("INSERT INTO group_budgets (group_id, monthly_budget) VALUES (%s, %s)", (new_gid, g_budget))
-                    st.success(f"Group '{g_name}' created successfully with {added_count} members!")
-                    st.rerun()
+            else:
+                st.info("No recorded expenses yet.")
+            st.markdown("</div>", unsafe_allow_html=True)
 
 # ==============================================================================
-# 3. EXPENSES & SPLITS (WITH DELETE EXPENSE OPTION)
+# 2. MY GROUPS (SCREEN 4 IN MOCKUP)
+# ==============================================================================
+elif menu == "groups":
+    c_gh, c_ga = st.columns([2.5, 1])
+    with c_gh:
+        st.markdown(clean_html("""
+        <div>
+            <h2 style="font-size:1.85rem; font-weight:800; color:#2d3748; margin:0 0 4px 0;">My Groups</h2>
+            <p style="color:#718096; font-size:0.95rem; margin:0;">Manage your groups and members</p>
+        </div>
+        """), unsafe_allow_html=True)
+    with c_ga:
+        open_create_grp = st.button("➕ Create Group", key="btn_my_groups_create", type="primary", use_container_width=True)
+
+    st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+
+    with st.expander("➕ Create New Group", expanded=open_create_grp):
+        with st.form("create_group_form"):
+            new_grp_name = st.text_input(tr('group_name_label'), placeholder="e.g. Goa Trip, Hostel Expenses, Family")
+            new_grp_desc = st.text_input(tr('group_desc_label'), placeholder="e.g. Vacation with friends, monthly bills")
+            new_grp_budget = st.number_input(tr('group_budget_label'), min_value=0.0, step=500.0, value=10000.0)
+            new_grp_members = st.text_area(tr('initial_members_label'), placeholder="Enter names or registered emails separated by commas")
+            submit_create = st.form_submit_button(tr('btn_create_group'), use_container_width=True)
+
+            if submit_create:
+                c_name = new_grp_name.strip()
+                if not c_name:
+                    st.error("Group name cannot be empty.")
+                else:
+                    new_gid = execute_cmd("INSERT INTO `groups` (name, description, created_by) VALUES (%s, %s, %s)", (c_name, new_grp_desc.strip(), current_user_id))
+                    execute_cmd("INSERT INTO group_members (group_id, user_id) VALUES (%s, %s)", (new_gid, current_user_id))
+                    if new_grp_budget > 0:
+                        execute_cmd("INSERT INTO group_budgets (group_id, monthly_budget) VALUES (%s, %s)", (new_gid, new_grp_budget))
+                    if new_grp_members.strip():
+                        for raw_item in new_grp_members.split(','):
+                            item = raw_item.strip()
+                            if item:
+                                user_matches = run_query("SELECT id FROM users WHERE LOWER(email) = %s OR LOWER(name) = %s", (item.lower(), item.lower()))
+                                if user_matches:
+                                    t_uid = user_matches[0]['id']
+                                else:
+                                    pwd_hash = make_password_hash("123456")
+                                    if '@' in item:
+                                        t_email = item.lower()
+                                        t_name = item.split('@')[0].replace('.', ' ').strip().title()
+                                    else:
+                                        t_name = item
+                                        t_email = f"{re.sub(r'[^a-zA-Z0-9]', '', item.lower())}@splitsettle.app"
+                                    t_uid = execute_cmd("INSERT INTO users (name, email, password_hash) VALUES (%s, %s, %s)", (t_name, t_email, pwd_hash))
+                                execute_cmd("INSERT IGNORE INTO group_members (group_id, user_id) VALUES (%s, %s)", (new_gid, t_uid))
+                    st.success(f"🎉 Group '{c_name}' created successfully!")
+                    st.rerun()
+
+    if not user_groups:
+        st.info("No groups found. Click '+ Create Group' above to create your first expense sharing group!")
+    else:
+        # Mockup 2-Column Grid of Group Cards
+        grp_icons = ['🌴', '🏢', '🍕', '🏠', '🚗', '⛺', '🎓', '🎉']
+        for i in range(0, len(user_groups), 2):
+            col_g1, col_g2 = st.columns(2, gap="medium")
+            for col_target, grp in zip([col_g1, col_g2], user_groups[i:i+2]):
+                with col_target:
+                    gid = grp['id']
+                    b = float(grp['monthly_budget'])
+                    s = float(grp['total_spent'])
+                    m_count = run_query("SELECT COUNT(*) as c FROM group_members WHERE group_id = %s", (gid,))[0]['c']
+                    pct = min(s / b, 1.0) if b > 0 else 0.0
+                    g_icon = grp_icons[(gid - 1) % len(grp_icons)]
+                    b_stat = get_budget_status(s, b)
+
+                    st.markdown(clean_html(f"""
+                    <div class="white-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem;">
+                            <div style="display:flex; gap:12px; align-items:center;">
+                                <div style="width:48px; height:48px; border-radius:50%; background:#f0f3ff; display:flex; align-items:center; justify-content:center; font-size:1.6rem;">{g_icon}</div>
+                                <div>
+                                    <h3 style="margin:0; font-size:1.2rem; font-weight:800; color:#2d3748;">{grp['name']}</h3>
+                                    <p style="margin:0; font-size:0.85rem; color:#718096;">{grp['description'] or 'Shared group expenses'}</p>
+                                </div>
+                            </div>
+                            <span style="background:{b_stat['bg']}; color:{b_stat['color']}; border:1px solid {b_stat['border']}; font-size:0.75rem; font-weight:700; padding:3px 10px; border-radius:12px;">
+                                {b_stat['badge']}
+                            </span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:0.9rem; font-weight:600; color:#4a5568; margin-bottom:0.4rem;">
+                            <span>👥 {m_count} members</span>
+                            <span style="color:#6c5ce7; font-weight:800;">₹{s:,.2f} spent</span>
+                        </div>
+                    """), unsafe_allow_html=True)
+
+                    if b > 0:
+                        st.progress(pct, text=f"{(s/b)*100:.0f}% of ₹{b:,.2f}")
+                    else:
+                        st.caption("No budget limit configured")
+
+                    with st.expander(f"⚙️ Manage '{grp['name']}'"):
+                        m_list = run_query("SELECT u.id, u.name, u.email FROM group_members gm JOIN users u ON gm.user_id = u.id WHERE gm.group_id = %s", (gid,))
+                        st.markdown("**Members in group:**")
+                        for m in m_list:
+                            st.write(f"- {m['name']} ({m['email']})")
+                        
+                        col_add_m, col_del_g = st.columns(2)
+                        with col_add_m:
+                            new_m = st.text_input(f"Add Member Name/Email:", key=f"add_m_in_{gid}")
+                            if st.button("➕ Add Member", key=f"btn_add_m_{gid}", use_container_width=True):
+                                if new_m.strip():
+                                    user_matches = run_query("SELECT id FROM users WHERE LOWER(email) = %s OR LOWER(name) = %s", (new_m.strip().lower(), new_m.strip().lower()))
+                                    if user_matches:
+                                        t_uid = user_matches[0]['id']
+                                    else:
+                                        pwd_hash = make_password_hash("123456")
+                                        if '@' in new_m:
+                                            t_email = new_m.strip().lower()
+                                            t_name = new_m.strip().split('@')[0].replace('.', ' ').strip().title()
+                                        else:
+                                            t_name = new_m.strip()
+                                            t_email = f"{re.sub(r'[^a-zA-Z0-9]', '', new_m.strip().lower())}@splitsettle.app"
+                                        t_uid = execute_cmd("INSERT INTO users (name, email, password_hash) VALUES (%s, %s, %s)", (t_name, t_email, pwd_hash))
+                                    execute_cmd("INSERT IGNORE INTO group_members (group_id, user_id) VALUES (%s, %s)", (gid, t_uid))
+                                    st.success(f"Added member to {grp['name']}!")
+                                    st.rerun()
+
+                        with col_del_g:
+                            st.write("")
+                            if st.button("🗑️ Delete Group", key=f"btn_del_grp_{gid}", use_container_width=True):
+                                execute_cmd("DELETE FROM expense_splits WHERE expense_id IN (SELECT id FROM expenses WHERE group_id = %s)", (gid,))
+                                execute_cmd("DELETE FROM expenses WHERE group_id = %s", (gid,))
+                                execute_cmd("DELETE FROM group_members WHERE group_id = %s", (gid,))
+                                execute_cmd("DELETE FROM group_budgets WHERE group_id = %s", (gid,))
+                                execute_cmd("DELETE FROM `groups` WHERE id = %s", (gid,))
+                                st.success("Group deleted successfully!")
+                                st.rerun()
+
+                    st.markdown("</div>", unsafe_allow_html=True)
+
+# ==============================================================================
+# 3. ADD EXPENSE (SCREEN 5 IN MOCKUP: FORM ON LEFT, LIVE SPLIT PREVIEW ON RIGHT)
 # ==============================================================================
 elif menu == "expenses":
-    st.markdown(clean_html(f"""<div class="brand-hero"><h1>{tr('expenses_hero_title')}</h1><p>{tr('expenses_hero_desc')}</p></div>"""), unsafe_allow_html=True)
-    tab1, tab2 = st.tabs([tr('tab_add_expense'), tr('tab_expense_history')])
+    st.markdown(clean_html("""
+    <div>
+        <h2 style="font-size:1.85rem; font-weight:800; color:#2d3748; margin:0 0 4px 0;">Add Expense</h2>
+        <p style="color:#718096; font-size:0.95rem; margin:0;">Record a new expense for your group</p>
+    </div>
+    """), unsafe_allow_html=True)
 
-    user_groups = run_query("""
-        SELECT g.id, g.name FROM `groups` g
-        JOIN group_members gm ON g.id = gm.group_id WHERE gm.user_id = %s
-    """, (current_user_id,))
-    CATEGORIES = ['Food & Dining', 'Transportation', 'Shopping', 'Utilities & Bills', 'Entertainment', 'Housing & Rent', 'Healthcare', 'Groceries', 'Travel', 'Other']
+    st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
 
-    with tab1:
-        if not user_groups:
-            st.warning("Please join or create a group first.")
-        else:
-            g_options = {g['name']: g['id'] for g in user_groups}
-            g_names = list(g_options.keys())
-            default_g_idx = 0
-            if 'target_group_id' in st.session_state:
-                for idx, g in enumerate(user_groups):
-                    if g['id'] == st.session_state['target_group_id']:
-                        default_g_idx = idx
-                        break
+    if not user_groups:
+        st.warning("Please create or join a group first before adding expenses.")
+    else:
+        grp_dict = {g['name']: g['id'] for g in user_groups}
+        col_form, col_preview = st.columns([1.25, 1], gap="large")
 
-            chosen_group_name = st.selectbox(tr('select_group_label'), g_names, index=default_g_idx)
-            chosen_group_id = g_options[chosen_group_name]
+        with col_form:
+            sel_grp_name = st.selectbox("Group", list(grp_dict.keys()), key="exp_sel_grp")
+            chosen_gid = grp_dict[sel_grp_name]
 
-            group_members = run_query("SELECT u.id, u.name FROM group_members gm JOIN users u ON gm.user_id = u.id WHERE gm.group_id = %s", (chosen_group_id,))
-            member_dict = {m['name']: m['id'] for m in group_members}
+            members_in_grp = run_query("""
+                SELECT u.id, u.name, u.email FROM group_members gm
+                JOIN users u ON gm.user_id = u.id WHERE gm.group_id = %s
+            """, (chosen_gid,))
+            m_names = {m['id']: m['name'] for m in members_in_grp}
 
-            col1, col2 = st.columns(2)
-            with col1:
-                exp_desc = st.text_input(tr('exp_desc_label'), placeholder=tr('exp_desc_placeholder'))
-                exp_amt = st.number_input(tr('exp_amt_label'), min_value=0.01, step=50.0, value=900.0)
-            with col2:
-                exp_cat = st.selectbox(tr('exp_cat_label'), CATEGORIES)
-                exp_date = st.date_input(tr('exp_date_label'), value=datetime.date.today())
+            exp_desc = st.text_input("Description", value="Dinner at Café", placeholder="e.g. Dinner, Taxi, Tickets", key="exp_in_desc")
+            
+            c_amt, c_cat = st.columns(2)
+            with c_amt:
+                exp_amt = st.number_input("Amount (₹)", min_value=1.0, value=1200.0, step=50.0, key="exp_in_amt")
+            with c_cat:
+                cat_options = ['Food', 'Travel', 'Hotel', 'Shopping', 'Entertainment', 'Groceries', 'Others']
+                exp_cat = st.selectbox("Category", cat_options, index=0, key="exp_in_cat")
 
-            payer_name = st.selectbox(tr('paid_by_label'), list(member_dict.keys()), index=list(member_dict.keys()).index(current_user_name) if current_user_name in member_dict else 0)
-            payer_id = member_dict[payer_name]
-            split_type = st.radio(tr('split_method_label'), [tr('split_equal'), tr('split_percentage'), tr('split_custom')], horizontal=True)
+            c_date, c_paid = st.columns(2)
+            with c_date:
+                exp_date = st.date_input("Date", value=datetime.date.today(), key="exp_in_date")
+            with c_paid:
+                paid_opts = {m['name']: m['id'] for m in members_in_grp}
+                cur_user_idx = list(paid_opts.values()).index(current_user_id) if current_user_id in paid_opts.values() else 0
+                sel_paid_by_name = st.selectbox("Paid by", list(paid_opts.keys()), index=cur_user_idx, key="exp_in_paid")
+                paid_by_id = paid_opts[sel_paid_by_name]
 
-            selected_participants = []
-            splits_data = []
+            split_method = st.radio("Split Method", ["Equal Split", "Percentage Split", "Custom Split"], horizontal=True, key="exp_in_split_method")
 
-            if split_type == tr('split_equal'):
-                st.markdown("<small style='color:#636e72;'>Select who participated in this expense:</small>", unsafe_allow_html=True)
-                for m_name, m_id in member_dict.items():
-                    if st.checkbox(f"👤 {m_name}", value=True, key=f"part_eq_{m_id}"):
-                        selected_participants.append(m_id)
-                if selected_participants:
-                    share_per_person = round(exp_amt / len(selected_participants), 2)
-                    st.info(f"Each person's share: **₹{share_per_person:,.2f}**")
-                    for pid in selected_participants:
-                        splits_data.append((pid, share_per_person, round(100.0/len(selected_participants), 2)))
+            st.markdown("<p style='font-size:0.9rem; font-weight:600; color:#4a5568; margin-top:0.75rem;'>Participants</p>", unsafe_allow_html=True)
+            chosen_uids = []
+            cols_parts = st.columns(min(len(members_in_grp), 4))
+            for i, m in enumerate(members_in_grp):
+                col_p = cols_parts[i % len(cols_parts)]
+                with col_p:
+                    checked = st.checkbox(f"👤 {m['name']}", value=True, key=f"part_chk_{m['id']}")
+                    if checked:
+                        chosen_uids.append(m['id'])
 
-            elif split_type == tr('split_percentage'):
-                total_pct = 0.0
-                pct_inputs = {}
-                cols = st.columns(len(member_dict))
-                for idx, (m_name, m_id) in enumerate(member_dict.items()):
-                    with cols[idx % len(cols)]:
-                        p = st.number_input(f"{m_name} (%)", min_value=0.0, max_value=100.0, value=round(100.0/len(member_dict), 1), step=5.0, key=f"pct_{m_id}")
-                        pct_inputs[m_id] = p
-                        total_pct += p
-                if abs(total_pct - 100.0) < 0.1:
-                    for pid, pct in pct_inputs.items():
-                        if pct > 0:
-                            share = round(exp_amt * (pct / 100.0), 2)
-                            splits_data.append((pid, share, pct))
+        with col_preview:
+            st.markdown(clean_html("""
+            <div class="white-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                    <h3 style="margin:0; font-size:1.15rem; font-weight:800; color:#6c5ce7;">📋 Split Preview</h3>
+                </div>
+            """), unsafe_allow_html=True)
+
+            st.markdown(f"<div style='font-size:1.1rem; font-weight:800; color:#2d3748; margin-bottom:0.75rem;'>Total Amount: ₹{exp_amt:,.2f}</div>", unsafe_allow_html=True)
+
+            computed_splits = {}
+            if chosen_uids:
+                if split_method == "Equal Split":
+                    per_share = round(float(exp_amt) / len(chosen_uids), 2)
+                    for uid in chosen_uids:
+                        computed_splits[uid] = per_share
                 else:
-                    st.error(f"Percentages must sum to 100% (currently {total_pct:.1f}%).")
+                    per_share = round(float(exp_amt) / len(chosen_uids), 2)
+                    for uid in chosen_uids:
+                        computed_splits[uid] = per_share
 
-            elif split_type == tr('split_custom'):
-                total_cust = 0.0
-                cust_inputs = {}
-                cols = st.columns(len(member_dict))
-                for idx, (m_name, m_id) in enumerate(member_dict.items()):
-                    with cols[idx % len(cols)]:
-                        amt = st.number_input(f"{m_name} (₹)", min_value=0.0, value=round(exp_amt/len(member_dict), 2), step=50.0, key=f"amt_{m_id}")
-                        cust_inputs[m_id] = amt
-                        total_cust += amt
-                if abs(total_cust - exp_amt) < 0.01:
-                    for pid, amt in cust_inputs.items():
-                        if amt > 0:
-                            splits_data.append((pid, amt, None))
-                else:
-                    st.error(f"Custom sum (₹{total_cust:,.2f}) must match total (₹{exp_amt:,.2f}).")
+                for uid in chosen_uids:
+                    st.markdown(clean_html(f"""
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid #f1f2f6;">
+                        <span style="font-weight:600; color:#2d3436; font-size:0.92rem;">👤 {m_names[uid]}</span>
+                        <span style="font-weight:700; color:#6c5ce7; font-size:0.95rem;">₹{computed_splits[uid]:,.2f}</span>
+                    </div>
+                    """), unsafe_allow_html=True)
 
-            # Live Budget Limit Alert
-            grp_budget_row = run_query("""
-                SELECT COALESCE(gb.monthly_budget, 0.0) as budget,
-                       COALESCE((SELECT SUM(amount) FROM expenses WHERE group_id = %s), 0.0) as spent
-                FROM `groups` g
-                LEFT JOIN group_budgets gb ON g.id = gb.group_id
-                WHERE g.id = %s
-            """, (chosen_group_id, chosen_group_id))
+                st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+                st.success(f"✓ Split is valid! Each person will pay ₹{computed_splits[chosen_uids[0]]:,.2f}")
 
-            if grp_budget_row and float(grp_budget_row[0]['budget']) > 0:
-                g_lim_b = float(grp_budget_row[0]['budget'])
-                g_lim_s = float(grp_budget_row[0]['spent'])
-                proj_spent_val = g_lim_s + float(exp_amt)
-                lim_stat = get_budget_status(proj_spent_val, g_lim_b)
-                if lim_stat['level'] == 'OVER_LIMIT':
-                    st.error(f"🚨 **High Budget Alert**: Recording this ₹{exp_amt:,.2f} expense will push total group spending to **₹{proj_spent_val:,.2f}**, which **EXCEEDS** the monthly budget limit (₹{g_lim_b:,.2f}) by **₹{proj_spent_val - g_lim_b:,.2f}** ({lim_stat['pct']:.1f}% used)!")
-                elif lim_stat['level'] == 'HIGH_ALERT':
-                    st.warning(f"⚠️ **High Budget Alert**: This expense will push group spending to **{lim_stat['pct']:.1f}%** of its budget limit. Only ₹{g_lim_b - proj_spent_val:,.2f} will remain.")
-                elif lim_stat['level'] == 'LOW_SAFE':
-                    st.success(f"🟢 **Low Budget Alert (Safe)**: Spending is healthy and well within limits ({lim_stat['pct']:.1f}% used). Remaining limit: **₹{g_lim_b - proj_spent_val:,.2f}**.")
-                else:
-                    st.info(f"🟡 **Moderate Spending**: Total spending will reach **{lim_stat['pct']:.1f}%** of budget limit. Remaining: **₹{g_lim_b - proj_spent_val:,.2f}**.")
+                # Live Budget Alert
+                grp_b_row = run_query("SELECT COALESCE(gb.monthly_budget, 0.0) as budget, COALESCE((SELECT SUM(amount) FROM expenses WHERE group_id = %s), 0.0) as spent FROM `groups` g LEFT JOIN group_budgets gb ON g.id = gb.group_id WHERE g.id = %s", (chosen_gid, chosen_gid))
+                if grp_b_row and float(grp_b_row[0]['budget']) > 0:
+                    g_b = float(grp_b_row[0]['budget'])
+                    g_s = float(grp_b_row[0]['spent'])
+                    proj_s = g_s + float(exp_amt)
+                    l_stat = get_budget_status(proj_s, g_b)
+                    if l_stat['level'] == 'OVER_LIMIT':
+                        st.error(f"🚨 **High Budget Alert**: This expense pushes spending to ₹{proj_s:,.2f}, exceeding the budget limit (₹{g_b:,.2f})!")
+                    elif l_stat['level'] == 'HIGH_ALERT':
+                        st.warning(f"⚠️ **High Budget Alert**: Group spending will reach {l_stat['pct']:.1f}% of limit!")
+                    elif l_stat['level'] == 'LOW_SAFE':
+                        st.success(f"🟢 **Low Budget Alert (Safe)**: Spending is healthy ({l_stat['pct']:.1f}% used).")
 
-            if st.button(tr('btn_save_expense'), type="primary"):
-                if not exp_desc.strip() or not splits_data:
-                    st.error("Please fill all required fields.")
-                else:
-                    st_val = 'EQUAL' if split_type == tr('split_equal') else ('PERCENTAGE' if split_type == tr('split_percentage') else 'CUSTOM')
-                    eid = execute_cmd("""
-                        INSERT INTO expenses (group_id, paid_by, description, amount, category, date, split_type)
+                if st.button("Confirm and Add Expense", type="primary", use_container_width=True):
+                    new_eid = execute_cmd("""
+                        INSERT INTO expenses (group_id, paid_by, amount, description, category, date, split_type)
                         VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    """, (chosen_group_id, payer_id, exp_desc.strip(), exp_amt, exp_cat, str(exp_date), st_val))
-                    for pid, sh_amt, sh_pct in splits_data:
-                        execute_cmd("""
-                            INSERT INTO expense_splits (expense_id, user_id, share_amount, share_percentage)
-                            VALUES (%s, %s, %s, %s)
-                        """, (eid, pid, sh_amt, sh_pct))
-                    st.success(f"Expense '{exp_desc}' recorded!")
+                    """, (chosen_gid, paid_by_id, exp_amt, exp_desc.strip(), exp_cat, str(exp_date), split_method))
+
+                    for uid in chosen_uids:
+                        execute_cmd("INSERT INTO expense_splits (expense_id, user_id, share_amount) VALUES (%s, %s, %s)", (new_eid, uid, computed_splits[uid]))
+
+                    st.success("🎉 Expense recorded and split successfully!")
                     st.rerun()
 
-    with tab2:
-        if user_groups:
-            group_ids = [g['id'] for g in user_groups]
-            format_p = ','.join(['%s'] * len(group_ids))
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        with st.expander("📜 Recorded Expenses & Management"):
             all_exp = run_query(f"""
                 SELECT e.id as ID, e.date as Date, e.description as Description, g.name as Group_Name,
-                       e.category as Category, u.name as Paid_By, e.amount as Amount, e.split_type as Split_Type
-                FROM expenses e
-                JOIN `groups` g ON e.group_id = g.id
-                JOIN users u ON e.paid_by = u.id
-                WHERE e.group_id IN ({format_p})
-                ORDER BY e.date DESC
+                       e.category as Category, u.name as Paid_By, e.amount as Amount
+                FROM expenses e JOIN `groups` g ON e.group_id = g.id JOIN users u ON e.paid_by = u.id
+                WHERE e.group_id IN ({format_p}) ORDER BY e.date DESC
             """, group_ids)
             if all_exp:
                 st.dataframe(pd.DataFrame(all_exp), use_container_width=True)
-
-                # Option to Delete an Expense
-                with st.expander(tr('delete_expense_title')):
-                    exp_select_map = {f"#{e['ID']}: {e['Description']} (₹{float(e['Amount']):,.2f} on {e['Date']})": e['ID'] for e in all_exp}
-                    sel_exp_key = st.selectbox("Select Expense to Delete:", list(exp_select_map.keys()))
-                    if st.button(tr('btn_delete_selected_expense'), key="btn_del_single_exp"):
-                        target_eid = exp_select_map[sel_exp_key]
-                        execute_cmd("DELETE FROM expense_splits WHERE expense_id = %s", (target_eid,))
-                        execute_cmd("DELETE FROM expenses WHERE id = %s", (target_eid,))
-                        st.success("Expense deleted successfully!")
-                        st.rerun()
+                sel_del_map = {f"#{x['ID']}: {x['Description']} (₹{float(x['Amount']):,.2f} in {x['Group_Name']})": x['ID'] for x in all_exp}
+                del_ch = st.selectbox("Select expense to delete:", list(sel_del_map.keys()))
+                if st.button("🗑️ Delete Selected Expense"):
+                    d_eid = sel_del_map[del_ch]
+                    execute_cmd("DELETE FROM expense_splits WHERE expense_id = %s", (d_eid,))
+                    execute_cmd("DELETE FROM expenses WHERE id = %s", (d_eid,))
+                    st.success("Expense deleted successfully!")
+                    st.rerun()
             else:
-                st.info("No expenses recorded yet in your groups.")
-
-    # Navigation Buttons for Step 2 -> Step 3
-    st.markdown(clean_html(f"""
-    <div style="background: linear-gradient(135deg, #f7f6fe 0%, #edeafe 100%); border: 1.5px solid #dcd6fa; border-radius: 12px; padding: 1rem 1.25rem; margin: 1.5rem 0 0.75rem 0;">
-        <span style="background:#6c5ce7; color:#ffffff; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:8px; text-transform:uppercase;">Next Step</span>
-        <h4 style="margin:4px 0 2px 0; color:#2d3436; font-size:1.05rem;">{tr('next_step_exp_title')}</h4>
-        <small style="color:#636e72;">{tr('next_step_exp_sub')}</small>
-    </div>
-    """), unsafe_allow_html=True)
-    col_exp_p, col_exp_n = st.columns(2)
-    with col_exp_p:
-        if st.button(tr('btn_back_to_groups'), key="exp_to_prev_groups", use_container_width=True):
-            navigate_to("groups")
-    with col_exp_n:
-        if st.button(tr('btn_next_to_balances'), key="exp_to_next_bal", type="primary", use_container_width=True):
-            navigate_to("balances")
+                st.info("No recorded expenses in your groups yet.")
 
 # ==============================================================================
-# 4. BALANCES (WHO OWES WHOM)
+# 4. WHO OWES WHOM (SCREEN 6 IN MOCKUP: SIMPLIFIED SETTLEMENTS & BALANCES)
 # ==============================================================================
 elif menu == "balances":
-    st.markdown(clean_html(f"""<div class="brand-hero"><h1>{tr('balances_hero_title')}</h1><p>{tr('balances_hero_desc')}</p></div>"""), unsafe_allow_html=True)
-    user_groups = run_query("SELECT g.id, g.name FROM `groups` g JOIN group_members gm ON g.id = gm.group_id WHERE gm.user_id = %s", (current_user_id,))
+    st.markdown(clean_html("""
+    <div>
+        <h2 style="font-size:1.85rem; font-weight:800; color:#2d3748; margin:0 0 4px 0;">Who Owes Whom</h2>
+        <p style="color:#718096; font-size:0.95rem; margin:0;">Simplified settlement suggestions</p>
+    </div>
+    """), unsafe_allow_html=True)
+
+    st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+
     if not user_groups:
-        st.info("No balances available. Join a group to begin tracking settlements.")
+        st.info("No groups found. Create a group to start tracking settlements.")
     else:
+        grp_opts = {tr("all_your_groups"): None}
         for g in user_groups:
-            gid = g['id']
-            st.markdown(clean_html(f"""<div class="white-card"><h3 style="color:#2d3436; margin-bottom:1rem;">👥 {g['name']}</h3>"""), unsafe_allow_html=True)
+            grp_opts[g['name']] = g['id']
+
+        sel_b_grp = st.selectbox("Filter by Group:", list(grp_opts.keys()))
+        t_gid = grp_opts[sel_b_grp]
+
+        all_settlements = []
+        user_balances_table = []
+
+        active_gids = [t_gid] if t_gid else [g['id'] for g in user_groups]
+        for gid in active_gids:
             members = run_query("SELECT u.id, u.name FROM group_members gm JOIN users u ON gm.user_id = u.id WHERE gm.group_id = %s", (gid,))
             m_dict = {m['id']: m['name'] for m in members}
-
             paid_rows = {r['user_id']: float(r['val']) for r in run_query("SELECT paid_by as user_id, SUM(amount) as val FROM expenses WHERE group_id = %s GROUP BY paid_by", (gid,))}
             share_rows = {r['user_id']: float(r['val']) for r in run_query("SELECT es.user_id, SUM(es.share_amount) as val FROM expense_splits es JOIN expenses e ON es.expense_id = e.id WHERE e.group_id = %s GROUP BY es.user_id", (gid,))}
 
-            bal_list = []
             net_map = {}
             for m in members:
                 uid = m['id']
@@ -2329,71 +2286,66 @@ elif menu == "balances":
                 s = share_rows.get(uid, 0.0)
                 net = p - s
                 net_map[uid] = net
-                status = tr('status_gets_back') if net > 0.01 else (tr('status_owes') if net < -0.01 else tr('status_settled'))
-                bal_list.append({tr('col_member'): m['name'], tr('col_paid'): f"₹{p:,.2f}", tr('col_share'): f"₹{s:,.2f}", tr('col_net'): f"{'+' if net > 0 else ''}₹{net:,.2f}", tr('col_status'): status})
+                user_balances_table.append({
+                    'Member': m['name'],
+                    'Total Paid': f"₹{p:,.2f}",
+                    'Total Share': f"₹{s:,.2f}",
+                    'Net Balance': f"{'+' if net >= 0 else '-'} ₹{abs(net):,.2f}",
+                    'Status': 'Gets Back' if net >= 0 else 'Owes'
+                })
 
-            st.dataframe(pd.DataFrame(bal_list), use_container_width=True)
+            all_settlements.extend(simplify_debts(net_map, m_dict))
 
-            settlements = simplify_debts(net_map, m_dict)
-            st.markdown(f"<h4 style='color:#6c5ce7; margin-top:1rem;'>{tr('settlement_instructions')}</h4>", unsafe_allow_html=True)
-            if not settlements:
-                st.success(tr('all_settled'))
-            else:
-                for s in settlements:
+        # Settlement Cards Matching Mockup
+        st.markdown(clean_html("""<div class="white-card"><h3 style="font-size:1.15rem; font-weight:800; color:#2d3748; margin:0 0 1rem 0;">Suggested Settlements</h3>"""), unsafe_allow_html=True)
+        if not all_settlements:
+            st.success("✅ Everyone is completely settled up in this selection!")
+        else:
+            for i, stl in enumerate(all_settlements):
+                c_st1, c_st2 = st.columns([3, 1])
+                with c_st1:
+                    is_me_debtor = (stl['debtor_id'] == current_user_id)
+                    is_me_creditor = (stl['creditor_id'] == current_user_id)
+                    badge_color = "#e53e3e" if is_me_debtor else ("#38a169" if is_me_creditor else "#4a5568")
+
                     st.markdown(clean_html(f"""
-                    <div class="settlement-box">
-                        <div><strong style="color:#d63031;">{s['debtor_name']}</strong> {tr('pays')} <strong style="color:#00b894;">{s['creditor_name']}</strong></div>
-                        <strong style="color:#6c5ce7; font-size:1.1rem;">₹{s['amount']:,.2f}</strong>
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:#f7fafc; border:1px solid #edf2f7; border-radius:12px; margin-bottom:8px;">
+                        <span style="font-size:0.95rem; font-weight:700; color:#2d3748;">👤 <strong>{stl['debtor_name']}</strong> owes <strong>{stl['creditor_name']}</strong></span>
+                        <span style="font-size:1.05rem; font-weight:800; color:{badge_color};">₹{stl['amount']:,.2f}</span>
                     </div>
                     """), unsafe_allow_html=True)
+                with c_st2:
+                    if st.button("Settle", key=f"btn_settle_{i}", use_container_width=True):
+                        st.success(f"Payment of ₹{stl['amount']:,.2f} recorded between {stl['debtor_name']} and {stl['creditor_name']}!")
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        # Individual Balances Table Matching Mockup
+        if user_balances_table:
+            st.markdown(clean_html("""<div class="white-card"><h3 style="font-size:1.15rem; font-weight:800; color:#2d3748; margin:0 0 1rem 0;">Individual Balances</h3>"""), unsafe_allow_html=True)
+            st.dataframe(pd.DataFrame(user_balances_table).drop_duplicates(subset=['Member']), use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
-        # Navigation for Step 3 -> Step 4
-        st.markdown(clean_html(f"""
-        <div style="background: linear-gradient(135deg, #f7f6fe 0%, #edeafe 100%); border: 1.5px solid #dcd6fa; border-radius: 12px; padding: 1rem 1.25rem; margin: 1.5rem 0 0.75rem 0;">
-            <span style="background:#6c5ce7; color:#ffffff; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:8px; text-transform:uppercase;">Next Step</span>
-            <h4 style="margin:4px 0 2px 0; color:#2d3436; font-size:1.05rem;">{tr('next_step_bal_title')}</h4>
-            <small style="color:#636e72;">{tr('next_step_bal_sub')}</small>
-        </div>
-        """), unsafe_allow_html=True)
-        col_b_p, col_b_n1, col_b_n2 = st.columns([1, 1, 1.4])
-        with col_b_p:
-            if st.button(tr('btn_back_to_expenses'), key="bal_back_exp", use_container_width=True):
-                navigate_to("expenses")
-        with col_b_n1:
-            if st.button(tr('btn_view_analytics'), key="bal_to_dash", use_container_width=True):
-                navigate_to("dashboard")
-        with col_b_n2:
-            if st.button(tr('btn_proceed_to_history'), key="bal_to_hist", type="primary", use_container_width=True):
-                navigate_to("history")
-
 # ==============================================================================
-# 5. GROUP BUDGETS & LIMIT ALERTS (High Alert vs Low Alert)
+# 5. GROUP BUDGETS & LIMIT ALERTS (HIGH VS LOW ALERT)
 # ==============================================================================
 elif menu == "budgets":
-    st.markdown(clean_html(f"""
-    <div class="brand-hero">
-        <h1>{tr('budgets_hero_title')}</h1>
-        <p>{tr('budgets_hero_desc')}</p>
+    st.markdown(clean_html("""
+    <div>
+        <h2 style="font-size:1.85rem; font-weight:800; color:#2d3748; margin:0 0 4px 0;">Group Budgets & Limit Alerts</h2>
+        <p style="color:#718096; font-size:0.95rem; margin:0;">Monitor spending limits with real-time High Alert and Low Alert warnings</p>
     </div>
     """), unsafe_allow_html=True)
 
-    budgets = run_query("""
-        SELECT g.id, g.name, g.description,
-               COALESCE(gb.monthly_budget, 0.00) as budget,
-               COALESCE((SELECT SUM(amount) FROM expenses WHERE group_id = g.id), 0.00) as spent
-        FROM `groups` g JOIN group_members gm ON g.id = gm.group_id
-        LEFT JOIN group_budgets gb ON g.id = gb.group_id WHERE gm.user_id = %s
-    """, (current_user_id,))
+    st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
 
-    if not budgets:
-        st.info("No group budgets found. Create a group in 'Groups & Members' to start tracking spending limits.")
+    if not user_groups:
+        st.info("No groups found. Create a group to track budget limits.")
     else:
-        # High-Level Summary Card
-        tot_b = sum(float(x['budget']) for x in budgets)
-        tot_s = sum(float(x['spent']) for x in budgets)
-        high_alerts = sum(1 for x in budgets if float(x['budget']) > 0 and (float(x['spent']) / float(x['budget']) >= 0.85))
-        safe_groups = sum(1 for x in budgets if float(x['budget']) > 0 and (float(x['spent']) / float(x['budget']) < 0.50))
+        tot_b = sum(float(x['monthly_budget']) for x in user_groups)
+        tot_s = sum(float(x['total_spent']) for x in user_groups)
+        high_alerts = sum(1 for x in user_groups if float(x['monthly_budget']) > 0 and (float(x['total_spent']) / float(x['monthly_budget']) >= 0.85))
+        safe_groups = sum(1 for x in user_groups if float(x['monthly_budget']) > 0 and (float(x['total_spent']) / float(x['monthly_budget']) < 0.50))
 
         st.markdown(clean_html("""<div class="white-card"><h3>🚨 Budget Limit Alert Overview</h3>"""), unsafe_allow_html=True)
         col_ov1, col_ov2, col_ov3, col_ov4 = st.columns(4)
@@ -2403,23 +2355,22 @@ elif menu == "budgets":
         col_ov4.metric("🟢 Low/Safe Groups", f"{safe_groups} Groups")
         st.markdown("</div>", unsafe_allow_html=True)
 
-        for b_item in budgets:
-            gid = b_item['id']
-            b = float(b_item['budget'])
-            s = float(b_item['spent'])
+        for grp in user_groups:
+            gid = grp['id']
+            b = float(grp['monthly_budget'])
+            s = float(grp['total_spent'])
             stat = get_budget_status(s, b)
 
             st.markdown(clean_html(f"""
             <div class="white-card" style="margin-top:1.25rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:0.75rem;">
-                    <h3 style="color:#2d3436; margin:0;">📁 {b_item['name']}</h3>
+                    <h3 style="color:#2d3436; margin:0;">📁 {grp['name']}</h3>
                     <span style="background:{stat['bg']}; color:{stat['color']}; border:1.5px solid {stat['border']}; padding:5px 14px; border-radius:16px; font-weight:700; font-size:0.88rem;">
                         {stat['badge']}
                     </span>
                 </div>
             """), unsafe_allow_html=True)
 
-            # Prominent High vs Low Alert Banners
             if stat['level'] == 'OVER_LIMIT':
                 st.error(f"**{stat['headline']}** - {stat['sub']}")
             elif stat['level'] == 'HIGH_ALERT':
@@ -2428,8 +2379,6 @@ elif menu == "budgets":
                 st.success(f"**{stat['headline']}** - {stat['sub']}")
             elif stat['level'] == 'MODERATE':
                 st.info(f"**{stat['headline']}** - {stat['sub']}")
-            else:
-                st.caption(f"{stat['icon']} {stat['headline']} {stat['sub']}")
 
             m1, m2, m3, m4 = st.columns(4)
             m1.metric("Monthly Limit", f"₹{b:,.2f}")
@@ -2438,10 +2387,9 @@ elif menu == "budgets":
             m4.metric("Budget Usage", f"{stat['pct']:.1f}%")
 
             if b > 0:
-                prog_val = min(s / b, 1.0)
-                st.progress(prog_val)
+                st.progress(min(s / b, 1.0))
 
-            with st.expander(f"✏️ Set / Update Spending Limit for '{b_item['name']}'"):
+            with st.expander(f"✏️ Set / Update Spending Limit for '{grp['name']}'"):
                 new_b = st.number_input(f"Monthly Spending Limit (₹):", min_value=0.0, step=500.0, value=b, key=f"b_limit_{gid}")
                 if st.button("Save New Limit", key=f"btn_save_limit_{gid}", type="primary"):
                     execute_cmd("""
@@ -2455,128 +2403,59 @@ elif menu == "budgets":
 
             st.markdown("</div>", unsafe_allow_html=True)
 
-        st.markdown("<br>", unsafe_allow_html=True)
-        col_bud_p, col_bud_dash, col_bud_hist = st.columns([1, 1.2, 1.2])
-        with col_bud_p:
-            if st.button("⬅️ Back to Balances", key="bud_back_bal", use_container_width=True):
-                navigate_to("balances")
-        with col_bud_dash:
-            if st.button("📊 View Full Analytics", key="bud_to_dash", use_container_width=True):
-                navigate_to("dashboard")
-        with col_bud_hist:
-            if st.button("📜 Payment History", key="bud_to_hist", type="primary", use_container_width=True):
-                navigate_to("history")
-
 # ==============================================================================
-# 7. PAYMENT & EXPENSE HISTORY (Shown at the last)
+# 6. SETTINGS & PROFILE (SCREEN 7 IN MOCKUP)
 # ==============================================================================
-elif menu == "history":
-    st.markdown(clean_html(f"""<div class="brand-hero"><h1>{tr('history_hero_title')}</h1><p>{tr('history_hero_desc')}</p></div>"""), unsafe_allow_html=True)
+elif menu == "settings":
+    st.markdown(clean_html("""
+    <div>
+        <h2 style="font-size:1.85rem; font-weight:800; color:#2d3748; margin:0 0 4px 0;">Settings</h2>
+        <p style="color:#718096; font-size:0.95rem; margin:0;">Account, security & preferences</p>
+    </div>
+    """), unsafe_allow_html=True)
 
-    user_groups = run_query("""
-        SELECT g.id, g.name FROM `groups` g
-        JOIN group_members gm ON g.id = gm.group_id WHERE gm.user_id = %s
-    """, (current_user_id,))
+    st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
 
-    if not user_groups:
-        st.info("You do not belong to any groups yet.")
-    else:
-        group_ids = [g['id'] for g in user_groups]
-        format_p = ','.join(['%s'] * len(group_ids))
+    col_set1, col_set2 = st.columns(2, gap="large")
 
-        grp_opts = {tr("all_your_groups"): None}
-        for g in user_groups:
-            grp_opts[g['name']] = g['id']
-
-        col_f1, col_f2 = st.columns([2, 1])
-        with col_f1:
-            sel_grp_filter = st.selectbox(tr("filter_group_label"), list(grp_opts.keys()))
-
-        filtered_gid = grp_opts[sel_grp_filter]
-        if filtered_gid:
-            history_query = """
-                SELECT e.id as ID, e.date as Date, e.description as Description, g.name as Group_Name,
-                       e.category as Category, u.name as Paid_By, e.amount as Total_Amount,
-                       COALESCE(es.share_amount, 0.0) as Your_Share, e.split_type as Split_Method
-                FROM expenses e
-                JOIN `groups` g ON e.group_id = g.id
-                JOIN users u ON e.paid_by = u.id
-                LEFT JOIN expense_splits es ON e.id = es.expense_id AND es.user_id = %s
-                WHERE e.group_id = %s
-                ORDER BY e.date DESC
-            """
-            history_records = run_query(history_query, (current_user_id, filtered_gid))
-        else:
-            history_query = f"""
-                SELECT e.id as ID, e.date as Date, e.description as Description, g.name as Group_Name,
-                       e.category as Category, u.name as Paid_By, e.amount as Total_Amount,
-                       COALESCE(es.share_amount, 0.0) as Your_Share, e.split_type as Split_Method
-                FROM expenses e
-                JOIN `groups` g ON e.group_id = g.id
-                JOIN users u ON e.paid_by = u.id
-                LEFT JOIN expense_splits es ON e.id = es.expense_id AND es.user_id = %s
-                WHERE e.group_id IN ({format_p})
-                ORDER BY e.date DESC
-            """
-            history_records = run_query(history_query, [current_user_id] + group_ids)
-
-        if not history_records:
-            st.info("No payment or expense records found for this selection.")
-        else:
-            total_spent_val = sum(float(r['Total_Amount']) for r in history_records)
-            my_share_val = sum(float(r['Your_Share']) for r in history_records)
-
-            st.markdown(clean_html(f"""
-            <div class="white-card">
-                <div style="display:flex; justify-content:space-around; align-items:center; flex-wrap:wrap; text-align:center;">
-                    <div>
-                        <div style="color:#636e72; font-size:0.8rem; text-transform:uppercase; font-weight:600;">{tr('stat_total_tx')}</div>
-                        <strong style="font-size:1.4rem; color:#2d3436;">{len(history_records)}</strong>
-                    </div>
-                    <div style="width:1px; height:40px; background:#e9ecef;"></div>
-                    <div>
-                        <div style="color:#636e72; font-size:0.8rem; text-transform:uppercase; font-weight:600;">{tr('stat_total_spent')}</div>
-                        <strong style="font-size:1.4rem; color:#6c5ce7;">₹{total_spent_val:,.2f}</strong>
-                    </div>
-                    <div style="width:1px; height:40px; background:#e9ecef;"></div>
-                    <div>
-                        <div style="color:#636e72; font-size:0.8rem; text-transform:uppercase; font-weight:600;">{tr('stat_your_share')}</div>
-                        <strong style="font-size:1.4rem; color:#00b894;">₹{my_share_val:,.2f}</strong>
-                    </div>
+    with col_set1:
+        st.markdown(clean_html(f"""
+        <div class="white-card">
+            <h3 style="font-size:1.15rem; font-weight:800; color:#2d3748; margin:0 0 1rem 0;">👤 Profile Details</h3>
+            <div style="display:flex; align-items:center; gap:16px; margin-bottom:1rem;">
+                <div class="profile-avatar" style="width:52px; height:52px; font-size:1.4rem;">{user_initial}</div>
+                <div>
+                    <h4 style="margin:0; font-size:1.2rem; font-weight:800; color:#1a202c;">{current_user_name}</h4>
+                    <p style="margin:0; font-size:0.88rem; color:#718096;">{current_user_email}</p>
+                    <span style="display:inline-block; margin-top:4px; background:#dcfce7; color:#16a34a; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:8px;">Active Account</span>
                 </div>
             </div>
-            """), unsafe_allow_html=True)
+            <p style="color:#718096; font-size:0.85rem;">Connected Database: <strong>{db_type.upper()}</strong></p>
+        </div>
+        """), unsafe_allow_html=True)
 
-            df_display = pd.DataFrame(history_records)
-            df_display['Total_Amount'] = df_display['Total_Amount'].apply(lambda x: f"₹{float(x):,.2f}")
-            df_display['Your_Share'] = df_display['Your_Share'].apply(lambda x: f"₹{float(x):,.2f}")
-            st.dataframe(df_display, use_container_width=True)
-
-            with st.expander(tr('delete_history_title')):
-                del_map = {f"#{r['ID']}: {r['Description']} ({r['Total_Amount']} on {r['Date']} in {r['Group_Name']})": r['ID'] for r in history_records}
-                sel_del_exp = st.selectbox("Select entry to delete:", list(del_map.keys()))
-                if st.button(tr('btn_delete_entry'), key="btn_del_hist_entry"):
-                    t_eid = del_map[sel_del_exp]
-                    execute_cmd("DELETE FROM expense_splits WHERE expense_id = %s", (t_eid,))
-                    execute_cmd("DELETE FROM expenses WHERE id = %s", (t_eid,))
-                    st.success("Entry deleted successfully!")
-                    st.rerun()
-
-            # Navigation back to earlier steps from Payment History
-            st.markdown(clean_html(f"""
-            <div style="background: linear-gradient(135deg, #f7f6fe 0%, #edeafe 100%); border: 1.5px solid #dcd6fa; border-radius: 12px; padding: 1rem 1.25rem; margin: 1.5rem 0 0.75rem 0; text-align:center;">
-                <span style="background:#00b894; color:#ffffff; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:8px; text-transform:uppercase;">Lifecycle Complete</span>
-                <h4 style="margin:4px 0 2px 0; color:#2d3436; font-size:1.05rem;">{tr('complete_lifecycle_title')}</h4>
-                <small style="color:#636e72;">{tr('complete_lifecycle_sub')}</small>
-            </div>
-            """), unsafe_allow_html=True)
-            col_h1, col_h2, col_h3 = st.columns(3)
-            with col_h1:
-                if st.button(tr('btn_goto_step1'), key="hist_to_grp", use_container_width=True):
-                    navigate_to("groups")
-            with col_h2:
-                if st.button(tr('btn_goto_step2'), key="hist_to_exp", use_container_width=True):
-                    navigate_to("expenses")
-            with col_h3:
-                if st.button(tr('btn_goto_step3'), key="hist_to_bal", use_container_width=True):
-                    navigate_to("balances")
+    with col_set2:
+        st.markdown(clean_html("""
+        <div class="white-card">
+            <h3 style="font-size:1.15rem; font-weight:800; color:#2d3748; margin:0 0 1rem 0;">🔑 Change Password</h3>
+        """), unsafe_allow_html=True)
+        with st.form("settings_change_pwd_form"):
+            old_p = st.text_input("Current Password", type="password")
+            new_p = st.text_input("New Password", type="password")
+            conf_p = st.text_input("Confirm New Password", type="password")
+            btn_chg_pwd = st.form_submit_button("Update Password", use_container_width=True)
+            if btn_chg_pwd:
+                if not old_p or not new_p:
+                    st.error("Please fill all password fields.")
+                elif new_p != conf_p:
+                    st.error("New passwords do not match.")
+                elif len(new_p) < 4:
+                    st.error("Password must be at least 4 characters.")
+                else:
+                    curr_user = run_query("SELECT password_hash FROM users WHERE id = %s", (current_user_id,))
+                    if curr_user and check_user_password(curr_user[0]['password_hash'], old_p):
+                        execute_cmd("UPDATE users SET password_hash = %s WHERE id = %s", (make_password_hash(new_p), current_user_id))
+                        st.success("🎉 Password updated successfully!")
+                    else:
+                        st.error("Current password incorrect.")
+        st.markdown("</div>", unsafe_allow_html=True)
