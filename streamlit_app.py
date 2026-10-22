@@ -1255,23 +1255,6 @@ if not st.session_state['authenticated']:
             display: none !important;
         }
 
-        /* Top Bar Language Selector Pill - Crisp White Background & Dark Text */
-        .auth-lang-container div[data-testid="stSelectbox"] label {
-            color: #ffffff !important;
-            font-weight: 700 !important;
-            font-size: 0.95rem !important;
-            margin-bottom: 4px !important;
-        }
-        .auth-lang-container div[data-testid="stSelectbox"] div[data-baseweb="select"] {
-            background: #ffffff !important;
-            border-radius: 14px !important;
-            border: 2px solid #ffffff !important;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
-        }
-        .auth-lang-container div[data-testid="stSelectbox"] div[data-baseweb="select"] * {
-            color: #2d3436 !important;
-            font-weight: 700 !important;
-        }
 
         /* The Form ITSELF is the Clean White Card (No extra empty containers) */
         div[data-testid="stForm"] {
@@ -1341,23 +1324,6 @@ if not st.session_state['authenticated']:
         }
     </style>
     """, unsafe_allow_html=True)
-
-    # Top Bar: Language Selector prominently aligned on top right
-    col_empty, col_auth_right = st.columns([2.5, 1.5])
-    with col_auth_right:
-        st.markdown('<div class="auth-lang-container">', unsafe_allow_html=True)
-        c_lang_auth = st.session_state.get('interface_language', 'English')
-        c_lang_auth_idx = LANGUAGE_OPTIONS.index(c_lang_auth) if c_lang_auth in LANGUAGE_OPTIONS else 0
-        sel_auth_lang = st.selectbox(
-            "🌐 Interface Language:",
-            LANGUAGE_OPTIONS,
-            index=c_lang_auth_idx,
-            key="auth_lang_dropdown"
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
-        if sel_auth_lang != st.session_state.get('interface_language'):
-            st.session_state['interface_language'] = sel_auth_lang
-            st.rerun()
 
     # Top Brand Header: Centered Squircle Logo & Brand Name (SplitSettlement)
     st.markdown(clean_html(render_brand_header(size=72, text_color="#ffffff", sub_color="rgba(255,255,255,0.88)", show_tagline=True)), unsafe_allow_html=True)
