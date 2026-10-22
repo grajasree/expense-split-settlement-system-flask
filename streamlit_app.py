@@ -704,7 +704,7 @@ TRANSLATIONS = {
         'nav_expenses': '➕ Add Expense',
         'nav_balances': '⚖️ Balances',
         'nav_budgets': '📊 Budgets',
-        'nav_settings': '⚙️ Settings',
+        'nav_settings': '⚙️ Settings & Profile',
         'step_1': 'Step 1: 👥 Groups & Members',
         'step_2': 'Step 2: 🧾 Add & Split Expenses',
         'step_3': 'Step 3: ⚖️ Who Owes Whom',
@@ -1698,7 +1698,7 @@ if st.sidebar.button(tr('btn_logout_account'), key="sidebar_bottom_logout_btn", 
 # ==============================================================================
 user_initial = current_user_name[0].upper() if current_user_name else "U"
 
-col_top_l, col_top_r = st.columns([2.2, 1.8])
+col_top_l, col_top_r = st.columns([1.8, 2.2])
 with col_top_l:
     st.markdown(
         f'<div style="display:flex; align-items:center; gap:12px; padding: 4px 0;">'
@@ -1709,7 +1709,7 @@ with col_top_l:
     )
 
 with col_top_r:
-    col_t_lang, col_t_prof = st.columns([1.2, 1.6])
+    col_t_lang, col_t_prof, col_t_btn = st.columns([1.0, 1.6, 1.4])
     with col_t_lang:
         cur_l = st.session_state.get('interface_language', 'English')
         cur_l_idx = LANGUAGE_OPTIONS.index(cur_l) if cur_l in LANGUAGE_OPTIONS else 0
@@ -1728,6 +1728,9 @@ with col_top_r:
             f'</div>',
             unsafe_allow_html=True
         )
+    with col_t_btn:
+        if st.button("✏️ Edit Profile", key="btn_top_edit_profile", use_container_width=True):
+            navigate_to("settings")
 
 st.markdown("<div style='height:1px; background:#edf2f7; margin: 0.5rem 0 1.5rem 0;'></div>", unsafe_allow_html=True)
 
@@ -1750,7 +1753,7 @@ format_p = ','.join(['%s'] * len(group_ids)) if group_ids else '0'
 # ==============================================================================
 if menu == "dashboard":
     # Greeting Header with Action Buttons
-    c_greet, c_actions = st.columns([2.2, 1.2])
+    c_greet, c_actions = st.columns([1.7, 1.5])
     with c_greet:
         st.markdown(clean_html(f"""
         <div>
@@ -1759,13 +1762,16 @@ if menu == "dashboard":
         </div>
         """), unsafe_allow_html=True)
     with c_actions:
-        col_btn1, col_btn2 = st.columns(2)
+        col_btn1, col_btn2, col_btn3 = st.columns(3)
         with col_btn1:
             if st.button("➕ Add Expense", key="dash_top_add_exp", type="primary", use_container_width=True):
                 navigate_to("expenses")
         with col_btn2:
             if st.button("👥 Create Group", key="dash_top_create_grp", use_container_width=True):
                 navigate_to("groups")
+        with col_btn3:
+            if st.button("✏️ Edit Profile", key="dash_top_edit_prof", use_container_width=True):
+                navigate_to("settings")
 
     st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
 
