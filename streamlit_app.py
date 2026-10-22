@@ -1154,14 +1154,13 @@ def tr(key):
         l_code = 'hi'
     return TRANSLATIONS.get(l_code, {}).get(key, TRANSLATIONS['en'].get(key, key))
 
+APP_LOGO_B64 = "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"
+
 def render_brand_logo(size=48, key="logo"):
-    radius = int(size * 0.28)
     return (
-        f'<div style="width:{size}px; height:{size}px; border-radius:{radius}px; '
-        f'background:linear-gradient(135deg, #7c4dff 0%, #6c5ce7 40%, #00b894 100%); '
-        f'display:inline-flex; align-items:center; justify-content:center; color:#ffffff; '
-        f'font-size:{int(size*0.50)}px; box-shadow:0 8px 24px rgba(108,92,231,0.38); '
-        f'border:1.5px solid rgba(255,255,255,0.55); vertical-align:middle;">⚖️</div>'
+        f'<img src="data:image/png;base64,{APP_LOGO_B64}" width="{size}" height="{size}" '
+        f'style="border-radius:{int(size*0.25)}px; box-shadow:0 8px 24px rgba(108,92,231,0.38); '
+        f'vertical-align:middle; display:inline-block;" alt="SplitSettlement">'
     )
 
 def render_brand_header(size=64, text_color="#ffffff", sub_color="rgba(255,255,255,0.88)", show_tagline=True):
@@ -1172,7 +1171,7 @@ def render_brand_header(size=64, text_color="#ffffff", sub_color="rgba(255,255,2
         if show_tagline else ''
     )
     return (
-        f'<div style="text-align:center; margin-bottom:1.25rem;">'
+        f'<div style="text-align:center; margin-bottom:1.5rem;">'
         f'{render_brand_logo(size=size)}'
         f'<h1 style="color:{text_color}; font-size:1.85rem; font-weight:800; margin:10px 0 2px 0; letter-spacing:-0.5px;">SplitSettlement</h1>'
         f'<p style="color:{sub_color}; font-size:0.95rem; font-weight:500; margin:0;">Expense Split & Settlement System</p>'
@@ -1229,7 +1228,7 @@ if 'authenticated' not in st.session_state:
     st.session_state['user_email'] = None
 
 # ==============================================================================
-# SCREEN 1: LOGIN & REGISTRATION PORTAL (Matching Creative Modern Design)
+# SCREEN 1: LOGIN & REGISTRATION PORTAL (Matching Exact Creative Mockup)
 # ==============================================================================
 if not st.session_state['authenticated']:
     # Inject Custom Login Screen Styles
@@ -1237,7 +1236,7 @@ if not st.session_state['authenticated']:
     <style>
         /* Immersive Deep Purple Gradient Viewport */
         .stApp {
-            background: radial-gradient(circle at 85% 15%, #6f47eb 0%, #5733d6 45%, #4420bf 100%) !important;
+            background: linear-gradient(135deg, #4f2cdb 0%, #683fea 45%, #7b4df2 100%) !important;
             min-height: 100vh !important;
         }
 
@@ -1261,19 +1260,19 @@ if not st.session_state['authenticated']:
             color: #ffffff !important;
         }
 
-        /* Floating White Auth Card */
+        /* Floating White Auth Card (Exactly like Screenshot) */
         .auth-white-card {
             background: #ffffff !important;
             border-radius: 22px !important;
             padding: 2.2rem 2.2rem 1.8rem 2.2rem !important;
             box-shadow: 0 20px 60px rgba(15, 5, 55, 0.32) !important;
             color: #2d3436 !important;
-            margin-top: 0.5rem;
+            margin-top: 0.25rem;
         }
 
         /* Inputs inside Auth Card */
         div[data-testid="stTextInput"] input {
-            background-color: #fafbff !important;
+            background-color: #ffffff !important;
             border: 1.5px solid #e1e8ed !important;
             border-radius: 10px !important;
             padding: 0.75rem 1rem !important;
@@ -1287,14 +1286,15 @@ if not st.session_state['authenticated']:
             box-shadow: 0 0 0 3px rgba(91, 54, 232, 0.15) !important;
         }
         div[data-testid="stTextInput"] label {
-            color: #2d3436 !important;
-            font-weight: 600 !important;
+            color: #636e72 !important;
+            font-weight: 500 !important;
             font-size: 0.88rem !important;
             margin-bottom: 2px !important;
         }
 
-        /* Purple Auth Action Submit Buttons */
+        /* Solid Purple Action Button (Exactly like Screenshot) */
         div[data-testid="stFormSubmitButton"] > button {
+            background: #5b36e8 !important;
             background: linear-gradient(135deg, #6c5ce7 0%, #5031df 100%) !important;
             color: #ffffff !important;
             border: none !important;
@@ -1313,12 +1313,18 @@ if not st.session_state['authenticated']:
             box-shadow: 0 12px 28px rgba(91, 54, 232, 0.45) !important;
         }
 
-        /* Switch Text and Link Styling */
-        .auth-switch-link {
+        /* Secondary switch button styling */
+        button[kind="secondary"] {
+            border: none !important;
+            background: transparent !important;
             color: #5b36e8 !important;
             font-weight: 700 !important;
-            text-decoration: none;
-            cursor: pointer;
+            padding: 0 !important;
+            box-shadow: none !important;
+        }
+        button[kind="secondary"]:hover {
+            text-decoration: underline !important;
+            background: transparent !important;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -1339,7 +1345,7 @@ if not st.session_state['authenticated']:
             st.rerun()
 
     # Top Brand Header: Centered Squircle Logo & Brand Name (SplitSettlement)
-    st.markdown(clean_html(render_brand_header(size=64, text_color="#ffffff", sub_color="rgba(255,255,255,0.88)", show_tagline=True)), unsafe_allow_html=True)
+    st.markdown(clean_html(render_brand_header(size=72, text_color="#ffffff", sub_color="rgba(255,255,255,0.88)", show_tagline=True)), unsafe_allow_html=True)
 
     # 2-Column Responsive Layout: Left Hero with Friends & Coins, Right Floating Card
     col_hero, col_card = st.columns([1.08, 1.12], gap="large")
@@ -1450,26 +1456,13 @@ if not st.session_state['authenticated']:
 
         st.markdown(clean_html('<div class="auth-white-card">'), unsafe_allow_html=True)
 
-        # Tab Mode Switcher (Clean Top Pills)
-        col_m1, col_m2 = st.columns(2)
-        with col_m1:
-            if st.button("🔑 Login", key="btn_auth_pill_login", type="primary" if auth_mode == "login" else "secondary", use_container_width=True):
-                st.session_state['auth_mode'] = 'login'
-                st.rerun()
-        with col_m2:
-            if st.button("✨ Create Account", key="btn_auth_pill_reg", type="primary" if auth_mode == "register" else "secondary", use_container_width=True):
-                st.session_state['auth_mode'] = 'register'
-                st.rerun()
-
-        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
-
         # ======================================================================
-        # CARD 1: LOGIN (Welcome Back)
+        # CARD 1: LOGIN (Welcome Back) - EXACTLY MATCHING SCREENSHOT
         # ======================================================================
         if auth_mode == 'login':
             st.markdown(clean_html("""
-            <div style="text-align: center; margin-bottom: 1.25rem;">
-                <h3 style="color: #2d3436; font-size: 1.6rem; font-weight: 700; margin: 0 0 4px 0;">Welcome Back</h3>
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <h3 style="color: #2d3436; font-size: 1.65rem; font-weight: 700; margin: 0 0 4px 0;">Welcome Back</h3>
                 <p style="color: #636e72; font-size: 0.92rem; margin: 0;">Login to your account</p>
             </div>
             """), unsafe_allow_html=True)
@@ -1509,7 +1502,7 @@ if not st.session_state['authenticated']:
                                 'ident': cleaned_ident,
                                 'pwd': login_pwd
                             }
-                            st.error(f"No account found for '{cleaned_ident}'. Click below to create your account in 1 click, or switch to Create Account.")
+                            st.error(f"No account found for '{cleaned_ident}'. Click below to create your account in 1 click, or click 'Register' below.")
                         else:
                             if 'unregistered_attempt' in st.session_state:
                                 del st.session_state['unregistered_attempt']
@@ -1550,23 +1543,23 @@ if not st.session_state['authenticated']:
                     st.success(f"🎉 Account created successfully! Welcome, {new_name}!")
                     st.rerun()
 
-            # Switch prompt to Register
-            st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+            # Switch prompt to Register (Exact text from screenshot: "Don't have an account? Register")
+            st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
             col_sw1, col_sw2 = st.columns([1.5, 1])
             with col_sw1:
-                st.markdown("<p style='text-align:right; color:#636e72; font-size:0.92rem; margin-top:8px;'>Don\'t have an account?</p>", unsafe_allow_html=True)
+                st.markdown("<p style='text-align:right; color:#636e72; font-size:0.92rem; margin-top:6px;'>Don\'t have an account?</p>", unsafe_allow_html=True)
             with col_sw2:
                 if st.button("Register", key="switch_to_reg"):
                     st.session_state['auth_mode'] = 'register'
                     st.rerun()
 
         # ======================================================================
-        # CARD 2: REGISTER (Create Account)
+        # CARD 2: REGISTER (Create Account) - EXACTLY MATCHING SCREENSHOT
         # ======================================================================
         else:
             st.markdown(clean_html("""
-            <div style="text-align: center; margin-bottom: 1.25rem;">
-                <h3 style="color: #2d3436; font-size: 1.6rem; font-weight: 700; margin: 0 0 4px 0;">Create Account</h3>
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <h3 style="color: #2d3436; font-size: 1.65rem; font-weight: 700; margin: 0 0 4px 0;">Create Account</h3>
                 <p style="color: #636e72; font-size: 0.92rem; margin: 0;">Join now and start managing expenses</p>
             </div>
             """), unsafe_allow_html=True)
@@ -1651,11 +1644,11 @@ if not st.session_state['authenticated']:
                             st.success(f"🎉 Account created successfully! Welcome, {c_name}!")
                             st.rerun()
 
-            # Switch prompt to Login
-            st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+            # Switch prompt to Login (Exact text from screenshot: "Already have an account? Login")
+            st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
             col_sw1, col_sw2 = st.columns([1.5, 1])
             with col_sw1:
-                st.markdown("<p style='text-align:right; color:#636e72; font-size:0.92rem; margin-top:8px;'>Already have an account?</p>", unsafe_allow_html=True)
+                st.markdown("<p style='text-align:right; color:#636e72; font-size:0.92rem; margin-top:6px;'>Already have an account?</p>", unsafe_allow_html=True)
             with col_sw2:
                 if st.button("Login", key="switch_to_login"):
                     st.session_state['auth_mode'] = 'login'
