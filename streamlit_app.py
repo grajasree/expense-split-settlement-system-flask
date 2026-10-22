@@ -1153,8 +1153,14 @@ if not st.session_state['authenticated']:
                         """, (cleaned_ident.lower(), cleaned_ident.lower()))
 
                         if not user_rec:
-                            st.error("No account found with this Name or Email. Please check your spelling or click 'Create New Account'.")
+                            st.session_state['unregistered_attempt'] = {
+                                'ident': cleaned_ident,
+                                'pwd': login_pwd
+                            }
+                            st.error(f"No account found for '{cleaned_ident}'. Click below to create your account in 1 click, or switch to the 'Create New Account' tab.")
                         else:
+                            if 'unregistered_attempt' in st.session_state:
+                                del st.session_state['unregistered_attempt']
                             u = user_rec[0]
                             if check_user_password(u['password_hash'], login_pwd):
                                 st.session_state['authenticated'] = True
@@ -1166,12 +1172,48 @@ if not st.session_state['authenticated']:
                             else:
                                 st.error("Incorrect password. Please try again.")
 
+            if st.session_state.get('unregistered_attempt'):
+                unreg = st.session_state['unregistered_attempt']
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.info(f"💡 No account found for **{unreg['ident']}**. Click below to quickly create it and log in!")
+                if st.button(f"✨ Create Account & Log In as '{unreg['ident']}'", key="btn_quick_register_from_login", type="primary", use_container_width=True):
+                    if '@' in unreg['ident']:
+                        new_email = unreg['ident'].lower()
+                        raw_prefix = unreg['ident'].split('@')[0]
+                        new_name = raw_prefix.replace('.', ' ').replace('_', ' ').strip().title()
+                    else:
+                        new_name = unreg['ident']
+                        new_email = f"{re.sub(r'[^a-zA-Z0-9]', '', unreg['ident'].lower())}@splitsettle.app"
+
+                    new_pwd_hash = make_password_hash(unreg['pwd'])
+                    new_uid = execute_cmd(
+                        "INSERT INTO users (name, email, password_hash) VALUES (%s, %s, %s)",
+                        (new_name, new_email, new_pwd_hash)
+                    )
+                    st.session_state['authenticated'] = True
+                    st.session_state['user_id'] = new_uid
+                    st.session_state['user_name'] = new_name
+                    st.session_state['user_email'] = new_email
+                    del st.session_state['unregistered_attempt']
+                    st.success(f"🎉 Account created successfully! Welcome, {new_name}!")
+                    st.rerun()
+
         # TAB 2: REGISTER
         with auth_tab2:
             st.markdown(f"<p style='color:#636e72; font-size:0.9rem; margin-top:0.5rem;'>{tr('reg_header')}</p>", unsafe_allow_html=True)
+            default_reg_email = ""
+            default_reg_name = ""
+            if st.session_state.get('unregistered_attempt'):
+                unreg = st.session_state['unregistered_attempt']
+                if '@' in unreg['ident']:
+                    default_reg_email = unreg['ident']
+                    default_reg_name = unreg['ident'].split('@')[0].replace('.', ' ').replace('_', ' ').strip().title()
+                else:
+                    default_reg_name = unreg['ident']
+
             with st.form("register_form"):
-                reg_name = st.text_input(tr('fullname_label'), placeholder=tr('fullname_placeholder'))
-                reg_email = st.text_input(tr('email_label'), placeholder=tr('email_placeholder'))
+                reg_name = st.text_input(tr('fullname_label'), value=default_reg_name, placeholder=tr('fullname_placeholder'))
+                reg_email = st.text_input(tr('email_label'), value=default_reg_email, placeholder=tr('email_placeholder'))
                 reg_pwd = st.text_input(tr('create_pwd_label'), type="password", placeholder="Enter a secure password")
                 reg_confirm = st.text_input(tr('confirm_pwd_label'), type="password", placeholder="Re-enter your password")
                 submit_reg = st.form_submit_button(tr('btn_create_account'))
