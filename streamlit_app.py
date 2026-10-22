@@ -1244,31 +1244,36 @@ if not st.session_state['authenticated']:
             display: none !important;
         }
 
-        /* Top Bar Language Selector */
-        div[data-testid="stSelectbox"] div[data-baseweb="select"] {
-            background: rgba(255, 255, 255, 0.16) !important;
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
-            border-radius: 14px !important;
+        /* Top Bar Language Selector Pill - Crisp White Background & Dark Text */
+        .auth-lang-container div[data-testid="stSelectbox"] label {
             color: #ffffff !important;
-            backdrop-filter: blur(6px);
+            font-weight: 700 !important;
+            font-size: 0.95rem !important;
+            margin-bottom: 4px !important;
         }
-        div[data-testid="stSelectbox"] div[data-baseweb="select"] * {
-            color: #ffffff !important;
+        .auth-lang-container div[data-testid="stSelectbox"] div[data-baseweb="select"] {
+            background: #ffffff !important;
+            border-radius: 14px !important;
+            border: 2px solid #ffffff !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
+        }
+        .auth-lang-container div[data-testid="stSelectbox"] div[data-baseweb="select"] * {
+            color: #2d3436 !important;
+            font-weight: 700 !important;
         }
 
-        /* Floating White Auth Card (Exactly like Screenshot) */
-        .auth-white-card {
+        /* The Form ITSELF is the Clean White Card (No extra empty containers) */
+        div[data-testid="stForm"] {
             background: #ffffff !important;
             border-radius: 22px !important;
             padding: 2.2rem 2.2rem 1.8rem 2.2rem !important;
-            box-shadow: 0 20px 60px rgba(15, 5, 55, 0.32) !important;
-            color: #2d3436 !important;
-            margin-top: 0.25rem;
+            box-shadow: 0 20px 60px rgba(15, 5, 55, 0.35) !important;
+            border: none !important;
         }
 
         /* Inputs inside Auth Card */
         div[data-testid="stTextInput"] input {
-            background-color: #ffffff !important;
+            background-color: #fafbff !important;
             border: 1.5px solid #e1e8ed !important;
             border-radius: 10px !important;
             padding: 0.75rem 1rem !important;
@@ -1283,14 +1288,13 @@ if not st.session_state['authenticated']:
         }
         div[data-testid="stTextInput"] label {
             color: #636e72 !important;
-            font-weight: 500 !important;
+            font-weight: 600 !important;
             font-size: 0.88rem !important;
             margin-bottom: 2px !important;
         }
 
-        /* Solid Purple Action Button (Exactly like Screenshot) */
+        /* Solid Purple Action Button */
         div[data-testid="stFormSubmitButton"] > button {
-            background: #5b36e8 !important;
             background: linear-gradient(135deg, #6c5ce7 0%, #5031df 100%) !important;
             color: #ffffff !important;
             border: none !important;
@@ -1309,25 +1313,28 @@ if not st.session_state['authenticated']:
             box-shadow: 0 12px 28px rgba(91, 54, 232, 0.45) !important;
         }
 
-        /* Secondary switch button styling */
-        button[kind="secondary"] {
-            border: none !important;
-            background: transparent !important;
-            color: #5b36e8 !important;
+        /* Bottom Switch Button */
+        .auth-switch-box button {
+            background: rgba(255, 255, 255, 0.15) !important;
+            color: #ffffff !important;
+            border: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+            border-radius: 10px !important;
             font-weight: 700 !important;
-            padding: 0 !important;
-            box-shadow: none !important;
+            padding: 0.5rem 1.2rem !important;
+            transition: all 0.2s ease !important;
         }
-        button[kind="secondary"]:hover {
-            text-decoration: underline !important;
-            background: transparent !important;
+        .auth-switch-box button:hover {
+            background: rgba(255, 255, 255, 0.3) !important;
+            color: #ffffff !important;
+            transform: translateY(-1px) !important;
         }
     </style>
     """, unsafe_allow_html=True)
 
-    # Top Bar: Language Dropdown aligned cleanly on top right
-    col_empty, col_auth_right = st.columns([2.7, 1.3])
+    # Top Bar: Language Selector prominently aligned on top right
+    col_empty, col_auth_right = st.columns([2.5, 1.5])
     with col_auth_right:
+        st.markdown('<div class="auth-lang-container">', unsafe_allow_html=True)
         c_lang_auth = st.session_state.get('interface_language', 'English')
         c_lang_auth_idx = LANGUAGE_OPTIONS.index(c_lang_auth) if c_lang_auth in LANGUAGE_OPTIONS else 0
         sel_auth_lang = st.selectbox(
@@ -1336,6 +1343,7 @@ if not st.session_state['authenticated']:
             index=c_lang_auth_idx,
             key="auth_lang_dropdown"
         )
+        st.markdown('</div>', unsafe_allow_html=True)
         if sel_auth_lang != st.session_state.get('interface_language'):
             st.session_state['interface_language'] = sel_auth_lang
             st.rerun()
@@ -1450,20 +1458,18 @@ if not st.session_state['authenticated']:
         # Determine current auth mode: login vs register
         auth_mode = st.session_state.get('auth_mode', 'login')
 
-        st.markdown(clean_html('<div class="auth-white-card">'), unsafe_allow_html=True)
-
         # ======================================================================
-        # CARD 1: LOGIN (Welcome Back) - EXACTLY MATCHING SCREENSHOT
+        # CARD 1: LOGIN (Welcome Back) - THE FORM IS THE WHITE CARD
         # ======================================================================
         if auth_mode == 'login':
-            st.markdown(clean_html("""
-            <div style="text-align: center; margin-bottom: 1.5rem;">
-                <h3 style="color: #2d3436; font-size: 1.65rem; font-weight: 700; margin: 0 0 4px 0;">Welcome Back</h3>
-                <p style="color: #636e72; font-size: 0.92rem; margin: 0;">Login to your account</p>
-            </div>
-            """), unsafe_allow_html=True)
-
             with st.form("login_form"):
+                st.markdown(clean_html("""
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <h3 style="color: #2d3436; font-size: 1.65rem; font-weight: 800; margin: 0 0 4px 0;">Welcome Back</h3>
+                    <p style="color: #636e72; font-size: 0.92rem; margin: 0;">Login to your account</p>
+                </div>
+                """), unsafe_allow_html=True)
+
                 login_ident = st.text_input("Email address", placeholder="Email address", key="login_ident_in")
                 login_pwd = st.text_input("Password", type="password", placeholder="Password", key="login_pwd_in")
 
@@ -1539,27 +1545,22 @@ if not st.session_state['authenticated']:
                     st.success(f"🎉 Account created successfully! Welcome, {new_name}!")
                     st.rerun()
 
-            # Switch prompt to Register (Exact text from screenshot: "Don't have an account? Register")
-            st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+            # Switch prompt to Register (Clean button below the white form)
+            st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
             col_sw1, col_sw2 = st.columns([1.5, 1])
             with col_sw1:
-                st.markdown("<p style='text-align:right; color:#636e72; font-size:0.92rem; margin-top:6px;'>Don\'t have an account?</p>", unsafe_allow_html=True)
+                st.markdown("<p style='text-align:right; color:#ffffff; font-size:0.95rem; font-weight:600; margin-top:8px;'>Don\'t have an account?</p>", unsafe_allow_html=True)
             with col_sw2:
+                st.markdown('<div class="auth-switch-box">', unsafe_allow_html=True)
                 if st.button("Register", key="switch_to_reg"):
                     st.session_state['auth_mode'] = 'register'
                     st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
 
         # ======================================================================
-        # CARD 2: REGISTER (Create Account) - EXACTLY MATCHING SCREENSHOT
+        # CARD 2: REGISTER (Create Account) - THE FORM IS THE WHITE CARD
         # ======================================================================
         else:
-            st.markdown(clean_html("""
-            <div style="text-align: center; margin-bottom: 1.5rem;">
-                <h3 style="color: #2d3436; font-size: 1.65rem; font-weight: 700; margin: 0 0 4px 0;">Create Account</h3>
-                <p style="color: #636e72; font-size: 0.92rem; margin: 0;">Join now and start managing expenses</p>
-            </div>
-            """), unsafe_allow_html=True)
-
             default_reg_email = ""
             default_reg_name = ""
             if st.session_state.get('unregistered_attempt'):
@@ -1571,6 +1572,13 @@ if not st.session_state['authenticated']:
                     default_reg_name = unreg['ident']
 
             with st.form("register_form"):
+                st.markdown(clean_html("""
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <h3 style="color: #2d3436; font-size: 1.65rem; font-weight: 800; margin: 0 0 4px 0;">Create Account</h3>
+                    <p style="color: #636e72; font-size: 0.92rem; margin: 0;">Join now and start managing expenses</p>
+                </div>
+                """), unsafe_allow_html=True)
+
                 reg_name = st.text_input("Full Name", value=default_reg_name, placeholder="Full Name", key="reg_name_in")
                 reg_email = st.text_input("Email address", value=default_reg_email, placeholder="Email address", key="reg_email_in")
                 reg_pwd = st.text_input("Password", type="password", placeholder="Password", key="reg_pwd_in")
@@ -1640,17 +1648,17 @@ if not st.session_state['authenticated']:
                             st.success(f"🎉 Account created successfully! Welcome, {c_name}!")
                             st.rerun()
 
-            # Switch prompt to Login (Exact text from screenshot: "Already have an account? Login")
-            st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+            # Switch prompt to Login (Clean button below the white form)
+            st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
             col_sw1, col_sw2 = st.columns([1.5, 1])
             with col_sw1:
-                st.markdown("<p style='text-align:right; color:#636e72; font-size:0.92rem; margin-top:6px;'>Already have an account?</p>", unsafe_allow_html=True)
+                st.markdown("<p style='text-align:right; color:#ffffff; font-size:0.95rem; font-weight:600; margin-top:8px;'>Already have an account?</p>", unsafe_allow_html=True)
             with col_sw2:
+                st.markdown('<div class="auth-switch-box">', unsafe_allow_html=True)
                 if st.button("Login", key="switch_to_login"):
                     st.session_state['auth_mode'] = 'login'
                     st.rerun()
-
-        st.markdown("</div>", unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
 
     # Stop execution here until the user logs in
     st.stop()
@@ -1686,6 +1694,20 @@ menu = st.sidebar.radio(
     label_visibility="collapsed"
 )
 st.session_state['nav_selection'] = menu
+
+# Interface Language Dropdown in Sidebar
+cur_lang_sb = st.session_state.get('interface_language', 'English')
+lang_idx_sb = LANGUAGE_OPTIONS.index(cur_lang_sb) if cur_lang_sb in LANGUAGE_OPTIONS else 0
+sel_lang_sb = st.sidebar.selectbox(
+    "🌐 Interface Language:",
+    LANGUAGE_OPTIONS,
+    index=lang_idx_sb,
+    key="sb_lang_dropdown_main"
+)
+if sel_lang_sb != st.session_state.get('interface_language'):
+    st.session_state['interface_language'] = sel_lang_sb
+    st.rerun()
+
 
 st.sidebar.markdown("<div style='height:2rem;'></div>", unsafe_allow_html=True)
 st.sidebar.caption(f"Engine: **{db_type.upper()}** &bull; Status: **Online**")
@@ -1742,6 +1764,9 @@ user_groups = run_query("""
     LEFT JOIN group_budgets gb ON g.id = gb.group_id
     WHERE gm.user_id = %s
 """, (current_user_id,))
+
+group_ids = [g['id'] for g in user_groups] if user_groups else []
+format_p = ','.join(['%s'] * len(group_ids)) if group_ids else '0' 
 
 # ==============================================================================
 # 1. DASHBOARD & ANALYTICS (SCREEN 3 IN MOCKUP)
