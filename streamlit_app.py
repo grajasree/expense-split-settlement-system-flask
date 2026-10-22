@@ -597,7 +597,7 @@ TRANSLATIONS = {
         'tab_signin': '🔐 Sign In to Account',
         'tab_register': '📝 Create New Account',
         'signin_header': 'Enter your name or email to access your dashboard:',
-        'signin_invited_tip': '💡 **Invited to a group by a friend?** You can log in using your name and default password **123456**, or switch to the **\'Create New Account\'** tab to set your own password and activate your account.',
+        'signin_invited_tip': '💡 **Secure Sign In:** Enter your registered Name/Email and confidential password. If you are a new user, switch to the **\'Create New Account\'** tab to choose your own secure password.',
         'ident_label': 'Name or Email *',
         'ident_placeholder': 'e.g. Rajasree or user@example.com',
         'pwd_label': 'Password *',
@@ -1367,6 +1367,28 @@ if st.sidebar.button(tr('btn_logout'), key="sidebar_top_logout_btn", use_contain
     st.session_state.clear()
     st.session_state['authenticated'] = False
     st.rerun()
+
+# Change Password Option
+with st.sidebar.expander("🔑 Change Password"):
+    with st.form("sidebar_change_pwd_form"):
+        old_p = st.text_input("Current Password", type="password")
+        new_p = st.text_input("New Password", type="password")
+        conf_p = st.text_input("Confirm New Password", type="password")
+        btn_chg_pwd = st.form_submit_button("Update Password", use_container_width=True)
+        if btn_chg_pwd:
+            if not old_p or not new_p:
+                st.error("Please fill all password fields.")
+            elif new_p != conf_p:
+                st.error("New passwords do not match.")
+            elif len(new_p) < 4:
+                st.error("Password must be at least 4 characters.")
+            else:
+                curr_user = run_query("SELECT password_hash FROM users WHERE id = %s", (current_user_id,))
+                if curr_user and check_user_password(curr_user[0]['password_hash'], old_p):
+                    execute_cmd("UPDATE users SET password_hash = %s WHERE id = %s", (make_password_hash(new_p), current_user_id))
+                    st.success("🎉 Password updated successfully!")
+                else:
+                    st.error("Current password incorrect.")
 
 cur_lang_sb = st.session_state.get('interface_language', 'English')
 lang_idx_sb = LANGUAGE_OPTIONS.index(cur_lang_sb) if cur_lang_sb in LANGUAGE_OPTIONS else 0
