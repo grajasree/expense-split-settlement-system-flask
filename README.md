@@ -1,231 +1,200 @@
 # Expense Split and Settlement System
-**B.Tech Major Project Review Edition**
+**B.Tech Major Project Edition**
 
-A modern, responsive, and fully functional web application designed to track shared group expenses, monitor real-time group budgets, simplify peer-to-peer debt settlements using optimal cash-flow algorithms, and simulate hypothetical expense scenarios.
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://expense-split-settlement.streamlit.app/)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-2.x-black.svg)](https://flask.palletsprojects.com/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-orange.svg)](https://www.mysql.com/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-Cloud-FF4B4B.svg)](https://streamlit.io/)
+
+A modern, responsive, and full-featured financial web application designed to track shared group expenses, monitor real-time group spending budgets, simplify peer-to-peer debt settlements using optimal cash-flow algorithms, simulate hypothetical expense scenarios, and provide interactive expense analytics.
+
+🌐 **Live Streamlit Cloud Deployment**: [https://expense-split-settlement.streamlit.app/](https://expense-split-settlement.streamlit.app/)  
+📂 **GitHub Repository**: [https://github.com/grajasree/expense-split-settlement-system-flask](https://github.com/grajasree/expense-split-settlement-system-flask)
 
 ---
 
-## 🚀 Key Features Implemented (Phase 1 / 50% Milestone)
+## 🌟 Key Features & Capabilities
 
-1. **User Authentication & Session Management**:
-   - Secure user registration, login, and logout using Werkzeug PBKDF2 password hashing.
-   - Show/hide password toggle for smooth user experience.
-   - Session-based authorization preventing unauthorized data access.
+### 1. User Authentication & Profile Management
+- Secure user registration, login, and session persistence using Werkzeug PBKDF2 password hashing.
+- Show/hide password toggle for enhanced usability.
+- **Edit Profile**: Seamlessly update full name, registered email, and password.
+- **Account Statistics**: View user member join date, total groups joined, lifetime amount paid, and net balance.
+- Top-right interactive **Profile Badge** for quick profile access.
 
-2. **Group Management**:
-   - Create groups with names and descriptions.
-   - Invite existing registered users to groups by email address.
-   - Role management (Group Creator / Member).
+### 2. Group Management & Member Collaboration
+- Create and manage groups with custom names, descriptions, and monthly spending budgets.
+- **Effortless Member Addition**: Add registered users directly using a smart dropdown selector or email lookup.
+- Visual member chips displaying member names and roles (Group Creator / Member).
+- Automatic cascade handling and settlement protection when managing group members.
 
-3. **Expense Tracking & Advanced Split Methods**:
-   - **Equal Split**: Even division among selected members with exact fractional remainder adjustment.
-   - **Percentage Split**: Custom percentage assignment per member with strict 100% total validation.
-   - **Custom Split**: Exact rupee amount assignment with sum validation matching expense total.
-   - Category assignment, payer attribution, and complete edit/delete workflows.
+### 3. Expense Tracking & Advanced Interactive Split Methods
+- **Equal Split**: Evenly divides expenses among selected participants with automatic cent/paisa remainder distribution.
+- **Percentage Split (Interactive & Live)**:
+  - Custom percentage input box (`%`) for each selected participant.
+  - Live ₹ share calculation preview for every member in real time.
+  - Strict 100.0% total validation with instant visual indicators showing remaining or excess percentage.
+- **Custom Split (Interactive & Live)**:
+  - Custom rupee amount input (`₹`) per participant.
+  - Real-time sum tracking matching against total expense with validation preventing mismatched submissions.
+- Categorization across 10 categories (*Food & Dining, Transportation, Housing & Rent, Utilities, Entertainment, Groceries, Travel, Healthcare, Shopping, Other*).
+- Complete expense editing, deletion, and split recalculation workflows.
 
-4. **Optimal Debt Simplification ("Who Owes Whom")**:
-   - Automatic calculation of Net Balance = Total Paid - Total Share.
-   - Debt settlement algorithm reducing circular transactions into minimal direct repayments (e.g., *Alice owes Bob ₹300*).
+### 4. Interactive Expense Analytics
+- **Category Breakdown Chart**: Visual doughnut/pie chart showing spending proportions across expense categories.
+- **Monthly Spending Trends**: Interactive bar chart displaying month-by-month expenditure.
+- **Summary Metrics**: High-level KPI cards for Total Spending, Average Monthly Spending, and Transaction Count.
+- **Dynamic Filters**: Real-time filtering by Date Range (From/To) and specific Group.
 
-5. **Group Spending Budgets & 4-Tier Automated Warnings**:
-   - Set and adjust monthly spending budgets per group.
-   - Real-time warning triggers:
-     - **Normal**: `< 75%`
-     - **Warning**: `75% - 89.9%`
-     - **High Spending Alert**: `90% - 99.9%`
-     - **Budget Exceeded**: `100%+`
+### 5. Optimal Debt Simplification ("Who Owes Whom")
+- Real-time balance calculation: `Net Balance = Total Paid - Total Share`.
+- Greedy cash-flow minimization algorithm that eliminates circular debts into the minimum number of direct peer-to-peer repayments (e.g., *Alice owes Bob ₹350*).
+- One-click **Record Settlement** feature to clear debts and record payments.
 
-6. **What-If Expense Simulator**:
-   - Test potential purchases and hypothetical splits without altering database records.
-   - Visual before-and-after spending projections, remaining budget impact, and warning levels.
-   - Optional 1-click **Confirm and Add Expense** confirmation button.
+### 6. Group Spending Budgets & 4-Tier Automated Alert System
+- Define and adjust monthly budgets per group.
+- Automated real-time spending status alerts:
+  - 🟢 **Low Alert / Safe**: `< 75%` budget consumed.
+  - 🟡 **Moderate Warning**: `75% - 84.9%` budget consumed.
+  - ⚠️ **High Budget Alert**: `85% - 99.9%` budget consumed.
+  - 🚨 **Over Budget / Exceeded**: `100%+` budget exceeded with immediate warning notices.
 
-7. **Interactive Visualizations (Chart.js)**:
-   - Monthly Spending Trend (Line Chart).
-   - Expense Category Breakdown (Doughnut Chart).
-   - Group-wise Spending Comparison (Bar Chart).
-   - Budget vs Spent Tracking (Bar Chart).
+### 7. What-If Expense Simulator
+- Test prospective purchases and hypothetical split scenarios before spending.
+- Visual side-by-side comparison of current spending vs. projected spending, remaining budget, and new alert tiers.
+- Optional 1-click **Confirm and Add Expense** button to commit simulated transactions directly.
 
-8. **Modern Purple-and-White Theme & Dark Mode**:
-   - Purple gradient authentication views and crisp white cards.
-   - Instant Dark/Light mode toggle stored in `localStorage`.
-   - Adaptive Chart.js color palette for seamless dark theme contrast.
-
-9. **Multi-Language Accessibility**:
-   - Instant 1-click translation dictionary supporting **English**, **Kannada (ಕನ್ನಡ)**, **Telugu (తెలుగు)**, and **Hindi (हिन्दी)**.
-   - Persists selected language across page reloads.
+### 8. Modern Finance UI (Midnight Indigo & Ice Blue)
+- Styled with a premium financial color palette:
+  - **Midnight Indigo (`#4338CA`)**: Navigation, primary buttons, active menus, and key headings.
+  - **Ice Blue (`#BAE6FD`)**: Card accents, hover states, metric highlights, and chart themes.
+- Clean typography, rounded cards, responsive mobile/tablet/desktop layouts, and light/dark theme toggle.
 
 ---
 
 ## 🛠️ Technology Stack
 
-- **Frontend**: HTML5, CSS3, Vanilla JavaScript, Chart.js, FontAwesome 6
-- **Backend**: Python 3.10+ / Flask Framework
-- **Database**: MySQL 8.0 / PyMySQL driver
-- **Security**: PBKDF2:SHA256 password hashing, CSRF session tokens, parameterized SQL queries
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | HTML5, CSS3, JavaScript (ES6+), Chart.js, FontAwesome 6, Jinja2 Templates |
+| **Backend** | Python 3.10+, Flask Framework, Streamlit Cloud framework |
+| **Database** | MySQL 8.0 (PyMySQL connection pool) / SQLite (Standalone Cloud fallback) |
+| **Security** | Werkzeug PBKDF2:SHA256 password hashing, CSRF session tokens, SQL parameterized queries |
+| **Hosting** | Streamlit Community Cloud (Live Web), Localhost (Flask & MySQL) |
 
 ---
 
-## 📋 Required Software
+## 💻 Setup & Installation Guide (Windows)
 
-Before setting up, ensure the following are installed on your Windows machine:
-1. **Python 3.10 or newer** (with `pip` and "Add python.exe to PATH" checked during install).
-2. **MySQL Server 8.0** (or MySQL Community / XAMPP).
-3. **Visual Studio Code (VS Code)**.
-
----
-
-## 💻 Step-by-Step Setup Guide on Windows
-
-### Step 1: Open the Project in VS Code
-1. Open VS Code.
-2. Click **File** > **Open Folder...**
-3. Select `expense-split-settlement-system` located at:
-   ```
-   c:\Users\akula\OneDrive\Desktop\Rajasree_DES\expense-split-settlement-system
-   ```
-4. Open a PowerShell terminal in VS Code using the shortcut:
-   `Ctrl + ~` (or **Terminal** > **New Terminal**).
+The application supports two run modes:
+- **Mode A: Flask Web Application with MySQL** (Recommended for local development & review)
+- **Mode B: Streamlit Cloud / Local Streamlit Application** (Instant setup without MySQL)
 
 ---
 
-### Step 2: Create & Activate Python Virtual Environment
-Run the following commands in the VS Code terminal:
+### Prerequisites
+1. **Python 3.10 or newer** installed (ensure `Add python.exe to PATH` was selected during installation).
+2. **MySQL Server 8.0** (or XAMPP / MySQL Community) running locally for Mode A.
+3. **Visual Studio Code (VS Code)** or your preferred IDE.
 
+---
+
+### Mode A: Running the Flask Application (with MySQL)
+
+#### Step 1: Open the Project
+Open VS Code, click **File > Open Folder...**, and select:
+```
+c:\Users\akula\OneDrive\Desktop\Rajasree_DES\expense-split-settlement-system
+```
+Open a PowerShell terminal (`Ctrl + ~`).
+
+#### Step 2: Create & Activate Virtual Environment
 ```powershell
-# Create the virtual environment
+# Create virtual environment
 python -m venv venv
 
-# Activate the virtual environment
+# Activate virtual environment
 .\venv\Scripts\Activate.ps1
 ```
-*(You will see `(venv)` appear on the left of your terminal prompt).*
+*(If execution is blocked by Windows, run: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`)*
 
-> **Tip for Execution Policy Error**: If Windows blocks running scripts, run this one-time command in PowerShell as Administrator:
-> ```powershell
-> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-> ```
-
----
-
-### Step 3: Install Required Dependencies
-Install all required libraries using `requirements.txt`:
-
+#### Step 3: Install Dependencies
 ```powershell
 pip install -r requirements.txt
 ```
 
----
+#### Step 4: Configure Database Credentials
+Create or edit `.env` in the root folder:
+```env
+SECRET_KEY=btech-expense-split-secret-key-2026
 
-### Step 4: Configure MySQL Credentials in `.env`
-1. Locate the `.env` file in the project folder (or copy `.env.example` to `.env`):
-   ```powershell
-   Copy-Item .env.example .env
-   ```
-2. Open `.env` in VS Code and enter your MySQL root password:
-   ```env
-   SECRET_KEY=btech-expense-split-secret-key-2026
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_actual_mysql_password
+DB_NAME=expense_split_db
+```
 
-   DB_HOST=localhost
-   DB_PORT=3306
-   DB_USER=root
-   DB_PASSWORD=your_actual_mysql_password
-   DB_NAME=expense_split_db
-   ```
-3. Save the file (`Ctrl + S`).
-
----
-
-### Step 5: Initialize the MySQL Database & Schema
-Run the database initializer script to automatically create `expense_split_db` and all tables:
-
+#### Step 5: Initialize the Database
 ```powershell
 python db.py init
 ```
 
-*Expected output:*
-```
-Connecting to MySQL on localhost:3306 as 'root'...
-Database 'expense_split_db' initialized successfully.
-Schema initialized successfully!
-```
-
----
-
-### Step 6 (Optional): Populate Realistic Sample Data for Demo
-To instantly showcase a rich dashboard, live charts, multi-member groups, and settlement recommendations during your project review, run the included seed script:
-
+#### Step 6 (Optional): Seed Demo Data
+To instantly populate realistic sample groups, expenses, and settlements for your presentation:
 ```powershell
 python seed.py
 ```
+*(Includes 4 demo users: `rahul@example.com`, `priya@example.com`, `amit@example.com`, `sneha@example.com` with password: `password123`)*
 
-*This creates 4 sample test accounts with password `password123`:*
-- `rahul@example.com`
-- `priya@example.com`
-- `amit@example.com`
-- `sneha@example.com`
-
----
-
-### Step 7: Start the Flask Application
-Run the Flask server:
-
+#### Step 7: Launch Flask Server
 ```powershell
 python app.py
 ```
-
-*Expected output:*
-```
-Starting Expense Split and Settlement System on http://127.0.0.1:5000
- * Serving Flask app 'app'
- * Debug mode: on
- * Running on http://127.0.0.1:5000
-```
+Open your browser and visit: **`http://127.0.0.1:5000`**
 
 ---
 
-### Step 8: Access the Website in Your Browser
-Open your browser and visit:
-👉 **`http://127.0.0.1:5000`**
+### Mode B: Running the Streamlit Application (Standalone / Cloud)
+
+You can run the full interactive application using Streamlit without needing a local MySQL server (uses embedded SQLite):
+
+```powershell
+# Ensure virtual environment is activated
+streamlit run streamlit_app.py
+```
+Open your browser and visit: **`http://localhost:8501`**
+
+Default pre-registered credentials:
+- **Email**: `sree11@gmail.com` | **Password**: `sree@11`
+- **Email**: `bhoomika@gmail.com` | **Password**: `123456`
+- **Email**: `priya@gmail.com` | **Password**: `123456`
+*(Or click "Register" to create your own account)*
 
 ---
 
-## 🧪 Testing the Main Features
+## 🧪 Step-by-Step Feature Walkthrough
 
-1. **Test Registration & Login**:
-   - Register a new account with your name, email, and password.
-   - Click the eye icon to verify show/hide password toggle.
-2. **Test Group Creation**:
-   - Click **Create Group** and name it (e.g., "Apartment 202"). Set a monthly budget of ₹10,000.
-3. **Add Group Members**:
-   - In group details, add a friend's registered email.
-4. **Test Split Methods**:
-   - **Equal Split**: Add ₹1,200 dinner split equally between members.
-   - **Percentage Split**: Add a ₹5,000 rent payment (60% / 40%).
-   - **Custom Split**: Add ₹3,000 utility payment with custom amounts.
-5. **Verify Balances & Settlements**:
-   - Go to **Balances** to view "Who Owes Whom" settlement instructions.
-6. **Test Budget Warnings**:
-   - Add expenses until group spending crosses 75%, 90%, and 100% of the budget.
-   - Verify the color-coded alerts on the Dashboard and Group page.
+1. **User Authentication & Profile**:
+   - Register a new account or log in.
+   - Click the **Profile** button in the header or sidebar to view your account stats or update your name/email/password.
+2. **Create a Group**:
+   - Go to **Groups**, click **Create Group**, give it a name (e.g., *"Trip to Goa"* or *"Apartment 101"*), and set a monthly budget (e.g., `₹15,000`).
+3. **Add Members**:
+   - Select the group, open the **Add Members** section, pick a registered user from the dropdown, and add them instantly.
+4. **Record Expenses with Different Split Methods**:
+   - **Equal Split**: Enter ₹1,200 for Dinner split equally between all members.
+   - **Percentage Split**: Enter ₹5,000 for Hotel with custom percentages (e.g., 60% and 40%). Observe real-time ₹ calculations and 100% total validation.
+   - **Custom Split**: Enter ₹3,000 with exact ₹ amounts per person. Observe live sum matching validation.
+5. **View Balances & Who Owes Whom**:
+   - Navigate to **Balances** to see net balances and the simplified settlement plan generated by the cash-flow algorithm.
+6. **Check Budget Status & Live Alerts**:
+   - Go to **Budgets** to view progress bars and color-coded status badges (Normal, Moderate, High Alert, or Over Budget).
 7. **Test What-If Expense Simulator**:
-   - Go to **Simulator**, enter a proposed expense of ₹4,000, and click **Run Simulation**.
-   - Notice the before-and-after comparison without database modification.
-   - Click **Confirm & Add Expense** to finalize.
-8. **Test Dark/Light Mode & Languages**:
-   - Click the moon/sun button in the top navigation.
-   - Change the language dropdown to **ಕನ್ನಡ**, **తెలుగు**, or **हिन्दी**.
-
----
-
-## 🛠️ Common Errors & Troubleshooting
-
-| Error | Root Cause | Solution |
-| :--- | :--- | :--- |
-| `Access denied for user 'root'@'localhost'` | Incorrect MySQL password in `.env` | Open `.env` and verify `DB_PASSWORD=...` matches your MySQL root password. |
-| `Can't connect to MySQL server on 'localhost'` | MySQL service is not running | Open Windows Services (`services.msc`), find **MySQL80**, and click **Start**. |
-| `Unknown database 'expense_split_db'` | Database not created yet | Run `python db.py init` to automatically create database and schema. |
-| `Execution of scripts is disabled on this system` | Windows PowerShell execution policy | Run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` in PowerShell. |
+   - Open **Simulator**, select a group, enter a prospective amount (e.g., `₹6,000`), and run the simulation to preview the financial impact before committing.
+8. **Explore Expense Analytics**:
+   - View category breakdown charts, monthly expense bars, and KPI metrics filtered by date range and group.
 
 ---
 
@@ -233,55 +202,67 @@ Open your browser and visit:
 
 ```
 expense-split-settlement-system/
-├── app.py                      # Main Flask application entry point
+├── app.py                      # Flask application entry point
+├── streamlit_app.py            # Streamlit standalone & cloud web application
 ├── config.py                   # Central configuration & environment loader
-├── db.py                       # MySQL connection pool & schema runner
-├── requirements.txt            # Python dependencies
-├── schema.sql                  # MySQL database schema with indexes & FKs
-├── seed.py                     # Optional demo sample data generator
-├── .env.example                # Example environment variables template
+├── db.py                       # MySQL connection pool & schema manager
+├── requirements.txt            # Python package dependencies
+├── schema.sql                  # MySQL database schema (DDL & constraints)
+├── seed.py                     # Demo sample data generator script
+├── .env.example                # Environment variables template
 ├── .env                        # Local database credentials
-├── README.md                   # Complete documentation & guide
+├── README.md                   # Complete project documentation
 ├── routes/
 │   ├── __init__.py
-│   ├── auth_utils.py           # Login decorator & CSRF verification
-│   ├── auth.py                 # Registration, login, logout
-│   ├── dashboard.py            # Overview metrics & chart data API
-│   ├── groups.py               # Group CRUD & membership
-│   ├── expenses.py             # Expense management & split calculations
-│   ├── balances.py             # Balance calculations & Who Owes Whom
-│   ├── budgets.py              # Spending limits & 4-tier alert monitoring
+│   ├── auth_utils.py           # Authentication decorators & CSRF protection
+│   ├── auth.py                 # Registration, login, logout, profile update
+│   ├── dashboard.py            # Summary dashboard & chart analytics APIs
+│   ├── groups.py               # Group management & member roster
+│   ├── expenses.py             # Expense recording & split validations
+│   ├── balances.py             # Balance calculation & debt simplification
+│   ├── budgets.py              # Spending budgets & 4-tier alert system
 │   └── simulator.py            # What-If hypothetical expense simulator
 ├── templates/
-│   ├── base.html               # Base layout with navbar, theme & lang toggles
-│   ├── login.html              # Modern gradient login page
-│   ├── register.html           # Modern gradient registration page
-│   ├── dashboard.html          # Interactive dashboard with Chart.js
-│   ├── groups.html             # Groups directory & creation modal
-│   ├── group_details.html      # Group details, expenses & member balances
+│   ├── base.html               # Master layout with navbar, theme & scripts
+│   ├── login.html              # Gradient login page
+│   ├── register.html           # Registration page
+│   ├── dashboard.html          # Main dashboard with charts & summaries
+│   ├── groups.html             # Groups directory & modal
+│   ├── group_details.html      # Group details, expenses & balances
 │   ├── expenses.html           # Filterable expense list
 │   ├── add_expense.html        # Dynamic expense split form
-│   ├── edit_expense.html       # Expense editor
-│   ├── balances.html           # Who Owes Whom settlement page
-│   ├── budgets.html            # Group budget health page
+│   ├── edit_expense.html       # Expense editing with split validations
+│   ├── balances.html           # Debt simplification settlement view
+│   ├── budgets.html            # Group budget health monitoring
 │   └── simulator.html          # What-If simulator interface
 └── static/
     ├── css/
-    │   └── style.css           # Purple & white theme / dark mode styling
+    │   └── style.css           # Midnight Indigo & Ice Blue theme styles
     └── js/
-        ├── theme.js            # Light/Dark mode manager & persistence
+        ├── theme.js            # Light/Dark mode toggler & persistence
         ├── language.js         # Multi-language dictionary (EN, KN, TE, HI)
-        ├── charts.js           # Live Chart.js graphs
+        ├── charts.js           # Chart.js analytics graphs
         └── main.js             # Form validation & simulator controller
 ```
 
 ---
 
-## 🎯 Features Reserved for Future Milestones (Next 50%)
+## 🛠️ Common Troubleshooting
 
-- Email / SMS OTP Verification & Password Recovery
-- UPI & QR Code Payment Gateway Settlement Integration
-- OCR Bill & Receipt Scanning
-- AI-based Auto-categorization
-- Multi-currency Conversion
-- Push Notifications & SMS Reminders
+| Issue | Root Cause | Solution |
+| :--- | :--- | :--- |
+| `Access denied for user 'root'@'localhost'` | Incorrect MySQL password | Verify `DB_PASSWORD` in `.env` matches your MySQL root password. |
+| `Can't connect to MySQL server on 'localhost'` | MySQL service is stopped | Open `services.msc`, find **MySQL80**, and click **Start**. |
+| `Unknown database 'expense_split_db'` | Database not initialized | Run `python db.py init` in terminal to create the database schema. |
+| `Execution of scripts is disabled on this system` | Windows PowerShell execution policy | Run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` in PowerShell. |
+| Port 5000 already in use | Previous Flask process still running | Run `Stop-Process -Name python -Force` in PowerShell, then restart. |
+
+---
+
+## 🎯 Future Roadmap (Phase 2)
+
+- [ ] UPI Deep-Linking & Instant QR Code Payment Settlement
+- [ ] OCR Optical Bill & Receipt Scanning
+- [ ] AI-Powered Automated Expense Categorization
+- [ ] Multi-Currency Support with Real-Time Exchange Rates
+- [ ] Automated Email / SMS Reminders for Pending Settlements
