@@ -46,8 +46,12 @@ function initExpenseForm() {
   const splitTypeRadios = document.querySelectorAll('input[name="split_type"]');
   const participantsContainer = document.getElementById('participants-container');
   const payerSelect = document.getElementById('expense-payer-select');
+  const expenseForm = document.getElementById('expense-form');
 
-  if (!groupSelect || !participantsContainer) return;
+  if (!groupSelect || !participantsContainer) {
+    // If on Edit Expense page where group is preset, check if expenseForm exists
+    if (!expenseForm || !document.querySelector('.participant-checkbox')) return;
+  }
 
   async function loadGroupMembers(groupId) {
     if (!groupId) {
@@ -211,9 +215,11 @@ function initExpenseForm() {
     }
   }
 
-  groupSelect.addEventListener('change', function () {
-    loadGroupMembers(this.value);
-  });
+  if (groupSelect) {
+    groupSelect.addEventListener('change', function () {
+      loadGroupMembers(this.value);
+    });
+  }
 
   if (amountInput) {
     amountInput.addEventListener('input', updateSplitFields);
@@ -223,9 +229,57 @@ function initExpenseForm() {
     radio.addEventListener('change', updateSplitFields);
   });
 
-  // If initial group selected (e.g. from preset query param)
-  if (groupSelect.value) {
+  // Form submit interception to ensure Percentage & Custom splits match before submitting
+  if (expenseForm) {
+    expenseForm.addEventListener('submit', function (e) {
+      const splitType = getSelectedSplitType();
+      const amount = parseFloat(amountInput ? amountInput.value : 0) || 0;
+      const checkedBoxes = document.querySelectorAll('.participant-checkbox:checked');
+
+      if (checkedBoxes.length === 0) {
+        e.preventDefault();
+        alert('Please select at least one participant to share this expense.');
+        return;
+      }
+
+      if (splitType === 'PERCENTAGE') {
+        let sumPct = 0;
+        document.querySelectorAll('.pct-input').forEach(inp => {
+          sumPct += parseFloat(inp.value) || 0;
+        });
+        sumPct = Math.round(sumPct * 100) / 100;
+        if (Math.abs(sumPct - 100) > 0.1) {
+          e.preventDefault();
+          alert(`Total percentage must equal exactly 100%. Current sum: ${sumPct}%. Please adjust the shares.`);
+          return;
+        }
+      } else if (splitType === 'CUSTOM') {
+        let sumAmt = 0;
+        document.querySelectorAll('.custom-amt-input').forEach(inp => {
+          sumAmt += parseFloat(inp.value) || 0;
+        });
+        sumAmt = Math.round(sumAmt * 100) / 100;
+        if (Math.abs(sumAmt - amount) > 0.05) {
+          e.preventDefault();
+          alert(`Sum of custom amounts (₹${sumAmt.toFixed(2)}) must equal the total expense amount (₹${amount.toFixed(2)}). Please adjust the shares.`);
+          return;
+        }
+      }
+    });
+  }
+
+  // If initial group selected (e.g. from preset query param on add page)
+  if (groupSelect && groupSelect.value) {
     loadGroupMembers(groupSelect.value);
+  } else if (!groupSelect && document.querySelector('.participant-checkbox')) {
+    // Edit Expense page: attach listeners to existing elements
+    document.querySelectorAll('.participant-checkbox').forEach(cb => {
+      cb.addEventListener('change', updateSplitFields);
+    });
+    validateSplitTotals();
+    document.querySelectorAll('.pct-input, .custom-amt-input').forEach(inp => {
+      inp.addEventListener('input', validateSplitTotals);
+    });
   }
 }
 

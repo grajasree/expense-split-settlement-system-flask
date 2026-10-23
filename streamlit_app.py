@@ -360,6 +360,10 @@ def setup_sqlite_schema(conn):
             share_percentage REAL
         );
     """)
+    try:
+        cur.execute("ALTER TABLE expense_splits ADD COLUMN share_percentage REAL")
+    except Exception:
+        pass
     conn.commit()
 
     # Pre-register primary accounts so Rajasree, Bhoomika, and Priya exist with password '123456'
@@ -2391,7 +2395,7 @@ elif menu == "expenses":
 
             split_method = st.radio("Split Method", ["Equal Split", "Percentage Split", "Custom Split"], horizontal=True, key="exp_in_split_method")
 
-            st.markdown("<p style='font-size:0.9rem; font-weight:600; color:#4a5568; margin-top:0.75rem;'>Participants</p>", unsafe_allow_html=True)
+            st.markdown("<p style='font-size:0.9rem; font-weight:700; color:#4a5568; margin-top:0.75rem;'>Select Participants</p>", unsafe_allow_html=True)
             chosen_uids = []
             cols_parts = st.columns(min(len(members_in_grp), 4))
             for i, m in enumerate(members_in_grp):
@@ -2401,6 +2405,48 @@ elif menu == "expenses":
                     if checked:
                         chosen_uids.append(m['id'])
 
+            # Inputs for Percentage Split or Custom Split
+            pct_inputs = {}
+            custom_inputs = {}
+
+            if chosen_uids and split_method == "Percentage Split":
+                st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+                st.markdown("<div style='background:#F0F9FF; border:1px solid #BAE6FD; border-radius:10px; padding:10px 14px; margin-bottom:10px;'><strong style='color:#0369A1;'>📊 Percentage Split:</strong> Enter each member's share in % (must sum to exactly 100%).</div>", unsafe_allow_html=True)
+                cols_pct = st.columns(min(len(chosen_uids), 3))
+                default_p = round(100.0 / len(chosen_uids), 2)
+                for i, uid in enumerate(chosen_uids):
+                    col_item = cols_pct[i % len(cols_pct)]
+                    with col_item:
+                        pct_val = st.number_input(
+                            f"👤 {m_names[uid]} (%)",
+                            min_value=0.0,
+                            max_value=100.0,
+                            value=default_p,
+                            step=1.0,
+                            format="%.2f",
+                            key=f"in_pct_{chosen_gid}_{uid}"
+                        )
+                        pct_inputs[uid] = pct_val
+
+            elif chosen_uids and split_method == "Custom Split":
+                st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='background:#F0F9FF; border:1px solid #BAE6FD; border-radius:10px; padding:10px 14px; margin-bottom:10px;'><strong style='color:#0369A1;'>💵 Custom Split:</strong> Enter exact amount in ₹ for each member (must sum to ₹{exp_amt:,.2f}).</div>", unsafe_allow_html=True)
+                cols_cst = st.columns(min(len(chosen_uids), 3))
+                default_a = round(float(exp_amt) / len(chosen_uids), 2)
+                for i, uid in enumerate(chosen_uids):
+                    col_item = cols_cst[i % len(cols_cst)]
+                    with col_item:
+                        amt_val = st.number_input(
+                            f"👤 {m_names[uid]} (₹)",
+                            min_value=0.0,
+                            max_value=float(exp_amt),
+                            value=default_a,
+                            step=10.0,
+                            format="%.2f",
+                            key=f"in_cst_{chosen_gid}_{uid}"
+                        )
+                        custom_inputs[uid] = amt_val
+
         with col_preview:
             st.markdown(clean_html("""
             <div class="white-card">
@@ -2409,29 +2455,87 @@ elif menu == "expenses":
                 </div>
             """), unsafe_allow_html=True)
 
-            st.markdown(f"<div style='font-size:1.1rem; font-weight:800; color:#2d3748; margin-bottom:0.75rem;'>Total Amount: ₹{exp_amt:,.2f}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='font-size:1.1rem; font-weight:800; color:#1E1B4B; margin-bottom:0.75rem;'>Total Amount: ₹{exp_amt:,.2f}</div>", unsafe_allow_html=True)
 
             computed_splits = {}
-            if chosen_uids:
+            split_pct_map = {}
+            is_split_valid = False
+            validation_msg = ""
+
+            if not chosen_uids:
+                st.warning("⚠️ Please select at least one participant.")
+            else:
                 if split_method == "Equal Split":
                     per_share = round(float(exp_amt) / len(chosen_uids), 2)
-                    for uid in chosen_uids:
-                        computed_splits[uid] = per_share
-                else:
-                    per_share = round(float(exp_amt) / len(chosen_uids), 2)
-                    for uid in chosen_uids:
-                        computed_splits[uid] = per_share
+                    accum = 0.0
+                    for idx, uid in enumerate(chosen_uids):
+                        if idx == len(chosen_uids) - 1:
+                            s_amt = round(float(exp_amt) - accum, 2)
+                        else:
+                            s_amt = per_share
+                            accum += s_amt
+                        computed_splits[uid] = s_amt
+                        split_pct_map[uid] = round(100.0 / len(chosen_uids), 1)
+                    is_split_valid = True
+                    validation_msg = f"✓ Split is valid! Divided equally among {len(chosen_uids)} members (₹{computed_splits[chosen_uids[0]]:,.2f} each)."
 
+                elif split_method == "Percentage Split":
+                    sum_pct = round(sum(pct_inputs.values()), 2)
+                    diff_pct = round(100.0 - sum_pct, 2)
+                    accum = 0.0
+                    for idx, uid in enumerate(chosen_uids):
+                        pct = pct_inputs.get(uid, 0.0)
+                        split_pct_map[uid] = pct
+                        if idx == len(chosen_uids) - 1 and abs(diff_pct) < 0.05:
+                            s_amt = round(float(exp_amt) - accum, 2)
+                        else:
+                            s_amt = round(float(exp_amt) * (pct / 100.0), 2)
+                            accum += s_amt
+                        computed_splits[uid] = s_amt
+
+                    if abs(sum_pct - 100.0) < 0.05:
+                        is_split_valid = True
+                        validation_msg = f"✓ Total Percentage is 100.0%! All individual shares calculated."
+                    else:
+                        is_split_valid = False
+                        if diff_pct > 0:
+                            validation_msg = f"⚠️ Total is {sum_pct:.2f}%. Please add {diff_pct:.2f}% more to reach 100.00%."
+                        else:
+                            validation_msg = f"⚠️ Total is {sum_pct:.2f}%. Please reduce {abs(diff_pct):.2f}% to equal 100.00%."
+
+                elif split_method == "Custom Split":
+                    sum_cst = round(sum(custom_inputs.values()), 2)
+                    diff_amt = round(float(exp_amt) - sum_cst, 2)
+                    for uid in chosen_uids:
+                        c_amt = custom_inputs.get(uid, 0.0)
+                        computed_splits[uid] = c_amt
+                        split_pct_map[uid] = round((c_amt / float(exp_amt) * 100.0), 1) if float(exp_amt) > 0 else 0.0
+
+                    if abs(sum_cst - float(exp_amt)) < 0.05:
+                        is_split_valid = True
+                        validation_msg = f"✓ Total custom sum matches ₹{exp_amt:,.2f} exactly!"
+                    else:
+                        is_split_valid = False
+                        if diff_amt > 0:
+                            validation_msg = f"⚠️ Current sum is ₹{sum_cst:,.2f}. Please add ₹{diff_amt:,.2f} to match ₹{exp_amt:,.2f}."
+                        else:
+                            validation_msg = f"⚠️ Current sum is ₹{sum_cst:,.2f}. Please reduce ₹{abs(diff_amt):,.2f} to match ₹{exp_amt:,.2f}."
+
+                # Render preview breakdown table
                 for uid in chosen_uids:
+                    pct_badge = f" <span style='font-size:0.75rem; color:#4338CA; font-weight:700;'>({split_pct_map.get(uid, 0)}%)</span>" if split_method == "Percentage Split" else ""
                     st.markdown(clean_html(f"""
                     <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid #f1f2f6;">
-                        <span style="font-weight:600; color:#2d3436; font-size:0.92rem;">👤 {m_names[uid]}</span>
-                        <span style="font-weight:700; color:#4338CA; font-size:0.95rem;">₹{computed_splits[uid]:,.2f}</span>
+                        <span style="font-weight:600; color:#1E1B4B; font-size:0.92rem;">👤 {m_names[uid]}</span>
+                        <span style="font-weight:700; color:#4338CA; font-size:0.95rem;">₹{computed_splits.get(uid, 0.0):,.2f}{pct_badge}</span>
                     </div>
                     """), unsafe_allow_html=True)
 
-                st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
-                st.success(f"✓ Split is valid! Each person will pay ₹{computed_splits[chosen_uids[0]]:,.2f}")
+                st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+                if is_split_valid:
+                    st.success(validation_msg)
+                else:
+                    st.error(validation_msg)
 
                 # Live Budget Alert
                 grp_b_row = run_query("SELECT COALESCE(gb.monthly_budget, 0.0) as budget, COALESCE((SELECT SUM(amount) FROM expenses WHERE group_id = %s), 0.0) as spent FROM `groups` g LEFT JOIN group_budgets gb ON g.id = gb.group_id WHERE g.id = %s", (chosen_gid, chosen_gid))
@@ -2447,14 +2551,21 @@ elif menu == "expenses":
                     elif l_stat['level'] == 'LOW_SAFE':
                         st.success(f"🟢 **Low Budget Alert (Safe)**: Spending is healthy ({l_stat['pct']:.1f}% used).")
 
-                if st.button("Confirm and Add Expense", type="primary", use_container_width=True):
+                # Canonical split type code: EQUAL, PERCENTAGE, CUSTOM
+                canonical_split_type = "EQUAL" if split_method == "Equal Split" else ("PERCENTAGE" if split_method == "Percentage Split" else "CUSTOM")
+
+                if st.button("Confirm and Add Expense", type="primary", disabled=not is_split_valid, use_container_width=True):
                     new_eid = execute_cmd("""
                         INSERT INTO expenses (group_id, paid_by, amount, description, category, date, split_type)
                         VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    """, (chosen_gid, paid_by_id, exp_amt, exp_desc.strip(), exp_cat, str(exp_date), split_method))
+                    """, (chosen_gid, paid_by_id, exp_amt, exp_desc.strip(), exp_cat, str(exp_date), canonical_split_type))
 
                     for uid in chosen_uids:
-                        execute_cmd("INSERT INTO expense_splits (expense_id, user_id, share_amount) VALUES (%s, %s, %s)", (new_eid, uid, computed_splits[uid]))
+                        s_pct = split_pct_map.get(uid) if canonical_split_type == "PERCENTAGE" else None
+                        execute_cmd("""
+                            INSERT INTO expense_splits (expense_id, user_id, share_amount, share_percentage)
+                            VALUES (%s, %s, %s, %s)
+                        """, (new_eid, uid, computed_splits[uid], s_pct))
 
                     st.success("🎉 Expense recorded and split successfully!")
                     st.rerun()
